@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
 import type { ApiResponse } from '@/types/install'
+import { clearAuth, getAccessToken } from '@/utils/auth-storage'
 
 const http: AxiosInstance = axios.create({
   baseURL: '/api',
@@ -7,6 +8,14 @@ const http: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+})
+
+http.interceptors.request.use((config) => {
+  const token = getAccessToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
 })
 
 http.interceptors.response.use(
@@ -20,6 +29,10 @@ http.interceptors.response.use(
     return response
   },
   (error) => {
+    if (error.response?.status === 401) {
+      clearAuth()
+    }
+
     const message =
       error.response?.data?.message ||
       error.message ||

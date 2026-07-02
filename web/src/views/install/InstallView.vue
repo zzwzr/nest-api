@@ -245,7 +245,18 @@
             </div>
           </div>
 
+          <div class="form-grid">
+            <el-form-item label="站点域名" prop="site_url" class="form-grid__full">
+              <el-input
+                v-model="form.site_url"
+                placeholder="例如 https://api.example.com，用于邀请链接和分享"
+              />
+            </el-form-item>
+          </div>
+
           <el-descriptions :column="2" border class="install-summary">
+            <el-descriptions-item label="站点域名">{{ form.site_url }}</el-descriptions-item>
+            <el-descriptions-item label="平台管理员">{{ form.admin.username }}</el-descriptions-item>
             <el-descriptions-item label="数据库类型">
               {{ form.database.driver === 'postgres' ? 'PostgreSQL' : form.database.driver }}
             </el-descriptions-item>
@@ -257,7 +268,6 @@
             <el-descriptions-item label="应用数据库用户">{{ form.app_database.username }}</el-descriptions-item>
             <el-descriptions-item label="应用用户密码">已设置（见上方表单）</el-descriptions-item>
             <el-descriptions-item label="安装用超级用户">{{ form.database.user }}</el-descriptions-item>
-            <el-descriptions-item label="平台管理员">{{ form.admin.username }}</el-descriptions-item>
           </el-descriptions>
 
           <el-alert
@@ -285,6 +295,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Connection } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
@@ -310,6 +321,8 @@ const validateAppDBUsername = (_rule: unknown, value: string, callback: (error?:
   callback()
 }
 
+const router = useRouter()
+
 const formRef = ref<FormInstance>()
 const alreadyInstalled = ref(false)
 const testing = ref(false)
@@ -317,6 +330,7 @@ const submitting = ref(false)
 const installCredentials = ref<InstallCredentials | null>(null)
 
 const form = reactive<InstallPayload>({
+  site_url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
   database: {
     driver: 'postgres',
     host: 'postgres',
@@ -350,6 +364,7 @@ const validateConfirmPassword = (_rule: unknown, value: string, callback: (error
 }
 
 const rules: FormRules = {
+  site_url: [{ required: true, message: '请输入站点域名', trigger: 'blur' }],
   'database.driver': [{ required: true, message: '请选择数据库类型', trigger: 'change' }],
   'database.host': [{ required: true, message: '请输入主机地址', trigger: 'blur' }],
   'database.port': [{ required: true, message: '请输入端口', trigger: 'change' }],
@@ -381,6 +396,7 @@ const rules: FormRules = {
 }
 
 const allFields = [
+  'site_url',
   'database.driver',
   'database.host',
   'database.port',
@@ -469,7 +485,7 @@ async function handleSubmit() {
 }
 
 function goLogin() {
-  ElMessage.info('登录页面将在后续版本中提供')
+  router.push('/login')
 }
 
 onMounted(async () => {

@@ -1,13 +1,29 @@
-:root {
+:root,
+:root[data-theme='light'] {
   --color-primary: #2563eb;
   --color-primary-light: #3b82f6;
-  --color-bg: #f0f4f8;
-  --color-surface: #ffffff;
-  --color-text: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-border: #e2e8f0;
-  --radius-lg: 16px;
-  --shadow-card: 0 20px 50px rgba(15, 23, 42, 0.08);
+  --color-bg: #212121;
+  --color-surface: #2d2d2d;
+  --color-sidebar: #2d2d2d;
+  --color-topbar: #2d2d2d;
+  --color-text: #f3f4f6;
+  --color-text-secondary: #a3a3a3;
+  --color-border: #3a3a3a;
+  --radius-lg: 12px;
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.24);
+}
+
+:root[data-theme='dark'] {
+  --color-primary: #3b82f6;
+  --color-primary-light: #60a5fa;
+  --color-bg: #212121;
+  --color-surface: #2d2d2d;
+  --color-sidebar: #2d2d2d;
+  --color-topbar: #2d2d2d;
+  --color-text: #f3f4f6;
+  --color-text-secondary: #a3a3a3;
+  --color-border: #3a3a3a;
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
 *,
@@ -38,6 +54,28 @@ body {
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-primary-light);
   text-decoration: none;
+}
+
+.el-card,
+.el-table,
+.el-input__wrapper,
+.el-select__wrapper,
+.el-dropdown-menu {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.el-table th.el-table__cell {
+  background: #333333;
+  color: var(--color-text-secondary);
+}
+
+.el-table tr {
+  background: var(--color-surface);
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background: #333333;
 }

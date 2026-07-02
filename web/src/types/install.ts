@@ -6,6 +6,7 @@ export interface ApiResponse<T = unknown> {
 
 export interface InstallStatus {
   installed: boolean
+  site_url?: string
 }
 
 export interface DatabaseConfig {
@@ -30,6 +31,7 @@ export interface AdminConfig {
 }
 
 export interface InstallPayload {
+  site_url: string
   database: DatabaseConfig
   app_database: AppDatabaseConfig
   admin: AdminConfig

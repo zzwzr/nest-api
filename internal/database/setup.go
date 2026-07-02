@@ -89,6 +89,10 @@ func escapeIdentifier(name string) string {
 	return strings.ReplaceAll(name, `"`, `""`)
 }
 
+func escapeLiteral(value string) string {
+	return strings.ReplaceAll(value, `'`, `''`)
+}
+
 func EnsureAppUser(adminCfg configs.DatabaseConfig, appUser, appPassword string) error {
 	if appUser == "" {
 		return fmt.Errorf("application database user is required")
@@ -128,14 +132,20 @@ func EnsureAppUser(adminCfg configs.DatabaseConfig, appUser, appPassword string)
 	if exists {
 		_, err = db.ExecContext(
 			ctx,
-			fmt.Sprintf(`ALTER ROLE "%s" WITH LOGIN PASSWORD $1`, escapeIdentifier(appUser)),
-			appPassword,
+			fmt.Sprintf(
+				`ALTER ROLE "%s" WITH LOGIN PASSWORD '%s'`,
+				escapeIdentifier(appUser),
+				escapeLiteral(appPassword),
+			),
 		)
 	} else {
 		_, err = db.ExecContext(
 			ctx,
-			fmt.Sprintf(`CREATE ROLE "%s" LOGIN PASSWORD $1`, escapeIdentifier(appUser)),
-			appPassword,
+			fmt.Sprintf(
+				`CREATE ROLE "%s" LOGIN PASSWORD '%s'`,
+				escapeIdentifier(appUser),
+				escapeLiteral(appPassword),
+			),
 		)
 	}
 	if err != nil {

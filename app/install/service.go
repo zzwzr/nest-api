@@ -3,6 +3,7 @@ package install
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sync"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 	"nest-api/internal/utils"
 	bizerr "nest-api/pkg/errors"
 )
+
+var pgRoleNamePattern = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 
 type Service struct{}
 
@@ -50,8 +53,6 @@ func (s Service) TestDatabase(params TestDatabaseRequest) (TestDatabaseResponse,
 	}, nil
 }
 
-const defaultAppDBUser = "nest"
-
 func (s Service) Install(ctx context.Context, params InstallRequest) (InstallResponse, error) {
 	installMu.Lock()
 	defer installMu.Unlock()
@@ -68,23 +69,29 @@ func (s Service) Install(ctx context.Context, params InstallRequest) (InstallRes
 		return InstallResponse{}, bizerr.New("两次输入的管理员密码不一致")
 	}
 
+	appUser := params.AppDatabase.Username
+	appPassword := params.AppDatabase.Password
+
+	if !pgRoleNamePattern.MatchString(appUser) {
+		return InstallResponse{}, bizerr.New("应用数据库用户名需以小写字母开头，仅包含小写字母、数字和下划线")
+	}
+
+	if appUser == params.Database.User {
+		return InstallResponse{}, bizerr.New("应用数据库用户名不能与超级用户名相同")
+	}
+
 	cfg := toDatabaseConfig(params.Database)
 
 	if err := database.EnsureDatabase(cfg); err != nil {
 		return InstallResponse{}, bizerr.New(fmt.Sprintf("创建数据库失败: %v", err))
 	}
 
-	appPassword, err := utils.RandomPassword(24)
-	if err != nil {
-		return InstallResponse{}, bizerr.New(fmt.Sprintf("生成应用数据库密码失败: %v", err))
-	}
-
-	if err := database.EnsureAppUser(cfg, defaultAppDBUser, appPassword); err != nil {
+	if err := database.EnsureAppUser(cfg, appUser, appPassword); err != nil {
 		return InstallResponse{}, bizerr.New(fmt.Sprintf("创建应用数据库用户失败: %v", err))
 	}
 
 	appCfg := cfg
-	appCfg.User = defaultAppDBUser
+	appCfg.User = appUser
 	appCfg.Password = appPassword
 
 	if err := database.InitWithConfig(appCfg); err != nil {
@@ -114,7 +121,7 @@ func (s Service) Install(ctx context.Context, params InstallRequest) (InstallRes
 			Driver:   params.Database.Driver,
 			Host:     params.Database.Host,
 			Port:     params.Database.Port,
-			User:     defaultAppDBUser,
+			User:     appUser,
 			Password: appPassword,
 			Name:     params.Database.Name,
 			SSLMode:  params.Database.SSLMode,
@@ -126,8 +133,9 @@ func (s Service) Install(ctx context.Context, params InstallRequest) (InstallRes
 	}
 
 	return InstallResponse{
-		Message:          "安装成功，请重启服务以确保所有模块正常加载",
-		DatabaseUser:     defaultAppDBUser,
+		AdminUsername:    params.Admin.Username,
+		AdminPassword:    params.Admin.Password,
+		DatabaseUser:     appUser,
 		DatabasePassword: appPassword,
 	}, nil
 }

@@ -10,6 +10,11 @@ type DatabaseRequest struct {
 	SSLMode  string `json:"ssl_mode" binding:"required"`
 }
 
+type AppDatabaseRequest struct {
+	Username string `json:"username" binding:"required,min=1,max=63"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
 type AdminRequest struct {
 	Username        string `json:"username" binding:"required,min=3,max=50"`
 	Password        string `json:"password" binding:"required,min=6"`
@@ -17,8 +22,9 @@ type AdminRequest struct {
 }
 
 type InstallRequest struct {
-	Database DatabaseRequest `json:"database" binding:"required"`
-	Admin    AdminRequest    `json:"admin" binding:"required"`
+	Database    DatabaseRequest    `json:"database" binding:"required"`
+	AppDatabase AppDatabaseRequest `json:"app_database" binding:"required"`
+	Admin       AdminRequest       `json:"admin" binding:"required"`
 }
 
 type TestDatabaseRequest struct {
@@ -35,7 +41,9 @@ type TestDatabaseResponse struct {
 }
 
 type InstallResponse struct {
-	Message          string `json:"message"`
+	Message          string `json:"message,omitempty"`
+	AdminUsername    string `json:"admin_username,omitempty"`
+	AdminPassword    string `json:"admin_password,omitempty"`
 	DatabaseUser     string `json:"database_user,omitempty"`
 	DatabasePassword string `json:"database_password,omitempty"`
 }

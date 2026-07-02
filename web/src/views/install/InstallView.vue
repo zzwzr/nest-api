@@ -26,45 +26,65 @@
         </el-result>
       </el-card>
 
-      <el-card v-else-if="installResult" class="install-card install-success" shadow="never">
-        <el-result icon="success" title="安装成功" :sub-title="installResult.message">
+      <el-card v-else-if="installCredentials" class="install-card install-success" shadow="never">
+        <el-result icon="success" title="安装成功" sub-title="请妥善保管以下账号信息，关闭页面后将无法再次查看明文密码。">
           <template #extra>
             <div class="install-credentials">
-              <h3>应用数据库账号</h3>
-              <p class="install-credentials__hint">
-                系统已创建专用数据库用户，日常运行不再使用安装时的超级用户。密码已写入
-                <code>runtime/config.yaml</code>，请妥善保管。
-              </p>
+              <section class="install-credentials__section">
+                <h3>平台管理员</h3>
+                <p class="install-credentials__hint">用于登录 ApiNest 管理后台。</p>
 
-              <div class="install-credentials__row">
-                <span class="install-credentials__label">用户名</span>
-                <div class="install-credentials__value">
-                  <code>{{ installResult.database_user }}</code>
-                  <el-button text type="primary" @click="copyText(installResult.database_user!)">
+                <div
+                  class="install-credentials__row install-credentials__row--clickable"
+                  @click="copyText(installCredentials.admin.username)"
+                >
+                  <span class="install-credentials__label">用户名</span>
+                  <code>{{ installCredentials.admin.username }}</code>
+                  <el-button text type="primary" @click.stop="copyText(installCredentials.admin.username)">
                     复制
                   </el-button>
                 </div>
-              </div>
 
-              <div class="install-credentials__row">
-                <span class="install-credentials__label">密码</span>
-                <div class="install-credentials__value">
-                  <code>{{ showPassword ? installResult.database_password : maskedPassword }}</code>
-                  <el-button text type="primary" @click="showPassword = !showPassword">
-                    {{ showPassword ? '隐藏' : '显示' }}
-                  </el-button>
-                  <el-button text type="primary" @click="copyText(installResult.database_password!)">
+                <div
+                  class="install-credentials__row install-credentials__row--clickable"
+                  @click="copyText(installCredentials.admin.password)"
+                >
+                  <span class="install-credentials__label">密码</span>
+                  <code>{{ installCredentials.admin.password }}</code>
+                  <el-button text type="primary" @click.stop="copyText(installCredentials.admin.password)">
                     复制
                   </el-button>
                 </div>
-              </div>
+              </section>
 
-              <el-alert
-                title="请重启服务后再登录使用。此页面关闭后将无法再次查看明文密码。"
-                type="warning"
-                show-icon
-                :closable="false"
-              />
+              <section class="install-credentials__section">
+                <h3>应用数据库账号</h3>
+                <p class="install-credentials__hint">
+                  平台日常连接数据库使用，凭据已写入 <code>runtime/config.yaml</code>。
+                </p>
+
+                <div
+                  class="install-credentials__row install-credentials__row--clickable"
+                  @click="copyText(installCredentials.database.username)"
+                >
+                  <span class="install-credentials__label">用户名</span>
+                  <code>{{ installCredentials.database.username }}</code>
+                  <el-button text type="primary" @click.stop="copyText(installCredentials.database.username)">
+                    复制
+                  </el-button>
+                </div>
+
+                <div
+                  class="install-credentials__row install-credentials__row--clickable"
+                  @click="copyText(installCredentials.database.password)"
+                >
+                  <span class="install-credentials__label">密码</span>
+                  <code>{{ installCredentials.database.password }}</code>
+                  <el-button text type="primary" @click.stop="copyText(installCredentials.database.password)">
+                    复制
+                  </el-button>
+                </div>
+              </section>
             </div>
 
             <el-button type="primary" size="large" @click="goLogin">前往登录</el-button>
@@ -149,23 +169,35 @@
                 />
               </el-form-item>
             </div>
-          </div>
-
-          <div class="app-user-preview">
-            <div class="app-user-preview__icon">
-              <el-icon :size="20"><Key /></el-icon>
-            </div>
-            <div>
-              <strong>应用数据库用户：{{ appDBUser }}</strong>
-              <p>
-                安装时将自动创建该用户并生成随机密码，作为平台日常连接数据库的专用账号，取代超级用户。
-              </p>
+            <div class="install-block__action">
+              <el-button :loading="testing" @click="handleTestConnection">测试连接</el-button>
             </div>
           </div>
 
-          <div class="install-block__action">
-            <el-button :loading="testing" @click="handleTestConnection">测试连接</el-button>
+          <div class="form-section">
+            <h3 class="form-section__title">应用数据库用户</h3>
+            <p class="form-section__desc">
+              平台日常连接数据库使用的专用账号，已预填默认值，可按需修改。
+            </p>
+            <div class="form-grid">
+              <el-form-item label="用户名" prop="app_database.username">
+                <el-input v-model="form.app_database.username" placeholder="例如 nest" />
+              </el-form-item>
+
+              <el-form-item label="密码" prop="app_database.password">
+                <div class="password-field">
+                  <el-input
+                    v-model="form.app_database.password"
+                    type="password"
+                    show-password
+                    placeholder="至少 6 位"
+                  />
+                  <el-button @click="regenerateAppPassword">重新生成</el-button>
+                </div>
+              </el-form-item>
+            </div>
           </div>
+
         </el-card>
 
         <!-- 管理员账号 -->
@@ -222,8 +254,8 @@
               {{ form.database.host }}:{{ form.database.port }}
             </el-descriptions-item>
             <el-descriptions-item label="数据库名">{{ form.database.name }}</el-descriptions-item>
-            <el-descriptions-item label="应用数据库用户">{{ appDBUser }}</el-descriptions-item>
-            <el-descriptions-item label="应用用户密码">安装时随机生成</el-descriptions-item>
+            <el-descriptions-item label="应用数据库用户">{{ form.app_database.username }}</el-descriptions-item>
+            <el-descriptions-item label="应用用户密码">已设置（见上方表单）</el-descriptions-item>
             <el-descriptions-item label="安装用超级用户">{{ form.database.user }}</el-descriptions-item>
             <el-descriptions-item label="平台管理员">{{ form.admin.username }}</el-descriptions-item>
           </el-descriptions>
@@ -252,27 +284,37 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { Connection, Key } from '@element-plus/icons-vue'
+import { onMounted, reactive, ref } from 'vue'
+import { Connection } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { fetchInstallStatus, submitInstall, testDatabaseConnection } from '@/api/install'
-import type { InstallPayload, InstallResult } from '@/types/install'
+import type { InstallCredentials, InstallPayload } from '@/types/install'
 
-const appDBUser = 'nest'
+function generateRandomPassword(length = 24): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+  const bytes = new Uint8Array(length)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, (b) => chars[b % chars.length]).join('')
+}
+
+const validateAppDBUsername = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (!/^[a-z][a-z0-9_]*$/.test(value)) {
+    callback(new Error('需以小写字母开头，仅包含小写字母、数字和下划线'))
+    return
+  }
+  if (value === form.database.user) {
+    callback(new Error('不能与超级用户名相同'))
+    return
+  }
+  callback()
+}
 
 const formRef = ref<FormInstance>()
 const alreadyInstalled = ref(false)
 const testing = ref(false)
 const submitting = ref(false)
-const installResult = ref<InstallResult | null>(null)
-const showPassword = ref(false)
-
-const maskedPassword = computed(() =>
-  installResult.value?.database_password
-    ? '•'.repeat(Math.min(installResult.value.database_password.length, 24))
-    : '',
-)
+const installCredentials = ref<InstallCredentials | null>(null)
 
 const form = reactive<InstallPayload>({
   database: {
@@ -284,12 +326,20 @@ const form = reactive<InstallPayload>({
     password: '',
     ssl_mode: 'disable',
   },
+  app_database: {
+    username: 'nest',
+    password: generateRandomPassword(),
+  },
   admin: {
     username: 'admin',
     password: '',
     confirm_password: '',
   },
 })
+
+function regenerateAppPassword() {
+  form.app_database.password = generateRandomPassword()
+}
 
 const validateConfirmPassword = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (value !== form.admin.password) {
@@ -307,6 +357,15 @@ const rules: FormRules = {
   'database.user': [{ required: true, message: '请输入超级用户名', trigger: 'blur' }],
   'database.password': [{ required: true, message: '请输入超级用户密码', trigger: 'blur' }],
   'database.ssl_mode': [{ required: true, message: '请选择 SSL 模式', trigger: 'change' }],
+  'app_database.username': [
+    { required: true, message: '请输入应用数据库用户名', trigger: 'blur' },
+    { min: 1, max: 63, message: '用户名长度不能超过 63 个字符', trigger: 'blur' },
+    { validator: validateAppDBUsername, trigger: 'blur' },
+  ],
+  'app_database.password': [
+    { required: true, message: '请输入应用数据库密码', trigger: 'blur' },
+    { min: 6, message: '密码至少 6 位', trigger: 'blur' },
+  ],
   'admin.username': [
     { required: true, message: '请输入管理员用户名', trigger: 'blur' },
     { min: 3, max: 50, message: '用户名长度为 3-50 个字符', trigger: 'blur' },
@@ -329,6 +388,8 @@ const allFields = [
   'database.user',
   'database.password',
   'database.ssl_mode',
+  'app_database.username',
+  'app_database.password',
   'admin.username',
   'admin.password',
   'admin.confirm_password',
@@ -388,9 +449,18 @@ async function handleSubmit() {
 
   submitting.value = true
   try {
-    const result = await submitInstall(form)
-    installResult.value = result
-    ElMessage.success(result.message || '安装成功')
+    await submitInstall(form)
+    installCredentials.value = {
+      admin: {
+        username: form.admin.username,
+        password: form.admin.password,
+      },
+      database: {
+        username: form.app_database.username,
+        password: form.app_database.password,
+      },
+    }
+    ElMessage.success('安装成功')
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '安装失败')
   } finally {
@@ -591,39 +661,14 @@ onMounted(async () => {
   grid-column: 1 / -1;
 }
 
-.app-user-preview {
+.password-field {
   display: flex;
-  gap: 14px;
-  padding: 16px 18px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #eff6ff, #f5f3ff);
-  border: 1px solid #dbeafe;
-  margin-bottom: 8px;
+  gap: 8px;
+  width: 100%;
 }
 
-.app-user-preview__icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #fff;
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.app-user-preview strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 14px;
-}
-
-.app-user-preview p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
+.password-field :deep(.el-input) {
+  flex: 1;
 }
 
 .install-form :deep(.el-form-item) {
@@ -668,7 +713,7 @@ onMounted(async () => {
 
 .install-success :deep(.el-result__extra) {
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
 }
 
 .install-credentials {
@@ -677,13 +722,21 @@ onMounted(async () => {
   margin-bottom: 24px;
 }
 
+.install-credentials__section {
+  margin-bottom: 24px;
+}
+
+.install-credentials__section:last-child {
+  margin-bottom: 0;
+}
+
 .install-credentials h3 {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 16px;
 }
 
 .install-credentials__hint {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   font-size: 13px;
   color: var(--color-text-secondary);
   line-height: 1.5;
@@ -700,8 +753,19 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.install-credentials__row--clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.install-credentials__row--clickable:hover {
+  background: #f8fafc;
 }
 
 .install-credentials__label {
@@ -711,19 +775,11 @@ onMounted(async () => {
   color: var(--color-text-secondary);
 }
 
-.install-credentials__value {
+.install-credentials__row code {
   flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 4px;
   min-width: 0;
-}
-
-.install-credentials__value code {
-  flex: 1;
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: #f8fafc;
+  padding: 0;
+  background: transparent;
   font-size: 13px;
   word-break: break-all;
 }
@@ -765,11 +821,10 @@ onMounted(async () => {
   }
 
   .install-credentials__row {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
-  .install-credentials__value {
+  .install-credentials__row code {
     width: 100%;
   }
 }

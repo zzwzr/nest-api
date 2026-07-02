@@ -18,6 +18,11 @@ export interface DatabaseConfig {
   ssl_mode: string
 }
 
+export interface AppDatabaseConfig {
+  username: string
+  password: string
+}
+
 export interface AdminConfig {
   username: string
   password: string
@@ -26,6 +31,7 @@ export interface AdminConfig {
 
 export interface InstallPayload {
   database: DatabaseConfig
+  app_database: AppDatabaseConfig
   admin: AdminConfig
 }
 
@@ -35,7 +41,20 @@ export interface TestDatabaseResult {
 }
 
 export interface InstallResult {
-  message: string
+  message?: string
+  admin_username?: string
+  admin_password?: string
   database_user?: string
   database_password?: string
+}
+
+export interface InstallCredentials {
+  admin: {
+    username: string
+    password: string
+  }
+  database: {
+    username: string
+    password: string
+  }
 }

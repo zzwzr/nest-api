@@ -3,6 +3,7 @@ package configs
 type RuntimeConfig struct {
 	Installed   bool            `yaml:"installed"`
 	InstalledAt string          `yaml:"installed_at,omitempty"`
+	SiteURL     string          `yaml:"site_url,omitempty"`
 	Database    DatabaseRuntime `yaml:"database"`
 }
 

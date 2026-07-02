@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 )
 
 var pgRoleNamePattern = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
+var accountPattern = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 
 type Service struct{}
 
@@ -23,6 +25,7 @@ var installMu sync.Mutex
 func (Service) Status() StatusResponse {
 	return StatusResponse{
 		Installed: runtime.IsInstalled(),
+		SiteURL:   runtime.SiteURL(),
 	}
 }
 
@@ -69,6 +72,11 @@ func (s Service) Install(ctx context.Context, params InstallRequest) (InstallRes
 		return InstallResponse{}, bizerr.New("两次输入的管理员密码不一致")
 	}
 
+	adminAccount := strings.TrimSpace(params.Admin.Username)
+	if !accountPattern.MatchString(adminAccount) {
+		return InstallResponse{}, bizerr.New("管理员账号仅支持字母、数字和下划线")
+	}
+
 	appUser := params.AppDatabase.Username
 	appPassword := params.AppDatabase.Password
 
@@ -106,6 +114,7 @@ func (s Service) Install(ctx context.Context, params InstallRequest) (InstallRes
 	_, err = database.DB.User.
 		Create().
 		SetName(params.Admin.Username).
+		SetAccount(adminAccount).
 		SetPassword(hash).
 		SetIsAdmin(true).
 		SetStatus(1).
@@ -117,6 +126,7 @@ func (s Service) Install(ctx context.Context, params InstallRequest) (InstallRes
 	runtimeCfg := configs.RuntimeConfig{
 		Installed:   true,
 		InstalledAt: time.Now().Format(time.RFC3339),
+		SiteURL:     strings.TrimRight(params.SiteURL, "/"),
 		Database: configs.DatabaseRuntime{
 			Driver:   params.Database.Driver,
 			Host:     params.Database.Host,

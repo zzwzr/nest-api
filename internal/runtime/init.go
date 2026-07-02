@@ -45,6 +45,20 @@ func IsInstalled() bool {
 	return state.Installed
 }
 
+func SiteURL() string {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	return state.SiteURL
+}
+
+func Config() configs.RuntimeConfig {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	return state
+}
+
 func Save(cfg configs.RuntimeConfig) error {
 	mu.Lock()
 	defer mu.Unlock()

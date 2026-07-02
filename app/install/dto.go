@@ -22,6 +22,7 @@ type AdminRequest struct {
 }
 
 type InstallRequest struct {
+	SiteURL     string             `json:"site_url" binding:"required,url,max=255"`
 	Database    DatabaseRequest    `json:"database" binding:"required"`
 	AppDatabase AppDatabaseRequest `json:"app_database" binding:"required"`
 	Admin       AdminRequest       `json:"admin" binding:"required"`
@@ -32,7 +33,8 @@ type TestDatabaseRequest struct {
 }
 
 type StatusResponse struct {
-	Installed bool `json:"installed"`
+	Installed bool   `json:"installed"`
+	SiteURL   string `json:"site_url,omitempty"`
 }
 
 type TestDatabaseResponse struct {

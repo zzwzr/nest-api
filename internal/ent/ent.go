@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nest-api/internal/ent/user"
+	"nest-api/internal/ent/workspace"
 	"reflect"
 	"sync"
 
@@ -73,7 +74,8 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			user.Table: user.ValidColumn,
+			user.Table:      user.ValidColumn,
+			workspace.Table: workspace.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

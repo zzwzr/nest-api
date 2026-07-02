@@ -11,7 +11,12 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/schema/mixin"
 )
+
+type SoftDeleteMixin struct {
+	mixin.Schema
+}
 
 type softDeleteKey struct{}
 
@@ -20,7 +25,7 @@ func SkipSoftDelete(parent context.Context) context.Context {
 	return context.WithValue(parent, softDeleteKey{}, true)
 }
 
-func (TimeMixin) Interceptors() []ent.Interceptor {
+func (SoftDeleteMixin) Interceptors() []ent.Interceptor {
 	return []ent.Interceptor{
 		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
 			if skip, _ := ctx.Value(softDeleteKey{}).(bool); skip {
@@ -32,7 +37,7 @@ func (TimeMixin) Interceptors() []ent.Interceptor {
 	}
 }
 
-func (TimeMixin) Hooks() []ent.Hook {
+func (SoftDeleteMixin) Hooks() []ent.Hook {
 	return []ent.Hook{
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {

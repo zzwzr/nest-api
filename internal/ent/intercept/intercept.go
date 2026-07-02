@@ -9,6 +9,7 @@ import (
 	"nest-api/internal/ent"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/user"
+	"nest-api/internal/ent/workspace"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -96,11 +97,40 @@ func (f TraverseUser) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.UserQuery", q)
 }
 
+// The WorkspaceFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkspaceFunc func(context.Context, *ent.WorkspaceQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkspaceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkspaceQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkspaceQuery", q)
+}
+
+// The TraverseWorkspace type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkspace func(context.Context, *ent.WorkspaceQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkspace) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkspace) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkspaceQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkspaceQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.UserQuery:
 		return &query[*ent.UserQuery, predicate.User, user.OrderOption]{typ: ent.TypeUser, tq: q}, nil
+	case *ent.WorkspaceQuery:
+		return &query[*ent.WorkspaceQuery, predicate.Workspace, workspace.OrderOption]{typ: ent.TypeWorkspace, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

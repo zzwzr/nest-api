@@ -18,14 +18,14 @@ type User struct {
 	// ID of the ent.
 	// 主键
 	ID int64 `json:"id,omitempty"`
-	// 创建时间
-	CreatedAt utils.DateTime `json:"created_at,omitempty"`
-	// 更新时间
-	UpdatedAt utils.DateTime `json:"updated_at,omitempty"`
-	// 删除时间
-	DeletedAt *utils.DateTime `json:"deleted_at,omitempty"`
-	// 用户名
+	// 显示名称
 	Name string `json:"name,omitempty"`
+	// 登录账号
+	Account string `json:"account,omitempty"`
+	// 邮箱
+	Email string `json:"email,omitempty"`
+	// 头像地址
+	Avatar string `json:"avatar,omitempty"`
 	// 手机号
 	Mobile string `json:"mobile,omitempty"`
 	// 密码
@@ -33,7 +33,13 @@ type User struct {
 	// 是否管理员
 	IsAdmin bool `json:"is_admin,omitempty"`
 	// 状态
-	Status       int8 `json:"status,omitempty"`
+	Status int8 `json:"status,omitempty"`
+	// 创建时间
+	CreatedAt utils.DateTime `json:"created_at,omitempty"`
+	// 更新时间
+	UpdatedAt utils.DateTime `json:"updated_at,omitempty"`
+	// 删除时间
+	DeletedAt    *utils.DateTime `json:"deleted_at,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -48,7 +54,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID, user.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case user.FieldName, user.FieldMobile, user.FieldPassword:
+		case user.FieldName, user.FieldAccount, user.FieldEmail, user.FieldAvatar, user.FieldMobile, user.FieldPassword:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(utils.DateTime)
@@ -73,30 +79,29 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			_m.ID = int64(value.Int64)
-		case user.FieldCreatedAt:
-			if value, ok := values[i].(*utils.DateTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value != nil {
-				_m.CreatedAt = *value
-			}
-		case user.FieldUpdatedAt:
-			if value, ok := values[i].(*utils.DateTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value != nil {
-				_m.UpdatedAt = *value
-			}
-		case user.FieldDeletedAt:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
-			} else if value.Valid {
-				_m.DeletedAt = new(utils.DateTime)
-				*_m.DeletedAt = *value.S.(*utils.DateTime)
-			}
 		case user.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case user.FieldAccount:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field account", values[i])
+			} else if value.Valid {
+				_m.Account = value.String
+			}
+		case user.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				_m.Email = value.String
+			}
+		case user.FieldAvatar:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field avatar", values[i])
+			} else if value.Valid {
+				_m.Avatar = value.String
 			}
 		case user.FieldMobile:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -121,6 +126,25 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = int8(value.Int64)
+			}
+		case user.FieldCreatedAt:
+			if value, ok := values[i].(*utils.DateTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value != nil {
+				_m.CreatedAt = *value
+			}
+		case user.FieldUpdatedAt:
+			if value, ok := values[i].(*utils.DateTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value != nil {
+				_m.UpdatedAt = *value
+			}
+		case user.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				_m.DeletedAt = new(utils.DateTime)
+				*_m.DeletedAt = *value.S.(*utils.DateTime)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -158,19 +182,17 @@ func (_m *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("created_at=")
-	builder.WriteString(fmt.Sprintf("%v", _m.CreatedAt))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(fmt.Sprintf("%v", _m.UpdatedAt))
-	builder.WriteString(", ")
-	if v := _m.DeletedAt; v != nil {
-		builder.WriteString("deleted_at=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("account=")
+	builder.WriteString(_m.Account)
+	builder.WriteString(", ")
+	builder.WriteString("email=")
+	builder.WriteString(_m.Email)
+	builder.WriteString(", ")
+	builder.WriteString("avatar=")
+	builder.WriteString(_m.Avatar)
 	builder.WriteString(", ")
 	builder.WriteString("mobile=")
 	builder.WriteString(_m.Mobile)
@@ -182,6 +204,17 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedAt))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UpdatedAt))
+	builder.WriteString(", ")
+	if v := _m.DeletedAt; v != nil {
+		builder.WriteString("deleted_at=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -1,0 +1,65 @@
+package mixin
+
+import (
+	"context"
+	"fmt"
+
+	gen "nest-api/internal/ent"
+	"nest-api/internal/ent/hook"
+	"nest-api/internal/ent/intercept"
+	"nest-api/internal/utils"
+
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
+)
+
+type softDeleteKey struct{}
+
+// 去掉软删除，使用方式 daily, cupInfo, err := Repo{}.GetCupDaily(ctx, userID, date)
+func SkipSoftDelete(parent context.Context) context.Context {
+	return context.WithValue(parent, softDeleteKey{}, true)
+}
+
+func (TimeMixin) Interceptors() []ent.Interceptor {
+	return []ent.Interceptor{
+		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
+			if skip, _ := ctx.Value(softDeleteKey{}).(bool); skip {
+				return nil
+			}
+			filterNotDeleted(q)
+			return nil
+		}),
+	}
+}
+
+func (TimeMixin) Hooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+					if skip, _ := ctx.Value(softDeleteKey{}).(bool); skip {
+						return next.Mutate(ctx, m)
+					}
+					mx, ok := m.(interface {
+						SetOp(ent.Op)
+						Client() *gen.Client
+						SetDeletedAt(utils.DateTime)
+						WhereP(...func(*sql.Selector))
+					})
+					if !ok {
+						return nil, fmt.Errorf("unexpected mutation type %T", m)
+					}
+					filterNotDeleted(mx)
+					mx.SetOp(ent.OpUpdate)
+					mx.SetDeletedAt(utils.Now())
+					return mx.Client().Mutate(ctx, m)
+				})
+			},
+			ent.OpDeleteOne|ent.OpDelete,
+		),
+	}
+}
+
+func filterNotDeleted(w interface{ WhereP(...func(*sql.Selector)) }) {
+	w.WhereP(sql.FieldIsNull("deleted_at"))
+}

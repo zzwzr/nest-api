@@ -1,0 +1,144 @@
+package install
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"time"
+
+	"nest-api/configs"
+	"nest-api/internal/database"
+	"nest-api/internal/runtime"
+	"nest-api/internal/utils"
+	bizerr "nest-api/pkg/errors"
+)
+
+type Service struct{}
+
+var installMu sync.Mutex
+
+func (Service) Status() StatusResponse {
+	return StatusResponse{
+		Installed: runtime.IsInstalled(),
+	}
+}
+
+func (s Service) TestDatabase(params TestDatabaseRequest) (TestDatabaseResponse, error) {
+	if params.Database.Driver == "mysql" {
+		return TestDatabaseResponse{}, bizerr.New("MySQL 将在后续版本中支持，请暂时使用 PostgreSQL")
+	}
+
+	cfg := toDatabaseConfig(params.Database)
+
+	if err := database.TestConnection(cfg); err == nil {
+		return TestDatabaseResponse{
+			OK:      true,
+			Message: "数据库连接成功",
+		}, nil
+	}
+
+	adminCfg := cfg
+	adminCfg.DBName = "postgres"
+
+	if err := database.TestConnection(adminCfg); err != nil {
+		return TestDatabaseResponse{}, bizerr.New("无法连接数据库，请检查主机、端口、账号和密码")
+	}
+
+	return TestDatabaseResponse{
+		OK:      true,
+		Message: "数据库服务连接成功，目标库不存在时将在安装过程中自动创建",
+	}, nil
+}
+
+const defaultAppDBUser = "nest"
+
+func (s Service) Install(ctx context.Context, params InstallRequest) (InstallResponse, error) {
+	installMu.Lock()
+	defer installMu.Unlock()
+
+	if runtime.IsInstalled() {
+		return InstallResponse{}, bizerr.New("系统已安装，请勿重复安装")
+	}
+
+	if params.Database.Driver == "mysql" {
+		return InstallResponse{}, bizerr.New("MySQL 将在后续版本中支持，请暂时使用 PostgreSQL")
+	}
+
+	if params.Admin.Password != params.Admin.ConfirmPassword {
+		return InstallResponse{}, bizerr.New("两次输入的管理员密码不一致")
+	}
+
+	cfg := toDatabaseConfig(params.Database)
+
+	if err := database.EnsureDatabase(cfg); err != nil {
+		return InstallResponse{}, bizerr.New(fmt.Sprintf("创建数据库失败: %v", err))
+	}
+
+	appPassword, err := utils.RandomPassword(24)
+	if err != nil {
+		return InstallResponse{}, bizerr.New(fmt.Sprintf("生成应用数据库密码失败: %v", err))
+	}
+
+	if err := database.EnsureAppUser(cfg, defaultAppDBUser, appPassword); err != nil {
+		return InstallResponse{}, bizerr.New(fmt.Sprintf("创建应用数据库用户失败: %v", err))
+	}
+
+	appCfg := cfg
+	appCfg.User = defaultAppDBUser
+	appCfg.Password = appPassword
+
+	if err := database.InitWithConfig(appCfg); err != nil {
+		return InstallResponse{}, bizerr.New(fmt.Sprintf("初始化数据库失败: %v", err))
+	}
+
+	hash, err := utils.Hash(params.Admin.Password)
+	if err != nil {
+		return InstallResponse{}, err
+	}
+
+	_, err = database.DB.User.
+		Create().
+		SetName(params.Admin.Username).
+		SetPassword(hash).
+		SetIsAdmin(true).
+		SetStatus(1).
+		Save(ctx)
+	if err != nil {
+		return InstallResponse{}, bizerr.New(fmt.Sprintf("创建管理员失败: %v", err))
+	}
+
+	runtimeCfg := configs.RuntimeConfig{
+		Installed:   true,
+		InstalledAt: time.Now().Format(time.RFC3339),
+		Database: configs.DatabaseRuntime{
+			Driver:   params.Database.Driver,
+			Host:     params.Database.Host,
+			Port:     params.Database.Port,
+			User:     defaultAppDBUser,
+			Password: appPassword,
+			Name:     params.Database.Name,
+			SSLMode:  params.Database.SSLMode,
+		},
+	}
+
+	if err := runtime.Save(runtimeCfg); err != nil {
+		return InstallResponse{}, bizerr.New(fmt.Sprintf("保存配置失败: %v", err))
+	}
+
+	return InstallResponse{
+		Message:          "安装成功，请重启服务以确保所有模块正常加载",
+		DatabaseUser:     defaultAppDBUser,
+		DatabasePassword: appPassword,
+	}, nil
+}
+
+func toDatabaseConfig(db DatabaseRequest) configs.DatabaseConfig {
+	return configs.DatabaseConfig{
+		Host:     db.Host,
+		Port:     db.Port,
+		User:     db.User,
+		Password: db.Password,
+		DBName:   db.Name,
+		SSLMode:  db.SSLMode,
+	}
+}

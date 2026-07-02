@@ -1,0 +1,776 @@
+<template>
+  <div class="install-page">
+    <div class="install-bg">
+      <div class="install-bg__orb install-bg__orb--1" />
+      <div class="install-bg__orb install-bg__orb--2" />
+    </div>
+
+    <header class="install-topbar">
+      <div class="install-topbar__inner">
+        <div class="install-logo">
+          <el-icon :size="24"><Connection /></el-icon>
+        </div>
+        <div class="install-topbar__text">
+          <h1>ApiNest 安装向导</h1>
+          <p>开源 API 协作管理平台 · 首次部署请完成以下配置</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="install-main">
+      <el-card v-if="alreadyInstalled" class="install-card" shadow="never">
+        <el-result icon="success" title="系统已安装" sub-title="ApiNest 已完成初始化，请前往登录页面使用。">
+          <template #extra>
+            <el-button type="primary" @click="goLogin">前往登录</el-button>
+          </template>
+        </el-result>
+      </el-card>
+
+      <el-card v-else-if="installResult" class="install-card install-success" shadow="never">
+        <el-result icon="success" title="安装成功" :sub-title="installResult.message">
+          <template #extra>
+            <div class="install-credentials">
+              <h3>应用数据库账号</h3>
+              <p class="install-credentials__hint">
+                系统已创建专用数据库用户，日常运行不再使用安装时的超级用户。密码已写入
+                <code>runtime/config.yaml</code>，请妥善保管。
+              </p>
+
+              <div class="install-credentials__row">
+                <span class="install-credentials__label">用户名</span>
+                <div class="install-credentials__value">
+                  <code>{{ installResult.database_user }}</code>
+                  <el-button text type="primary" @click="copyText(installResult.database_user!)">
+                    复制
+                  </el-button>
+                </div>
+              </div>
+
+              <div class="install-credentials__row">
+                <span class="install-credentials__label">密码</span>
+                <div class="install-credentials__value">
+                  <code>{{ showPassword ? installResult.database_password : maskedPassword }}</code>
+                  <el-button text type="primary" @click="showPassword = !showPassword">
+                    {{ showPassword ? '隐藏' : '显示' }}
+                  </el-button>
+                  <el-button text type="primary" @click="copyText(installResult.database_password!)">
+                    复制
+                  </el-button>
+                </div>
+              </div>
+
+              <el-alert
+                title="请重启服务后再登录使用。此页面关闭后将无法再次查看明文密码。"
+                type="warning"
+                show-icon
+                :closable="false"
+              />
+            </div>
+
+            <el-button type="primary" size="large" @click="goLogin">前往登录</el-button>
+          </template>
+        </el-result>
+      </el-card>
+
+      <el-form
+        v-else
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-position="top"
+        class="install-form"
+        @submit.prevent
+      >
+        <!-- 数据库配置 -->
+        <el-card class="install-block" shadow="never">
+          <div class="install-block__head">
+            <span class="install-block__index">01</span>
+            <div>
+              <h2>数据库连接</h2>
+              <p>填写 PostgreSQL 服务信息。安装完成后，平台将使用自动创建的专用账号连接数据库。</p>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="form-section__title">服务信息</h3>
+            <div class="form-grid">
+              <el-form-item label="数据库类型" prop="database.driver" class="form-grid__full">
+                <el-select v-model="form.database.driver">
+                  <el-option label="PostgreSQL" value="postgres" />
+                  <el-option label="MySQL（即将支持）" value="mysql" disabled />
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="主机地址" prop="database.host">
+                <el-input v-model="form.database.host" placeholder="localhost 或数据库 IP / 域名" />
+              </el-form-item>
+
+              <el-form-item label="端口" prop="database.port">
+                <el-input-number
+                  v-model="form.database.port"
+                  :min="1"
+                  :max="65535"
+                  controls-position="right"
+                  style="width: 100%"
+                />
+              </el-form-item>
+
+              <el-form-item label="数据库名" prop="database.name" class="form-grid__full">
+                <el-input v-model="form.database.name" placeholder="例如 nest" />
+              </el-form-item>
+
+              <el-form-item label="SSL 模式" prop="database.ssl_mode" class="form-grid__full">
+                <el-select v-model="form.database.ssl_mode">
+                  <el-option label="disable — 不使用 SSL（内网/本地推荐）" value="disable" />
+                  <el-option label="require — 使用 SSL，不校验证书" value="require" />
+                  <el-option label="verify-ca — 使用 SSL 并校验 CA" value="verify-ca" />
+                  <el-option label="verify-full — 使用 SSL 并校验 CA 与主机名" value="verify-full" />
+                </el-select>
+              </el-form-item>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="form-section__title">安装用超级用户</h3>
+            <p class="form-section__desc">
+              需要具备创建数据库、创建用户等权限的账号（如 <code>postgres</code>）。仅用于本次安装，不会写入配置文件。
+            </p>
+            <div class="form-grid">
+              <el-form-item label="超级用户名" prop="database.user">
+                <el-input v-model="form.database.user" placeholder="例如 postgres" />
+              </el-form-item>
+
+              <el-form-item label="超级用户密码" prop="database.password">
+                <el-input
+                  v-model="form.database.password"
+                  type="password"
+                  show-password
+                  placeholder="超级用户密码"
+                />
+              </el-form-item>
+            </div>
+          </div>
+
+          <div class="app-user-preview">
+            <div class="app-user-preview__icon">
+              <el-icon :size="20"><Key /></el-icon>
+            </div>
+            <div>
+              <strong>应用数据库用户：{{ appDBUser }}</strong>
+              <p>
+                安装时将自动创建该用户并生成随机密码，作为平台日常连接数据库的专用账号，取代超级用户。
+              </p>
+            </div>
+          </div>
+
+          <div class="install-block__action">
+            <el-button :loading="testing" @click="handleTestConnection">测试连接</el-button>
+          </div>
+        </el-card>
+
+        <!-- 管理员账号 -->
+        <el-card class="install-block" shadow="never">
+          <div class="install-block__head">
+            <span class="install-block__index">02</span>
+            <div>
+              <h2>管理员账号</h2>
+              <p>平台登录用的超级管理员，与上面的数据库超级用户无关。</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <el-form-item label="用户名" prop="admin.username" class="form-grid__full">
+              <el-input v-model="form.admin.username" placeholder="3-50 个字符" />
+            </el-form-item>
+
+            <el-form-item label="登录密码" prop="admin.password">
+              <el-input
+                v-model="form.admin.password"
+                type="password"
+                show-password
+                placeholder="至少 6 位"
+              />
+            </el-form-item>
+
+            <el-form-item label="确认密码" prop="admin.confirm_password">
+              <el-input
+                v-model="form.admin.confirm_password"
+                type="password"
+                show-password
+                placeholder="再次输入密码"
+              />
+            </el-form-item>
+          </div>
+        </el-card>
+
+        <!-- 确认安装 -->
+        <el-card class="install-block" shadow="never">
+          <div class="install-block__head">
+            <span class="install-block__index">03</span>
+            <div>
+              <h2>确认安装</h2>
+              <p>请确认以下配置信息，提交后将初始化数据库并创建管理员账号。</p>
+            </div>
+          </div>
+
+          <el-descriptions :column="2" border class="install-summary">
+            <el-descriptions-item label="数据库类型">
+              {{ form.database.driver === 'postgres' ? 'PostgreSQL' : form.database.driver }}
+            </el-descriptions-item>
+            <el-descriptions-item label="SSL 模式">{{ form.database.ssl_mode }}</el-descriptions-item>
+            <el-descriptions-item label="主机地址">
+              {{ form.database.host }}:{{ form.database.port }}
+            </el-descriptions-item>
+            <el-descriptions-item label="数据库名">{{ form.database.name }}</el-descriptions-item>
+            <el-descriptions-item label="应用数据库用户">{{ appDBUser }}</el-descriptions-item>
+            <el-descriptions-item label="应用用户密码">安装时随机生成</el-descriptions-item>
+            <el-descriptions-item label="安装用超级用户">{{ form.database.user }}</el-descriptions-item>
+            <el-descriptions-item label="平台管理员">{{ form.admin.username }}</el-descriptions-item>
+          </el-descriptions>
+
+          <el-alert
+            title="安装完成后，超级用户凭据不会被保存；应用数据库账号密码将写入 runtime/config.yaml。"
+            type="info"
+            show-icon
+            :closable="false"
+            class="install-alert"
+          />
+
+          <div class="install-submit">
+            <el-button type="primary" size="large" :loading="submitting" @click="handleSubmit">
+              开始安装
+            </el-button>
+          </div>
+        </el-card>
+      </el-form>
+
+      <footer class="install-footer">
+        <span>ApiNest · Open Source API Collaboration Platform</span>
+      </footer>
+    </main>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref } from 'vue'
+import { Connection, Key } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { fetchInstallStatus, submitInstall, testDatabaseConnection } from '@/api/install'
+import type { InstallPayload, InstallResult } from '@/types/install'
+
+const appDBUser = 'nest'
+
+const formRef = ref<FormInstance>()
+const alreadyInstalled = ref(false)
+const testing = ref(false)
+const submitting = ref(false)
+const installResult = ref<InstallResult | null>(null)
+const showPassword = ref(false)
+
+const maskedPassword = computed(() =>
+  installResult.value?.database_password
+    ? '•'.repeat(Math.min(installResult.value.database_password.length, 24))
+    : '',
+)
+
+const form = reactive<InstallPayload>({
+  database: {
+    driver: 'postgres',
+    host: 'postgres',
+    port: 5432,
+    name: 'nest',
+    user: 'postgres',
+    password: '',
+    ssl_mode: 'disable',
+  },
+  admin: {
+    username: 'admin',
+    password: '',
+    confirm_password: '',
+  },
+})
+
+const validateConfirmPassword = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (value !== form.admin.password) {
+    callback(new Error('两次输入的密码不一致'))
+    return
+  }
+  callback()
+}
+
+const rules: FormRules = {
+  'database.driver': [{ required: true, message: '请选择数据库类型', trigger: 'change' }],
+  'database.host': [{ required: true, message: '请输入主机地址', trigger: 'blur' }],
+  'database.port': [{ required: true, message: '请输入端口', trigger: 'change' }],
+  'database.name': [{ required: true, message: '请输入数据库名', trigger: 'blur' }],
+  'database.user': [{ required: true, message: '请输入超级用户名', trigger: 'blur' }],
+  'database.password': [{ required: true, message: '请输入超级用户密码', trigger: 'blur' }],
+  'database.ssl_mode': [{ required: true, message: '请选择 SSL 模式', trigger: 'change' }],
+  'admin.username': [
+    { required: true, message: '请输入管理员用户名', trigger: 'blur' },
+    { min: 3, max: 50, message: '用户名长度为 3-50 个字符', trigger: 'blur' },
+  ],
+  'admin.password': [
+    { required: true, message: '请输入登录密码', trigger: 'blur' },
+    { min: 6, message: '密码至少 6 位', trigger: 'blur' },
+  ],
+  'admin.confirm_password': [
+    { required: true, message: '请再次输入密码', trigger: 'blur' },
+    { validator: validateConfirmPassword, trigger: 'blur' },
+  ],
+}
+
+const allFields = [
+  'database.driver',
+  'database.host',
+  'database.port',
+  'database.name',
+  'database.user',
+  'database.password',
+  'database.ssl_mode',
+  'admin.username',
+  'admin.password',
+  'admin.confirm_password',
+] as const
+
+const databaseFields = [
+  'database.driver',
+  'database.host',
+  'database.port',
+  'database.name',
+  'database.user',
+  'database.password',
+  'database.ssl_mode',
+] as const
+
+async function validateFields(fields: readonly string[]) {
+  if (!formRef.value) return false
+
+  try {
+    await formRef.value.validateField(fields as string[])
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    ElMessage.success('已复制到剪贴板')
+  } catch {
+    ElMessage.error('复制失败，请手动复制')
+  }
+}
+
+async function handleTestConnection() {
+  const valid = await validateFields(databaseFields)
+  if (!valid) return
+
+  testing.value = true
+  try {
+    const result = await testDatabaseConnection(form.database)
+    ElMessage.success(result.message || '数据库连接成功')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '连接失败')
+  } finally {
+    testing.value = false
+  }
+}
+
+async function handleSubmit() {
+  const valid = await validateFields(allFields)
+  if (!valid) {
+    ElMessage.warning('请检查表单填写是否完整')
+    return
+  }
+
+  submitting.value = true
+  try {
+    const result = await submitInstall(form)
+    installResult.value = result
+    ElMessage.success(result.message || '安装成功')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '安装失败')
+  } finally {
+    submitting.value = false
+  }
+}
+
+function goLogin() {
+  ElMessage.info('登录页面将在后续版本中提供')
+}
+
+onMounted(async () => {
+  try {
+    const status = await fetchInstallStatus()
+    alreadyInstalled.value = status.installed
+  } catch {
+    // 后端未启动时仍展示安装表单
+  }
+})
+</script>
+
+<style scoped>
+.install-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.install-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.install-bg__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+}
+
+.install-bg__orb--1 {
+  width: 480px;
+  height: 480px;
+  background: #93c5fd;
+  top: -160px;
+  right: -100px;
+}
+
+.install-bg__orb--2 {
+  width: 400px;
+  height: 400px;
+  background: #c4b5fd;
+  bottom: -120px;
+  left: -80px;
+}
+
+.install-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.install-topbar__inner {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.install-logo {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+}
+
+.install-topbar__text h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.install-topbar__text p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.install-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  max-width: 880px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 40px;
+}
+
+.install-card,
+.install-block {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.install-block {
+  margin-bottom: 20px;
+}
+
+.install-block :deep(.el-card__body) {
+  padding: 28px 32px;
+}
+
+.install-block__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.install-block__index {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.install-block__head h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.install-block__head p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.form-section__title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-section__desc {
+  margin: -4px 0 12px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.form-section__desc code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  font-size: 12px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 20px;
+}
+
+.form-grid__full {
+  grid-column: 1 / -1;
+}
+
+.app-user-preview {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+  border: 1px solid #dbeafe;
+  margin-bottom: 8px;
+}
+
+.app-user-preview__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-user-preview strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.app-user-preview p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.install-form :deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+.install-form :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: var(--color-text);
+  padding-bottom: 6px;
+  line-height: 1.4;
+}
+
+.install-form :deep(.el-select),
+.install-form :deep(.el-input) {
+  width: 100%;
+}
+
+.install-block__action {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.install-summary {
+  margin-bottom: 20px;
+}
+
+.install-alert {
+  margin-bottom: 24px;
+}
+
+.install-submit {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.install-submit .el-button {
+  min-width: 200px;
+}
+
+.install-success :deep(.el-result__extra) {
+  width: 100%;
+  max-width: 520px;
+}
+
+.install-credentials {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.install-credentials h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.install-credentials__hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.install-credentials__hint code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  font-size: 12px;
+}
+
+.install-credentials__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.install-credentials__label {
+  flex-shrink: 0;
+  width: 56px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.install-credentials__value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.install-credentials__value code {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #f8fafc;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.install-footer {
+  margin-top: 8px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .install-topbar__inner {
+    padding: 16px;
+  }
+
+  .install-topbar__text h1 {
+    font-size: 18px;
+  }
+
+  .install-main {
+    padding: 20px 16px 32px;
+  }
+
+  .install-block :deep(.el-card__body) {
+    padding: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid__full {
+    grid-column: auto;
+  }
+
+  .install-summary :deep(.el-descriptions) {
+    --el-descriptions-item-bordered-label-width: 100px;
+  }
+
+  .install-credentials__row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .install-credentials__value {
+    width: 100%;
+  }
+}
+</style>

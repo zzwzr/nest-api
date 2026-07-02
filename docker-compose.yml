@@ -1,0 +1,39 @@
+services:
+  caddy:
+    image: caddy:2
+
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./docker/caddy/data:/data
+      - ./docker/caddy/config:/config
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18.4-trixie
+
+    environment:
+      TZ: Asia/Shanghai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres/data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:9.1.0-trixie
+
+    volumes:
+      - ./docker/valkey/data:/data
+    command: valkey-server --appendonly yes
+    restart: unless-stopped
+
+networks:
+  default:
+    name: common-network
+    external: true

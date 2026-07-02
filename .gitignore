@@ -1,0 +1,10 @@
+
+.vscode/
+.idea/
+*.log
+
+docker/caddy/data/
+docker/valkey/data/
+docker/postgres/data/
+
+/runtime/

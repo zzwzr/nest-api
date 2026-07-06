@@ -8,4 +8,7 @@ func Register(r *gin.Engine) {
 	Auth(api)
 	Admin(api)
 	User(api)
+	Workspace(api)
+	Member(api)
+	Project(api)
 }

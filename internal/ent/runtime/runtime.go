@@ -4,8 +4,10 @@ package runtime
 
 import (
 	"nest-api/app/schema"
+	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
+	"nest-api/internal/ent/workspacemember"
 	"nest-api/internal/utils"
 )
 
@@ -13,6 +15,31 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	projectMixin := schema.Project{}.Mixin()
+	projectMixinHooks0 := projectMixin[0].Hooks()
+	project.Hooks[0] = projectMixinHooks0[0]
+	projectMixinInters0 := projectMixin[0].Interceptors()
+	project.Interceptors[0] = projectMixinInters0[0]
+	projectFields := schema.Project{}.Fields()
+	_ = projectFields
+	// projectDescName is the schema descriptor for name field.
+	projectDescName := projectFields[2].Descriptor()
+	// project.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	project.NameValidator = projectDescName.Validators[0].(func(string) error)
+	// projectDescCreatedAt is the schema descriptor for created_at field.
+	projectDescCreatedAt := projectFields[4].Descriptor()
+	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
+	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() utils.DateTime)
+	// projectDescUpdatedAt is the schema descriptor for updated_at field.
+	projectDescUpdatedAt := projectFields[5].Descriptor()
+	// project.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	project.DefaultUpdatedAt = projectDescUpdatedAt.Default.(func() utils.DateTime)
+	// project.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	project.UpdateDefaultUpdatedAt = projectDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// projectDescID is the schema descriptor for id field.
+	projectDescID := projectFields[0].Descriptor()
+	// project.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	project.IDValidator = projectDescID.Validators[0].(func(int64) error)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	user.Hooks[0] = userMixinHooks0[0]
@@ -90,11 +117,11 @@ func init() {
 	// workspace.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	workspace.NameValidator = workspaceDescName.Validators[0].(func(string) error)
 	// workspaceDescCreatedAt is the schema descriptor for created_at field.
-	workspaceDescCreatedAt := workspaceFields[2].Descriptor()
+	workspaceDescCreatedAt := workspaceFields[3].Descriptor()
 	// workspace.DefaultCreatedAt holds the default value on creation for the created_at field.
 	workspace.DefaultCreatedAt = workspaceDescCreatedAt.Default.(func() utils.DateTime)
 	// workspaceDescUpdatedAt is the schema descriptor for updated_at field.
-	workspaceDescUpdatedAt := workspaceFields[3].Descriptor()
+	workspaceDescUpdatedAt := workspaceFields[4].Descriptor()
 	// workspace.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	workspace.DefaultUpdatedAt = workspaceDescUpdatedAt.Default.(func() utils.DateTime)
 	// workspace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -103,6 +130,31 @@ func init() {
 	workspaceDescID := workspaceFields[0].Descriptor()
 	// workspace.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	workspace.IDValidator = workspaceDescID.Validators[0].(func(int64) error)
+	workspacememberMixin := schema.WorkspaceMember{}.Mixin()
+	workspacememberMixinHooks0 := workspacememberMixin[0].Hooks()
+	workspacemember.Hooks[0] = workspacememberMixinHooks0[0]
+	workspacememberMixinInters0 := workspacememberMixin[0].Interceptors()
+	workspacemember.Interceptors[0] = workspacememberMixinInters0[0]
+	workspacememberFields := schema.WorkspaceMember{}.Fields()
+	_ = workspacememberFields
+	// workspacememberDescRole is the schema descriptor for role field.
+	workspacememberDescRole := workspacememberFields[3].Descriptor()
+	// workspacemember.DefaultRole holds the default value on creation for the role field.
+	workspacemember.DefaultRole = workspacememberDescRole.Default.(uint8)
+	// workspacememberDescCreatedAt is the schema descriptor for created_at field.
+	workspacememberDescCreatedAt := workspacememberFields[4].Descriptor()
+	// workspacemember.DefaultCreatedAt holds the default value on creation for the created_at field.
+	workspacemember.DefaultCreatedAt = workspacememberDescCreatedAt.Default.(func() utils.DateTime)
+	// workspacememberDescUpdatedAt is the schema descriptor for updated_at field.
+	workspacememberDescUpdatedAt := workspacememberFields[5].Descriptor()
+	// workspacemember.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	workspacemember.DefaultUpdatedAt = workspacememberDescUpdatedAt.Default.(func() utils.DateTime)
+	// workspacemember.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	workspacemember.UpdateDefaultUpdatedAt = workspacememberDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// workspacememberDescID is the schema descriptor for id field.
+	workspacememberDescID := workspacememberFields[0].Descriptor()
+	// workspacemember.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	workspacemember.IDValidator = workspacememberDescID.Validators[0].(func(int64) error)
 }
 
 const (

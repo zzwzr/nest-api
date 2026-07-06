@@ -20,7 +20,7 @@ type SoftDeleteMixin struct {
 
 type softDeleteKey struct{}
 
-// 去掉软删除，使用方式 daily, cupInfo, err := Repo{}.GetCupDaily(ctx, userID, date)
+// use cupInfo, err := Repo{}.GetCupDaily(ctx, userID, date)
 func SkipSoftDelete(parent context.Context) context.Context {
 	return context.WithValue(parent, softDeleteKey{}, true)
 }

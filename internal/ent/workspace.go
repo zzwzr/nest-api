@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/utils"
 	"strings"
@@ -20,13 +21,60 @@ type Workspace struct {
 	ID int64 `json:"id,omitempty"`
 	// 工作空间名称
 	Name string `json:"name,omitempty"`
+	// 拥有者用户 ID
+	OwnerID int64 `json:"owner_id,omitempty"`
 	// 创建时间
 	CreatedAt utils.DateTime `json:"created_at,omitempty"`
 	// 更新时间
 	UpdatedAt utils.DateTime `json:"updated_at,omitempty"`
 	// 删除时间
-	DeletedAt    *utils.DateTime `json:"deleted_at,omitempty"`
+	DeletedAt *utils.DateTime `json:"deleted_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the WorkspaceQuery when eager-loading is set.
+	Edges        WorkspaceEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// WorkspaceEdges holds the relations/edges for other nodes in the graph.
+type WorkspaceEdges struct {
+	// Owner holds the value of the owner edge.
+	Owner *User `json:"owner,omitempty"`
+	// Members holds the value of the members edge.
+	Members []*WorkspaceMember `json:"members,omitempty"`
+	// Projects holds the value of the projects edge.
+	Projects []*Project `json:"projects,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// OwnerOrErr returns the Owner value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e WorkspaceEdges) OwnerOrErr() (*User, error) {
+	if e.Owner != nil {
+		return e.Owner, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "owner"}
+}
+
+// MembersOrErr returns the Members value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkspaceEdges) MembersOrErr() ([]*WorkspaceMember, error) {
+	if e.loadedTypes[1] {
+		return e.Members, nil
+	}
+	return nil, &NotLoadedError{edge: "members"}
+}
+
+// ProjectsOrErr returns the Projects value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkspaceEdges) ProjectsOrErr() ([]*Project, error) {
+	if e.loadedTypes[2] {
+		return e.Projects, nil
+	}
+	return nil, &NotLoadedError{edge: "projects"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -36,7 +84,7 @@ func (*Workspace) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case workspace.FieldDeletedAt:
 			values[i] = &sql.NullScanner{S: new(utils.DateTime)}
-		case workspace.FieldID:
+		case workspace.FieldID, workspace.FieldOwnerID:
 			values[i] = new(sql.NullInt64)
 		case workspace.FieldName:
 			values[i] = new(sql.NullString)
@@ -68,6 +116,12 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case workspace.FieldOwnerID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_id", values[i])
+			} else if value.Valid {
+				_m.OwnerID = value.Int64
 			}
 		case workspace.FieldCreatedAt:
 			if value, ok := values[i].(*utils.DateTime); !ok {
@@ -101,6 +155,21 @@ func (_m *Workspace) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
+// QueryOwner queries the "owner" edge of the Workspace entity.
+func (_m *Workspace) QueryOwner() *UserQuery {
+	return NewWorkspaceClient(_m.config).QueryOwner(_m)
+}
+
+// QueryMembers queries the "members" edge of the Workspace entity.
+func (_m *Workspace) QueryMembers() *WorkspaceMemberQuery {
+	return NewWorkspaceClient(_m.config).QueryMembers(_m)
+}
+
+// QueryProjects queries the "projects" edge of the Workspace entity.
+func (_m *Workspace) QueryProjects() *ProjectQuery {
+	return NewWorkspaceClient(_m.config).QueryProjects(_m)
+}
+
 // Update returns a builder for updating this Workspace.
 // Note that you need to call Workspace.Unwrap() before calling this method if this Workspace
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -126,6 +195,9 @@ func (_m *Workspace) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("owner_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OwnerID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CreatedAt))

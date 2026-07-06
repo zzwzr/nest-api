@@ -7,9 +7,7 @@
 
     <header class="install-topbar">
       <div class="install-topbar__inner">
-        <div class="install-logo">
-          <el-icon :size="24"><Connection /></el-icon>
-        </div>
+        <img class="install-logo app-logo" src="/nest.png" alt="ApiNest" />
         <div class="install-topbar__text">
           <h1>ApiNest 安装向导</h1>
           <p>开源 API 协作管理平台 · 首次部署请完成以下配置</p>
@@ -115,7 +113,7 @@
             <h3 class="form-section__title">服务信息</h3>
             <div class="form-grid">
               <el-form-item label="数据库类型" prop="database.driver" class="form-grid__full">
-                <el-select v-model="form.database.driver">
+                <el-select v-model="form.database.driver" popper-class="install-popper">
                   <el-option label="PostgreSQL" value="postgres" />
                   <el-option label="MySQL（即将支持）" value="mysql" disabled />
                 </el-select>
@@ -140,7 +138,7 @@
               </el-form-item>
 
               <el-form-item label="SSL 模式" prop="database.ssl_mode" class="form-grid__full">
-                <el-select v-model="form.database.ssl_mode">
+                <el-select v-model="form.database.ssl_mode" popper-class="install-popper">
                   <el-option label="disable — 不使用 SSL（内网/本地推荐）" value="disable" />
                   <el-option label="require — 使用 SSL，不校验证书" value="require" />
                   <el-option label="verify-ca — 使用 SSL 并校验 CA" value="verify-ca" />
@@ -153,31 +151,31 @@
           <div class="form-section">
             <h3 class="form-section__title">安装用超级用户</h3>
             <p class="form-section__desc">
-              需要具备创建数据库、创建用户等权限的账号（如 <code>postgres</code>）。仅用于本次安装，不会写入配置文件。
+              需要具备创建数据库、创建用户等权限的账号，仅用于本次安装，不会写入配置文件。
             </p>
             <div class="form-grid">
               <el-form-item label="超级用户名" prop="database.user">
-                <el-input v-model="form.database.user" placeholder="例如 postgres" />
+                <el-input v-model="form.database.user" placeholder="例如: postgres" />
               </el-form-item>
 
               <el-form-item label="超级用户密码" prop="database.password">
-                <el-input
-                  v-model="form.database.password"
-                  type="password"
-                  show-password
-                  placeholder="超级用户密码"
-                />
+                <div class="password-field">
+                  <el-input
+                    v-model="form.database.password"
+                    type="password"
+                    show-password
+                    placeholder="超级用户密码"
+                  />
+                  <el-button :loading="testing" @click="handleTestConnection">测试连接</el-button>
+                </div>
               </el-form-item>
-            </div>
-            <div class="install-block__action">
-              <el-button :loading="testing" @click="handleTestConnection">测试连接</el-button>
             </div>
           </div>
 
           <div class="form-section">
             <h3 class="form-section__title">应用数据库用户</h3>
             <p class="form-section__desc">
-              平台日常连接数据库使用的专用账号，已预填默认值，可按需修改。
+              平台日常连接数据库使用的专用账号，可按需修改。
             </p>
             <div class="form-grid">
               <el-form-item label="用户名" prop="app_database.username">
@@ -296,7 +294,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Connection } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { fetchInstallStatus, submitInstall, testDatabaseConnection } from '@/api/install'
@@ -504,6 +501,56 @@ onMounted(async () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  color-scheme: light;
+  --color-primary: #2563eb;
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-border: #e2e8f0;
+  --color-surface: #ffffff;
+  --shadow-card: 0 12px 32px rgba(15, 23, 42, 0.08);
+  color: var(--color-text);
+  background: #f8fafc;
+}
+
+.install-page :deep(.el-card) {
+  background-color: #ffffff;
+  color: var(--color-text);
+}
+
+.install-page :deep(.el-input__wrapper),
+.install-page :deep(.el-select__wrapper) {
+  background-color: #ffffff !important;
+  color: var(--color-text);
+  box-shadow: 0 0 0 1px var(--color-border) inset !important;
+}
+
+.install-page :deep(.el-input__inner),
+.install-page :deep(.el-select__selected-item),
+.install-page :deep(.el-select__placeholder) {
+  color: var(--color-text) !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+}
+
+.install-page :deep(.el-input-number .el-input__wrapper) {
+  background-color: #ffffff !important;
+}
+
+.install-page :deep(.el-descriptions__cell) {
+  background: #ffffff;
+  color: var(--color-text);
+}
+
+.install-page :deep(.el-descriptions__label) {
+  background: #f8fafc;
+  color: var(--color-text-secondary);
+}
+
+.install-page :deep(.el-result__title) {
+  color: var(--color-text);
+}
+
+.install-page :deep(.el-result__subtitle) {
+  color: var(--color-text-secondary);
 }
 
 .install-bg {
@@ -511,6 +558,7 @@ onMounted(async () => {
   inset: 0;
   pointer-events: none;
   z-index: 0;
+  background: #f8fafc;
 }
 
 .install-bg__orb {
@@ -558,13 +606,8 @@ onMounted(async () => {
   flex-shrink: 0;
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+  object-fit: contain;
+  display: block;
 }
 
 .install-topbar__text h1 {
@@ -595,7 +638,7 @@ onMounted(async () => {
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
-  background: rgba(255, 255, 255, 0.92);
+  background: #ffffff;
 }
 
 .install-block {
@@ -843,5 +886,21 @@ onMounted(async () => {
   .install-credentials__row code {
     width: 100%;
   }
+}
+</style>
+
+<style>
+.install-popper.el-select-dropdown {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.install-popper .el-select-dropdown__item {
+  color: #1e293b;
+}
+
+.install-popper .el-select-dropdown__item.is-hovering,
+.install-popper .el-select-dropdown__item:hover {
+  background: #f1f5f9;
 }
 </style>

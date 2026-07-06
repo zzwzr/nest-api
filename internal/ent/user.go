@@ -39,8 +39,51 @@ type User struct {
 	// 更新时间
 	UpdatedAt utils.DateTime `json:"updated_at,omitempty"`
 	// 删除时间
-	DeletedAt    *utils.DateTime `json:"deleted_at,omitempty"`
+	DeletedAt *utils.DateTime `json:"deleted_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// OwnedWorkspaces holds the value of the owned_workspaces edge.
+	OwnedWorkspaces []*Workspace `json:"owned_workspaces,omitempty"`
+	// WorkspaceMemberships holds the value of the workspace_memberships edge.
+	WorkspaceMemberships []*WorkspaceMember `json:"workspace_memberships,omitempty"`
+	// CreatedProjects holds the value of the created_projects edge.
+	CreatedProjects []*Project `json:"created_projects,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// OwnedWorkspacesOrErr returns the OwnedWorkspaces value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) OwnedWorkspacesOrErr() ([]*Workspace, error) {
+	if e.loadedTypes[0] {
+		return e.OwnedWorkspaces, nil
+	}
+	return nil, &NotLoadedError{edge: "owned_workspaces"}
+}
+
+// WorkspaceMembershipsOrErr returns the WorkspaceMemberships value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) WorkspaceMembershipsOrErr() ([]*WorkspaceMember, error) {
+	if e.loadedTypes[1] {
+		return e.WorkspaceMemberships, nil
+	}
+	return nil, &NotLoadedError{edge: "workspace_memberships"}
+}
+
+// CreatedProjectsOrErr returns the CreatedProjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CreatedProjectsOrErr() ([]*Project, error) {
+	if e.loadedTypes[2] {
+		return e.CreatedProjects, nil
+	}
+	return nil, &NotLoadedError{edge: "created_projects"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -157,6 +200,21 @@ func (_m *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryOwnedWorkspaces queries the "owned_workspaces" edge of the User entity.
+func (_m *User) QueryOwnedWorkspaces() *WorkspaceQuery {
+	return NewUserClient(_m.config).QueryOwnedWorkspaces(_m)
+}
+
+// QueryWorkspaceMemberships queries the "workspace_memberships" edge of the User entity.
+func (_m *User) QueryWorkspaceMemberships() *WorkspaceMemberQuery {
+	return NewUserClient(_m.config).QueryWorkspaceMemberships(_m)
+}
+
+// QueryCreatedProjects queries the "created_projects" edge of the User entity.
+func (_m *User) QueryCreatedProjects() *ProjectQuery {
+	return NewUserClient(_m.config).QueryCreatedProjects(_m)
 }
 
 // Update returns a builder for updating this User.

@@ -6,8 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
+	"nest-api/internal/ent/workspacemember"
 	"reflect"
 	"sync"
 
@@ -74,8 +76,10 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			user.Table:      user.ValidColumn,
-			workspace.Table: workspace.ValidColumn,
+			project.Table:         project.ValidColumn,
+			user.Table:            user.ValidColumn,
+			workspace.Table:       workspace.ValidColumn,
+			workspacemember.Table: workspacemember.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

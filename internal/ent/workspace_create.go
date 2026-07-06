@@ -6,7 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
+	"nest-api/internal/ent/workspacemember"
 	"nest-api/internal/utils"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,6 +26,12 @@ type WorkspaceCreate struct {
 // SetName sets the "name" field.
 func (_c *WorkspaceCreate) SetName(v string) *WorkspaceCreate {
 	_c.mutation.SetName(v)
+	return _c
+}
+
+// SetOwnerID sets the "owner_id" field.
+func (_c *WorkspaceCreate) SetOwnerID(v int64) *WorkspaceCreate {
+	_c.mutation.SetOwnerID(v)
 	return _c
 }
 
@@ -72,6 +81,41 @@ func (_c *WorkspaceCreate) SetNillableDeletedAt(v *utils.DateTime) *WorkspaceCre
 func (_c *WorkspaceCreate) SetID(v int64) *WorkspaceCreate {
 	_c.mutation.SetID(v)
 	return _c
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (_c *WorkspaceCreate) SetOwner(v *User) *WorkspaceCreate {
+	return _c.SetOwnerID(v.ID)
+}
+
+// AddMemberIDs adds the "members" edge to the WorkspaceMember entity by IDs.
+func (_c *WorkspaceCreate) AddMemberIDs(ids ...int64) *WorkspaceCreate {
+	_c.mutation.AddMemberIDs(ids...)
+	return _c
+}
+
+// AddMembers adds the "members" edges to the WorkspaceMember entity.
+func (_c *WorkspaceCreate) AddMembers(v ...*WorkspaceMember) *WorkspaceCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMemberIDs(ids...)
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (_c *WorkspaceCreate) AddProjectIDs(ids ...int64) *WorkspaceCreate {
+	_c.mutation.AddProjectIDs(ids...)
+	return _c
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (_c *WorkspaceCreate) AddProjects(v ...*Project) *WorkspaceCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddProjectIDs(ids...)
 }
 
 // Mutation returns the WorkspaceMutation object of the builder.
@@ -138,6 +182,9 @@ func (_c *WorkspaceCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Workspace.name": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.OwnerID(); !ok {
+		return &ValidationError{Name: "owner_id", err: errors.New(`ent: missing required field "Workspace.owner_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Workspace.created_at"`)}
 	}
@@ -148,6 +195,9 @@ func (_c *WorkspaceCreate) check() error {
 		if err := workspace.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Workspace.id": %w`, err)}
 		}
+	}
+	if len(_c.mutation.OwnerIDs()) == 0 {
+		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required edge "Workspace.owner"`)}
 	}
 	return nil
 }
@@ -196,6 +246,55 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DeletedAt(); ok {
 		_spec.SetField(workspace.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = &value
+	}
+	if nodes := _c.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   workspace.OwnerTable,
+			Columns: []string{workspace.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OwnerID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.MembersTable,
+			Columns: []string{workspace.MembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workspace.ProjectsTable,
+			Columns: []string{workspace.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

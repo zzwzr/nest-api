@@ -6,6 +6,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -29,6 +30,9 @@ func (Workspace) Fields() []ent.Field {
 		field.String("name").
 			MaxLen(100).
 			Comment("工作空间名称"),
+
+		field.Int64("owner_id").
+			Comment("拥有者用户 ID"),
 
 		field.Time("created_at").
 			GoType(utils.DateTime{}).
@@ -55,5 +59,16 @@ func (Workspace) Fields() []ent.Field {
 				dialect.Postgres: "timestamp(0) without time zone",
 			}).
 			Comment("删除时间"),
+	}
+}
+
+func (Workspace) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("owner", User.Type).
+			Unique().
+			Required().
+			Field("owner_id"),
+		edge.To("members", WorkspaceMember.Type),
+		edge.To("projects", Project.Type),
 	}
 }

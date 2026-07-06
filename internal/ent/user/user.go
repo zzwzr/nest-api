@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -36,8 +37,35 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
+	// EdgeOwnedWorkspaces holds the string denoting the owned_workspaces edge name in mutations.
+	EdgeOwnedWorkspaces = "owned_workspaces"
+	// EdgeWorkspaceMemberships holds the string denoting the workspace_memberships edge name in mutations.
+	EdgeWorkspaceMemberships = "workspace_memberships"
+	// EdgeCreatedProjects holds the string denoting the created_projects edge name in mutations.
+	EdgeCreatedProjects = "created_projects"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// OwnedWorkspacesTable is the table that holds the owned_workspaces relation/edge.
+	OwnedWorkspacesTable = "workspaces"
+	// OwnedWorkspacesInverseTable is the table name for the Workspace entity.
+	// It exists in this package in order to avoid circular dependency with the "workspace" package.
+	OwnedWorkspacesInverseTable = "workspaces"
+	// OwnedWorkspacesColumn is the table column denoting the owned_workspaces relation/edge.
+	OwnedWorkspacesColumn = "owner_id"
+	// WorkspaceMembershipsTable is the table that holds the workspace_memberships relation/edge.
+	WorkspaceMembershipsTable = "workspace_members"
+	// WorkspaceMembershipsInverseTable is the table name for the WorkspaceMember entity.
+	// It exists in this package in order to avoid circular dependency with the "workspacemember" package.
+	WorkspaceMembershipsInverseTable = "workspace_members"
+	// WorkspaceMembershipsColumn is the table column denoting the workspace_memberships relation/edge.
+	WorkspaceMembershipsColumn = "user_id"
+	// CreatedProjectsTable is the table that holds the created_projects relation/edge.
+	CreatedProjectsTable = "projects"
+	// CreatedProjectsInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	CreatedProjectsInverseTable = "projects"
+	// CreatedProjectsColumn is the table column denoting the created_projects relation/edge.
+	CreatedProjectsColumn = "created_by"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -173,4 +201,67 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByDeletedAt orders the results by the deleted_at field.
 func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
+}
+
+// ByOwnedWorkspacesCount orders the results by owned_workspaces count.
+func ByOwnedWorkspacesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOwnedWorkspacesStep(), opts...)
+	}
+}
+
+// ByOwnedWorkspaces orders the results by owned_workspaces terms.
+func ByOwnedWorkspaces(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOwnedWorkspacesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByWorkspaceMembershipsCount orders the results by workspace_memberships count.
+func ByWorkspaceMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newWorkspaceMembershipsStep(), opts...)
+	}
+}
+
+// ByWorkspaceMemberships orders the results by workspace_memberships terms.
+func ByWorkspaceMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWorkspaceMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCreatedProjectsCount orders the results by created_projects count.
+func ByCreatedProjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCreatedProjectsStep(), opts...)
+	}
+}
+
+// ByCreatedProjects orders the results by created_projects terms.
+func ByCreatedProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCreatedProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newOwnedWorkspacesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OwnedWorkspacesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, OwnedWorkspacesTable, OwnedWorkspacesColumn),
+	)
+}
+func newWorkspaceMembershipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WorkspaceMembershipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, WorkspaceMembershipsTable, WorkspaceMembershipsColumn),
+	)
+}
+func newCreatedProjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatedProjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CreatedProjectsTable, CreatedProjectsColumn),
+	)
 }

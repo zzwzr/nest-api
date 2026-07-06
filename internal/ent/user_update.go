@@ -7,7 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"nest-api/internal/ent/predicate"
+	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
+	"nest-api/internal/ent/workspace"
+	"nest-api/internal/ent/workspacemember"
 	"nest-api/internal/utils"
 
 	"entgo.io/ent/dialect/sql"
@@ -187,9 +190,117 @@ func (_u *UserUpdate) ClearDeletedAt() *UserUpdate {
 	return _u
 }
 
+// AddOwnedWorkspaceIDs adds the "owned_workspaces" edge to the Workspace entity by IDs.
+func (_u *UserUpdate) AddOwnedWorkspaceIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddOwnedWorkspaceIDs(ids...)
+	return _u
+}
+
+// AddOwnedWorkspaces adds the "owned_workspaces" edges to the Workspace entity.
+func (_u *UserUpdate) AddOwnedWorkspaces(v ...*Workspace) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOwnedWorkspaceIDs(ids...)
+}
+
+// AddWorkspaceMembershipIDs adds the "workspace_memberships" edge to the WorkspaceMember entity by IDs.
+func (_u *UserUpdate) AddWorkspaceMembershipIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddWorkspaceMembershipIDs(ids...)
+	return _u
+}
+
+// AddWorkspaceMemberships adds the "workspace_memberships" edges to the WorkspaceMember entity.
+func (_u *UserUpdate) AddWorkspaceMemberships(v ...*WorkspaceMember) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWorkspaceMembershipIDs(ids...)
+}
+
+// AddCreatedProjectIDs adds the "created_projects" edge to the Project entity by IDs.
+func (_u *UserUpdate) AddCreatedProjectIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddCreatedProjectIDs(ids...)
+	return _u
+}
+
+// AddCreatedProjects adds the "created_projects" edges to the Project entity.
+func (_u *UserUpdate) AddCreatedProjects(v ...*Project) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCreatedProjectIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearOwnedWorkspaces clears all "owned_workspaces" edges to the Workspace entity.
+func (_u *UserUpdate) ClearOwnedWorkspaces() *UserUpdate {
+	_u.mutation.ClearOwnedWorkspaces()
+	return _u
+}
+
+// RemoveOwnedWorkspaceIDs removes the "owned_workspaces" edge to Workspace entities by IDs.
+func (_u *UserUpdate) RemoveOwnedWorkspaceIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveOwnedWorkspaceIDs(ids...)
+	return _u
+}
+
+// RemoveOwnedWorkspaces removes "owned_workspaces" edges to Workspace entities.
+func (_u *UserUpdate) RemoveOwnedWorkspaces(v ...*Workspace) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOwnedWorkspaceIDs(ids...)
+}
+
+// ClearWorkspaceMemberships clears all "workspace_memberships" edges to the WorkspaceMember entity.
+func (_u *UserUpdate) ClearWorkspaceMemberships() *UserUpdate {
+	_u.mutation.ClearWorkspaceMemberships()
+	return _u
+}
+
+// RemoveWorkspaceMembershipIDs removes the "workspace_memberships" edge to WorkspaceMember entities by IDs.
+func (_u *UserUpdate) RemoveWorkspaceMembershipIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveWorkspaceMembershipIDs(ids...)
+	return _u
+}
+
+// RemoveWorkspaceMemberships removes "workspace_memberships" edges to WorkspaceMember entities.
+func (_u *UserUpdate) RemoveWorkspaceMemberships(v ...*WorkspaceMember) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWorkspaceMembershipIDs(ids...)
+}
+
+// ClearCreatedProjects clears all "created_projects" edges to the Project entity.
+func (_u *UserUpdate) ClearCreatedProjects() *UserUpdate {
+	_u.mutation.ClearCreatedProjects()
+	return _u
+}
+
+// RemoveCreatedProjectIDs removes the "created_projects" edge to Project entities by IDs.
+func (_u *UserUpdate) RemoveCreatedProjectIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveCreatedProjectIDs(ids...)
+	return _u
+}
+
+// RemoveCreatedProjects removes "created_projects" edges to Project entities.
+func (_u *UserUpdate) RemoveCreatedProjects(v ...*Project) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCreatedProjectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -319,6 +430,141 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DeletedAtCleared() {
 		_spec.ClearField(user.FieldDeletedAt, field.TypeTime)
+	}
+	if _u.mutation.OwnedWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OwnedWorkspacesTable,
+			Columns: []string{user.OwnedWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOwnedWorkspacesIDs(); len(nodes) > 0 && !_u.mutation.OwnedWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OwnedWorkspacesTable,
+			Columns: []string{user.OwnedWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OwnedWorkspacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OwnedWorkspacesTable,
+			Columns: []string{user.OwnedWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.WorkspaceMembershipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.WorkspaceMembershipsTable,
+			Columns: []string{user.WorkspaceMembershipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWorkspaceMembershipsIDs(); len(nodes) > 0 && !_u.mutation.WorkspaceMembershipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.WorkspaceMembershipsTable,
+			Columns: []string{user.WorkspaceMembershipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WorkspaceMembershipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.WorkspaceMembershipsTable,
+			Columns: []string{user.WorkspaceMembershipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CreatedProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.CreatedProjectsTable,
+			Columns: []string{user.CreatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCreatedProjectsIDs(); len(nodes) > 0 && !_u.mutation.CreatedProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.CreatedProjectsTable,
+			Columns: []string{user.CreatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CreatedProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.CreatedProjectsTable,
+			Columns: []string{user.CreatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -499,9 +745,117 @@ func (_u *UserUpdateOne) ClearDeletedAt() *UserUpdateOne {
 	return _u
 }
 
+// AddOwnedWorkspaceIDs adds the "owned_workspaces" edge to the Workspace entity by IDs.
+func (_u *UserUpdateOne) AddOwnedWorkspaceIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddOwnedWorkspaceIDs(ids...)
+	return _u
+}
+
+// AddOwnedWorkspaces adds the "owned_workspaces" edges to the Workspace entity.
+func (_u *UserUpdateOne) AddOwnedWorkspaces(v ...*Workspace) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOwnedWorkspaceIDs(ids...)
+}
+
+// AddWorkspaceMembershipIDs adds the "workspace_memberships" edge to the WorkspaceMember entity by IDs.
+func (_u *UserUpdateOne) AddWorkspaceMembershipIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddWorkspaceMembershipIDs(ids...)
+	return _u
+}
+
+// AddWorkspaceMemberships adds the "workspace_memberships" edges to the WorkspaceMember entity.
+func (_u *UserUpdateOne) AddWorkspaceMemberships(v ...*WorkspaceMember) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddWorkspaceMembershipIDs(ids...)
+}
+
+// AddCreatedProjectIDs adds the "created_projects" edge to the Project entity by IDs.
+func (_u *UserUpdateOne) AddCreatedProjectIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddCreatedProjectIDs(ids...)
+	return _u
+}
+
+// AddCreatedProjects adds the "created_projects" edges to the Project entity.
+func (_u *UserUpdateOne) AddCreatedProjects(v ...*Project) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCreatedProjectIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearOwnedWorkspaces clears all "owned_workspaces" edges to the Workspace entity.
+func (_u *UserUpdateOne) ClearOwnedWorkspaces() *UserUpdateOne {
+	_u.mutation.ClearOwnedWorkspaces()
+	return _u
+}
+
+// RemoveOwnedWorkspaceIDs removes the "owned_workspaces" edge to Workspace entities by IDs.
+func (_u *UserUpdateOne) RemoveOwnedWorkspaceIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveOwnedWorkspaceIDs(ids...)
+	return _u
+}
+
+// RemoveOwnedWorkspaces removes "owned_workspaces" edges to Workspace entities.
+func (_u *UserUpdateOne) RemoveOwnedWorkspaces(v ...*Workspace) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOwnedWorkspaceIDs(ids...)
+}
+
+// ClearWorkspaceMemberships clears all "workspace_memberships" edges to the WorkspaceMember entity.
+func (_u *UserUpdateOne) ClearWorkspaceMemberships() *UserUpdateOne {
+	_u.mutation.ClearWorkspaceMemberships()
+	return _u
+}
+
+// RemoveWorkspaceMembershipIDs removes the "workspace_memberships" edge to WorkspaceMember entities by IDs.
+func (_u *UserUpdateOne) RemoveWorkspaceMembershipIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveWorkspaceMembershipIDs(ids...)
+	return _u
+}
+
+// RemoveWorkspaceMemberships removes "workspace_memberships" edges to WorkspaceMember entities.
+func (_u *UserUpdateOne) RemoveWorkspaceMemberships(v ...*WorkspaceMember) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveWorkspaceMembershipIDs(ids...)
+}
+
+// ClearCreatedProjects clears all "created_projects" edges to the Project entity.
+func (_u *UserUpdateOne) ClearCreatedProjects() *UserUpdateOne {
+	_u.mutation.ClearCreatedProjects()
+	return _u
+}
+
+// RemoveCreatedProjectIDs removes the "created_projects" edge to Project entities by IDs.
+func (_u *UserUpdateOne) RemoveCreatedProjectIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveCreatedProjectIDs(ids...)
+	return _u
+}
+
+// RemoveCreatedProjects removes "created_projects" edges to Project entities.
+func (_u *UserUpdateOne) RemoveCreatedProjects(v ...*Project) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCreatedProjectIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -661,6 +1015,141 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.DeletedAtCleared() {
 		_spec.ClearField(user.FieldDeletedAt, field.TypeTime)
+	}
+	if _u.mutation.OwnedWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OwnedWorkspacesTable,
+			Columns: []string{user.OwnedWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOwnedWorkspacesIDs(); len(nodes) > 0 && !_u.mutation.OwnedWorkspacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OwnedWorkspacesTable,
+			Columns: []string{user.OwnedWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OwnedWorkspacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OwnedWorkspacesTable,
+			Columns: []string{user.OwnedWorkspacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.WorkspaceMembershipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.WorkspaceMembershipsTable,
+			Columns: []string{user.WorkspaceMembershipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedWorkspaceMembershipsIDs(); len(nodes) > 0 && !_u.mutation.WorkspaceMembershipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.WorkspaceMembershipsTable,
+			Columns: []string{user.WorkspaceMembershipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.WorkspaceMembershipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.WorkspaceMembershipsTable,
+			Columns: []string{user.WorkspaceMembershipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CreatedProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.CreatedProjectsTable,
+			Columns: []string{user.CreatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCreatedProjectsIDs(); len(nodes) > 0 && !_u.mutation.CreatedProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.CreatedProjectsTable,
+			Columns: []string{user.CreatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CreatedProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.CreatedProjectsTable,
+			Columns: []string{user.CreatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: _u.config}
 	_spec.Assign = _node.assignValues

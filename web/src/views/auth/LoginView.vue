@@ -47,7 +47,7 @@ async function handleSubmit() {
 
 <template>
   <div class="login-view">
-    <h2>登录 ApiNest</h2>
+    <h2>登录</h2>
     <p class="login-view__desc">使用账号和密码登录，管理员与普通用户使用同一入口。</p>
 
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
@@ -83,11 +83,12 @@ async function handleSubmit() {
   margin: 0 0 8px;
   font-size: 28px;
   font-weight: 700;
+  color: #0f172a;
 }
 
 .login-view__desc {
   margin: 0 0 24px;
-  color: var(--color-text-secondary);
+  color: #64748b;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -100,7 +101,7 @@ async function handleSubmit() {
 .login-view__footer {
   margin: 20px 0 0;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: #64748b;
   font-size: 14px;
 }
 </style>

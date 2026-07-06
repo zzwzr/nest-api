@@ -14,18 +14,25 @@ const router = createRouter({
       meta: { title: '系统安装', public: true, installOnly: true },
     },
     {
-      path: '/',
+      path: '/login',
       component: () => import('@/layouts/AuthLayout.vue'),
       meta: { public: true },
       children: [
         {
-          path: 'login',
+          path: '',
           name: 'login',
           component: () => import('@/views/auth/LoginView.vue'),
           meta: { title: '登录', guestOnly: true },
         },
+      ],
+    },
+    {
+      path: '/register',
+      component: () => import('@/layouts/AuthLayout.vue'),
+      meta: { public: true },
+      children: [
         {
-          path: 'register',
+          path: '',
           name: 'register',
           component: () => import('@/views/auth/RegisterView.vue'),
           meta: { title: '注册', guestOnly: true },
@@ -44,14 +51,17 @@ const router = createRouter({
         {
           path: 'home',
           name: 'home',
-          component: () => import('@/views/home/HomeView.vue'),
-          meta: { title: '首页' },
+          component: () => import('@/views/workspace/WorkspaceView.vue'),
+          meta: { title: '工作空间' },
         },
         {
           path: 'admin/settings',
           name: 'admin-settings',
-          component: () => import('@/views/admin/SettingsView.vue'),
-          meta: { title: '系统设置', requiresAdmin: true },
+          components: {
+            default: () => import('@/views/workspace/WorkspaceView.vue'),
+            overlay: () => import('@/views/admin/SettingsView.vue'),
+          },
+          meta: { title: '系统设置', requiresAdmin: true, overlay: true },
         },
       ],
     },

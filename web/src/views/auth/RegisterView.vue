@@ -118,11 +118,12 @@ async function handleSubmit() {
   margin: 0 0 8px;
   font-size: 28px;
   font-weight: 700;
+  color: #0f172a;
 }
 
 .register-view__desc {
   margin: 0 0 24px;
-  color: var(--color-text-secondary);
+  color: #64748b;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -135,7 +136,7 @@ async function handleSubmit() {
 .register-view__footer {
   margin: 20px 0 0;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: #64748b;
   font-size: 14px;
 }
 </style>

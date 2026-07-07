@@ -460,7 +460,7 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if nodes := _c.mutation.OwnedWorkspacesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.OwnedWorkspacesTable,
 			Columns: []string{user.OwnedWorkspacesColumn},
 			Bidi:    false,
@@ -476,7 +476,7 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if nodes := _c.mutation.WorkspaceMembershipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.WorkspaceMembershipsTable,
 			Columns: []string{user.WorkspaceMembershipsColumn},
 			Bidi:    false,
@@ -492,7 +492,7 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if nodes := _c.mutation.CreatedProjectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.CreatedProjectsTable,
 			Columns: []string{user.CreatedProjectsColumn},
 			Bidi:    false,

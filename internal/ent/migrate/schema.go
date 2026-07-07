@@ -15,9 +15,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
-		{Name: "workspace_id", Type: field.TypeInt64},
 		{Name: "created_by", Type: field.TypeInt64},
-		{Name: "workspace_projects", Type: field.TypeInt64, Nullable: true},
+		{Name: "workspace_id", Type: field.TypeInt64},
 	}
 	// ProjectsTable holds the schema information for the "projects" table.
 	ProjectsTable = &schema.Table{
@@ -26,22 +25,16 @@ var (
 		PrimaryKey: []*schema.Column{ProjectsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "projects_workspaces_workspace",
+				Symbol:     "projects_users_created_projects",
 				Columns:    []*schema.Column{ProjectsColumns[5]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "projects_users_creator",
-				Columns:    []*schema.Column{ProjectsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "projects_workspaces_projects",
-				Columns:    []*schema.Column{ProjectsColumns[7]},
+				Columns:    []*schema.Column{ProjectsColumns[6]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -82,7 +75,7 @@ var (
 		PrimaryKey: []*schema.Column{WorkspacesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "workspaces_users_owner",
+				Symbol:     "workspaces_users_owned_workspaces",
 				Columns:    []*schema.Column{WorkspacesColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
@@ -96,9 +89,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
-		{Name: "workspace_members", Type: field.TypeInt64, Nullable: true},
-		{Name: "workspace_id", Type: field.TypeInt64},
 		{Name: "user_id", Type: field.TypeInt64},
+		{Name: "workspace_id", Type: field.TypeInt64},
 	}
 	// WorkspaceMembersTable holds the schema information for the "workspace_members" table.
 	WorkspaceMembersTable = &schema.Table{
@@ -107,29 +99,16 @@ var (
 		PrimaryKey: []*schema.Column{WorkspaceMembersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "workspace_members_workspaces_members",
+				Symbol:     "workspace_members_users_workspace_memberships",
 				Columns:    []*schema.Column{WorkspaceMembersColumns[5]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "workspace_members_workspaces_workspace",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[6]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "workspace_members_users_user",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-		},
-		Indexes: []*schema.Index{
 			{
-				Name:    "workspacemember_workspace_id_user_id",
-				Unique:  true,
-				Columns: []*schema.Column{WorkspaceMembersColumns[6], WorkspaceMembersColumns[7]},
+				Symbol:     "workspace_members_workspaces_members",
+				Columns:    []*schema.Column{WorkspaceMembersColumns[6]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -143,11 +122,9 @@ var (
 )
 
 func init() {
-	ProjectsTable.ForeignKeys[0].RefTable = WorkspacesTable
-	ProjectsTable.ForeignKeys[1].RefTable = UsersTable
-	ProjectsTable.ForeignKeys[2].RefTable = WorkspacesTable
+	ProjectsTable.ForeignKeys[0].RefTable = UsersTable
+	ProjectsTable.ForeignKeys[1].RefTable = WorkspacesTable
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
-	WorkspaceMembersTable.ForeignKeys[0].RefTable = WorkspacesTable
+	WorkspaceMembersTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[1].RefTable = WorkspacesTable
-	WorkspaceMembersTable.ForeignKeys[2].RefTable = UsersTable
 }

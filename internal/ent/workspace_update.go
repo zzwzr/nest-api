@@ -272,7 +272,7 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspace.OwnerTable,
 			Columns: []string{workspace.OwnerColumn},
 			Bidi:    false,
@@ -285,7 +285,7 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspace.OwnerTable,
 			Columns: []string{workspace.OwnerColumn},
 			Bidi:    false,
@@ -679,7 +679,7 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 	if _u.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspace.OwnerTable,
 			Columns: []string{workspace.OwnerColumn},
 			Bidi:    false,
@@ -692,7 +692,7 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 	if nodes := _u.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspace.OwnerTable,
 			Columns: []string{workspace.OwnerColumn},
 			Bidi:    false,

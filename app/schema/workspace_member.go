@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/index"
 )
 
 type WorkspaceMember struct {
@@ -68,20 +67,15 @@ func (WorkspaceMember) Fields() []ent.Field {
 
 func (WorkspaceMember) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("workspace", Workspace.Type).
+		edge.From("workspace", Workspace.Type).
+			Ref("members").
 			Unique().
 			Required().
 			Field("workspace_id"),
-		edge.To("user", User.Type).
+		edge.From("user", User.Type).
+			Ref("workspace_memberships").
 			Unique().
 			Required().
 			Field("user_id"),
-	}
-}
-
-func (WorkspaceMember) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("workspace_id", "user_id").
-			Unique(),
 	}
 }

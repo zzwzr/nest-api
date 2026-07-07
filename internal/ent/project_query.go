@@ -26,7 +26,6 @@ type ProjectQuery struct {
 	predicates    []predicate.Project
 	withWorkspace *WorkspaceQuery
 	withCreator   *UserQuery
-	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,7 +76,7 @@ func (_q *ProjectQuery) QueryWorkspace() *WorkspaceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, project.WorkspaceTable, project.WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.WorkspaceTable, project.WorkspaceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -99,7 +98,7 @@ func (_q *ProjectQuery) QueryCreator() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, project.CreatorTable, project.CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.CreatorTable, project.CreatorColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -406,16 +405,12 @@ func (_q *ProjectQuery) prepareQuery(ctx context.Context) error {
 func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Project, error) {
 	var (
 		nodes       = []*Project{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withWorkspace != nil,
 			_q.withCreator != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, project.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Project).scanValues(nil, columns)
 	}

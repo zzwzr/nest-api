@@ -248,20 +248,20 @@ func newOwnedWorkspacesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OwnedWorkspacesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, OwnedWorkspacesTable, OwnedWorkspacesColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, OwnedWorkspacesTable, OwnedWorkspacesColumn),
 	)
 }
 func newWorkspaceMembershipsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(WorkspaceMembershipsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, WorkspaceMembershipsTable, WorkspaceMembershipsColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, WorkspaceMembershipsTable, WorkspaceMembershipsColumn),
 	)
 }
 func newCreatedProjectsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatedProjectsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CreatedProjectsTable, CreatedProjectsColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, CreatedProjectsTable, CreatedProjectsColumn),
 	)
 }

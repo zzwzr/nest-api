@@ -64,7 +64,8 @@ func (Workspace) Fields() []ent.Field {
 
 func (Workspace) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("owner", User.Type).
+		edge.From("owner", User.Type).
+			Ref("owned_workspaces").
 			Unique().
 			Required().
 			Field("owner_id"),

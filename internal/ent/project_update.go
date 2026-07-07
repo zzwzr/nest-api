@@ -233,7 +233,7 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.WorkspaceTable,
 			Columns: []string{project.WorkspaceColumn},
 			Bidi:    false,
@@ -246,7 +246,7 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.WorkspaceTable,
 			Columns: []string{project.WorkspaceColumn},
 			Bidi:    false,
@@ -262,7 +262,7 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.CreatorTable,
 			Columns: []string{project.CreatorColumn},
 			Bidi:    false,
@@ -275,7 +275,7 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.CreatorTable,
 			Columns: []string{project.CreatorColumn},
 			Bidi:    false,
@@ -541,7 +541,7 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.WorkspaceTable,
 			Columns: []string{project.WorkspaceColumn},
 			Bidi:    false,
@@ -554,7 +554,7 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.WorkspaceTable,
 			Columns: []string{project.WorkspaceColumn},
 			Bidi:    false,
@@ -570,7 +570,7 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 	if _u.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.CreatorTable,
 			Columns: []string{project.CreatorColumn},
 			Bidi:    false,
@@ -583,7 +583,7 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 	if nodes := _u.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   project.CreatorTable,
 			Columns: []string{project.CreatorColumn},
 			Bidi:    false,

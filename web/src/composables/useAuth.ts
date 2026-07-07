@@ -1,31 +1,37 @@
 import { computed, ref } from 'vue'
 import { fetchCurrentUser, login as loginApi, register as registerApi } from '@/api/auth'
 import type { LoginPayload, RegisterPayload, UserProfile } from '@/types/auth'
-import { clearAuth, getStoredUser, saveAuth } from '@/utils/auth-storage'
+import { clearAuth, getAccessToken, getRefreshToken, getStoredUser, saveAuth } from '@/utils/auth-storage'
 
 const user = ref<UserProfile | null>(getStoredUser())
-const bootstrapped = ref(false)
+let bootstrapTask: Promise<void> | null = null
 
 export function useAuth() {
   const isLoggedIn = computed(() => !!user.value)
 
   async function bootstrap() {
-    if (bootstrapped.value) return
-    bootstrapped.value = true
-
-    if (!getStoredUser()) return
-
-    try {
-      user.value = await fetchCurrentUser()
-      saveAuth(
-        localStorage.getItem('apinest_access_token') || '',
-        localStorage.getItem('apinest_refresh_token') || '',
-        user.value,
-      )
-    } catch {
-      clearAuth()
+    const token = getAccessToken()
+    if (!token) {
       user.value = null
+      return
     }
+
+    if (!bootstrapTask) {
+      bootstrapTask = (async () => {
+        try {
+          const profile = await fetchCurrentUser()
+          user.value = profile
+          saveAuth(token, getRefreshToken(), profile)
+        } catch {
+          clearAuth()
+          user.value = null
+        } finally {
+          bootstrapTask = null
+        }
+      })()
+    }
+
+    await bootstrapTask
   }
 
   async function login(payload: LoginPayload) {
@@ -45,6 +51,7 @@ export function useAuth() {
   function logout() {
     clearAuth()
     user.value = null
+    bootstrapTask = null
   }
 
   return {

@@ -46,14 +46,14 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "workspacemember" package.
 	MembersInverseTable = "workspace_members"
 	// MembersColumn is the table column denoting the members relation/edge.
-	MembersColumn = "workspace_members"
+	MembersColumn = "workspace_id"
 	// ProjectsTable is the table that holds the projects relation/edge.
 	ProjectsTable = "projects"
 	// ProjectsInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectsInverseTable = "projects"
 	// ProjectsColumn is the table column denoting the projects relation/edge.
-	ProjectsColumn = "workspace_projects"
+	ProjectsColumn = "workspace_id"
 )
 
 // Columns holds all SQL columns for workspace fields.
@@ -167,7 +167,7 @@ func newOwnerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OwnerInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, OwnerTable, OwnerColumn),
+		sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
 	)
 }
 func newMembersStep() *sqlgraph.Step {

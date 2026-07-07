@@ -11,7 +11,7 @@ import (
 	"nest-api/internal/utils"
 	bizerr "nest-api/pkg/errors"
 
-	entsql "entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 )
 
 type Service struct{}
@@ -46,7 +46,7 @@ func (Service) List(ctx context.Context, userID int64) ([]Item, error) {
 		WithWorkspace(func(q *ent.WorkspaceQuery) {
 			q.WithOwner()
 		}).
-		Order(workspacemember.ByWorkspaceField(workspace.FieldID, entsql.OrderDesc())).
+		Order(workspacemember.ByWorkspaceID(sql.OrderDesc())).
 		All(ctx)
 	if err != nil {
 		return nil, err

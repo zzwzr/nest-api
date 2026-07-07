@@ -232,7 +232,7 @@ func (_u *WorkspaceMemberUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.WorkspaceTable,
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
@@ -245,7 +245,7 @@ func (_u *WorkspaceMemberUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.WorkspaceTable,
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
@@ -261,7 +261,7 @@ func (_u *WorkspaceMemberUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.UserTable,
 			Columns: []string{workspacemember.UserColumn},
 			Bidi:    false,
@@ -274,7 +274,7 @@ func (_u *WorkspaceMemberUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.UserTable,
 			Columns: []string{workspacemember.UserColumn},
 			Bidi:    false,
@@ -539,7 +539,7 @@ func (_u *WorkspaceMemberUpdateOne) sqlSave(ctx context.Context) (_node *Workspa
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.WorkspaceTable,
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
@@ -552,7 +552,7 @@ func (_u *WorkspaceMemberUpdateOne) sqlSave(ctx context.Context) (_node *Workspa
 	if nodes := _u.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.WorkspaceTable,
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
@@ -568,7 +568,7 @@ func (_u *WorkspaceMemberUpdateOne) sqlSave(ctx context.Context) (_node *Workspa
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.UserTable,
 			Columns: []string{workspacemember.UserColumn},
 			Bidi:    false,
@@ -581,7 +581,7 @@ func (_u *WorkspaceMemberUpdateOne) sqlSave(ctx context.Context) (_node *Workspa
 	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.UserTable,
 			Columns: []string{workspacemember.UserColumn},
 			Bidi:    false,

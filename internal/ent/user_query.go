@@ -79,7 +79,7 @@ func (_q *UserQuery) QueryOwnedWorkspaces() *WorkspaceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.OwnedWorkspacesTable, user.OwnedWorkspacesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OwnedWorkspacesTable, user.OwnedWorkspacesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -101,7 +101,7 @@ func (_q *UserQuery) QueryWorkspaceMemberships() *WorkspaceMemberQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.WorkspaceMembershipsTable, user.WorkspaceMembershipsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.WorkspaceMembershipsTable, user.WorkspaceMembershipsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -123,7 +123,7 @@ func (_q *UserQuery) QueryCreatedProjects() *ProjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.CreatedProjectsTable, user.CreatedProjectsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedProjectsTable, user.CreatedProjectsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -533,7 +533,6 @@ func (_q *UserQuery) loadWorkspaceMemberships(ctx context.Context, query *Worksp
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(workspacemember.FieldUserID)
 	}
@@ -564,7 +563,6 @@ func (_q *UserQuery) loadCreatedProjects(ctx context.Context, query *ProjectQuer
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(project.FieldCreatedBy)
 	}

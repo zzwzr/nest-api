@@ -243,7 +243,7 @@ func (_c *WorkspaceMemberCreate) createSpec() (*WorkspaceMember, *sqlgraph.Creat
 	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.WorkspaceTable,
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
@@ -260,7 +260,7 @@ func (_c *WorkspaceMemberCreate) createSpec() (*WorkspaceMember, *sqlgraph.Creat
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   workspacemember.UserTable,
 			Columns: []string{workspacemember.UserColumn},
 			Bidi:    false,

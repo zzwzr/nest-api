@@ -67,11 +67,13 @@ func (Project) Fields() []ent.Field {
 
 func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("workspace", Workspace.Type).
+		edge.From("workspace", Workspace.Type).
+			Ref("projects").
 			Unique().
 			Required().
 			Field("workspace_id"),
-		edge.To("creator", User.Type).
+		edge.From("creator", User.Type).
+			Ref("created_projects").
 			Unique().
 			Required().
 			Field("created_by"),

@@ -325,7 +325,7 @@ func HasWorkspace() predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, WorkspaceTable, WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, WorkspaceTable, WorkspaceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -348,7 +348,7 @@ func HasCreator() predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

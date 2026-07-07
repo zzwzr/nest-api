@@ -434,7 +434,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.OwnedWorkspacesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.OwnedWorkspacesTable,
 			Columns: []string{user.OwnedWorkspacesColumn},
 			Bidi:    false,
@@ -447,7 +447,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.RemovedOwnedWorkspacesIDs(); len(nodes) > 0 && !_u.mutation.OwnedWorkspacesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.OwnedWorkspacesTable,
 			Columns: []string{user.OwnedWorkspacesColumn},
 			Bidi:    false,
@@ -463,7 +463,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.OwnedWorkspacesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.OwnedWorkspacesTable,
 			Columns: []string{user.OwnedWorkspacesColumn},
 			Bidi:    false,
@@ -479,7 +479,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.WorkspaceMembershipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.WorkspaceMembershipsTable,
 			Columns: []string{user.WorkspaceMembershipsColumn},
 			Bidi:    false,
@@ -492,7 +492,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.RemovedWorkspaceMembershipsIDs(); len(nodes) > 0 && !_u.mutation.WorkspaceMembershipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.WorkspaceMembershipsTable,
 			Columns: []string{user.WorkspaceMembershipsColumn},
 			Bidi:    false,
@@ -508,7 +508,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.WorkspaceMembershipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.WorkspaceMembershipsTable,
 			Columns: []string{user.WorkspaceMembershipsColumn},
 			Bidi:    false,
@@ -524,7 +524,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.CreatedProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.CreatedProjectsTable,
 			Columns: []string{user.CreatedProjectsColumn},
 			Bidi:    false,
@@ -537,7 +537,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.RemovedCreatedProjectsIDs(); len(nodes) > 0 && !_u.mutation.CreatedProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.CreatedProjectsTable,
 			Columns: []string{user.CreatedProjectsColumn},
 			Bidi:    false,
@@ -553,7 +553,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.CreatedProjectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.CreatedProjectsTable,
 			Columns: []string{user.CreatedProjectsColumn},
 			Bidi:    false,
@@ -1019,7 +1019,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.OwnedWorkspacesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.OwnedWorkspacesTable,
 			Columns: []string{user.OwnedWorkspacesColumn},
 			Bidi:    false,
@@ -1032,7 +1032,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if nodes := _u.mutation.RemovedOwnedWorkspacesIDs(); len(nodes) > 0 && !_u.mutation.OwnedWorkspacesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.OwnedWorkspacesTable,
 			Columns: []string{user.OwnedWorkspacesColumn},
 			Bidi:    false,
@@ -1048,7 +1048,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if nodes := _u.mutation.OwnedWorkspacesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.OwnedWorkspacesTable,
 			Columns: []string{user.OwnedWorkspacesColumn},
 			Bidi:    false,
@@ -1064,7 +1064,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.WorkspaceMembershipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.WorkspaceMembershipsTable,
 			Columns: []string{user.WorkspaceMembershipsColumn},
 			Bidi:    false,
@@ -1077,7 +1077,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if nodes := _u.mutation.RemovedWorkspaceMembershipsIDs(); len(nodes) > 0 && !_u.mutation.WorkspaceMembershipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.WorkspaceMembershipsTable,
 			Columns: []string{user.WorkspaceMembershipsColumn},
 			Bidi:    false,
@@ -1093,7 +1093,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if nodes := _u.mutation.WorkspaceMembershipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.WorkspaceMembershipsTable,
 			Columns: []string{user.WorkspaceMembershipsColumn},
 			Bidi:    false,
@@ -1109,7 +1109,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.CreatedProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.CreatedProjectsTable,
 			Columns: []string{user.CreatedProjectsColumn},
 			Bidi:    false,
@@ -1122,7 +1122,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if nodes := _u.mutation.RemovedCreatedProjectsIDs(); len(nodes) > 0 && !_u.mutation.CreatedProjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.CreatedProjectsTable,
 			Columns: []string{user.CreatedProjectsColumn},
 			Bidi:    false,
@@ -1138,7 +1138,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if nodes := _u.mutation.CreatedProjectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.CreatedProjectsTable,
 			Columns: []string{user.CreatedProjectsColumn},
 			Bidi:    false,

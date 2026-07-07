@@ -685,7 +685,7 @@ func HasOwnedWorkspaces() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, OwnedWorkspacesTable, OwnedWorkspacesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, OwnedWorkspacesTable, OwnedWorkspacesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -708,7 +708,7 @@ func HasWorkspaceMemberships() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, WorkspaceMembershipsTable, WorkspaceMembershipsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, WorkspaceMembershipsTable, WorkspaceMembershipsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -731,7 +731,7 @@ func HasCreatedProjects() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, CreatedProjectsTable, CreatedProjectsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, CreatedProjectsTable, CreatedProjectsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

@@ -104,11 +104,8 @@ func (User) Fields() []ent.Field {
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("owned_workspaces", Workspace.Type).
-			Ref("owner"),
-		edge.From("workspace_memberships", WorkspaceMember.Type).
-			Ref("user"),
-		edge.From("created_projects", Project.Type).
-			Ref("creator"),
+		edge.To("owned_workspaces", Workspace.Type),
+		edge.To("workspace_memberships", WorkspaceMember.Type),
+		edge.To("created_projects", Project.Type),
 	}
 }

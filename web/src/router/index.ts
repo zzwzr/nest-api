@@ -71,23 +71,34 @@ const router = createRouter({
 let installChecked = false
 let installed = false
 
+async function loadInstallStatus() {
+  try {
+    const status = await fetchInstallStatus()
+    installed = status.installed
+  } catch {
+    try {
+      const site = await fetchSiteInfo()
+      installed = site.installed
+    } catch {
+      installed = false
+    }
+  }
+  installChecked = true
+  return installed
+}
+
+/** 安装完成后更新缓存，避免仍被重定向回 /install */
+export function markAppInstalled() {
+  installed = true
+  installChecked = true
+}
+
 router.beforeEach(async (to, _from, next) => {
   const title = to.meta.title as string | undefined
   document.title = title ? `${title} - ApiNest` : 'ApiNest'
 
   if (!installChecked) {
-    try {
-      const status = await fetchInstallStatus()
-      installed = status.installed
-    } catch {
-      try {
-        const site = await fetchSiteInfo()
-        installed = site.installed
-      } catch {
-        installed = false
-      }
-    }
-    installChecked = true
+    await loadInstallStatus()
   }
 
   if (!installed) {

@@ -300,7 +300,7 @@ func HasOwner() predicate.Workspace {
 	return predicate.Workspace(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, OwnerTable, OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

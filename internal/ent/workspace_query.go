@@ -79,7 +79,7 @@ func (_q *WorkspaceQuery) QueryOwner() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, workspace.OwnerTable, workspace.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspace.OwnerTable, workspace.OwnerColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -529,7 +529,9 @@ func (_q *WorkspaceQuery) loadMembers(ctx context.Context, query *WorkspaceMembe
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(workspacemember.FieldWorkspaceID)
+	}
 	query.Where(predicate.WorkspaceMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.MembersColumn), fks...))
 	}))
@@ -538,13 +540,10 @@ func (_q *WorkspaceQuery) loadMembers(ctx context.Context, query *WorkspaceMembe
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.workspace_members
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "workspace_members" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "workspace_members" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -560,7 +559,9 @@ func (_q *WorkspaceQuery) loadProjects(ctx context.Context, query *ProjectQuery,
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(project.FieldWorkspaceID)
+	}
 	query.Where(predicate.Project(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.ProjectsColumn), fks...))
 	}))
@@ -569,13 +570,10 @@ func (_q *WorkspaceQuery) loadProjects(ctx context.Context, query *ProjectQuery,
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.workspace_projects
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "workspace_projects" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "workspace_projects" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

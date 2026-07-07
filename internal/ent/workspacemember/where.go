@@ -300,7 +300,7 @@ func HasWorkspace() predicate.WorkspaceMember {
 	return predicate.WorkspaceMember(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, WorkspaceTable, WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, WorkspaceTable, WorkspaceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -323,7 +323,7 @@ func HasUser() predicate.WorkspaceMember {
 	return predicate.WorkspaceMember(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

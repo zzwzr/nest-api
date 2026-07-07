@@ -344,7 +344,7 @@ func (c *ProjectClient) QueryWorkspace(_m *Project) *WorkspaceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, project.WorkspaceTable, project.WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.WorkspaceTable, project.WorkspaceColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -360,7 +360,7 @@ func (c *ProjectClient) QueryCreator(_m *Project) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, project.CreatorTable, project.CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.CreatorTable, project.CreatorColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -511,7 +511,7 @@ func (c *UserClient) QueryOwnedWorkspaces(_m *User) *WorkspaceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.OwnedWorkspacesTable, user.OwnedWorkspacesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OwnedWorkspacesTable, user.OwnedWorkspacesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -527,7 +527,7 @@ func (c *UserClient) QueryWorkspaceMemberships(_m *User) *WorkspaceMemberQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.WorkspaceMembershipsTable, user.WorkspaceMembershipsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.WorkspaceMembershipsTable, user.WorkspaceMembershipsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -543,7 +543,7 @@ func (c *UserClient) QueryCreatedProjects(_m *User) *ProjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.CreatedProjectsTable, user.CreatedProjectsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedProjectsTable, user.CreatedProjectsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -694,7 +694,7 @@ func (c *WorkspaceClient) QueryOwner(_m *Workspace) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workspace.Table, workspace.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, workspace.OwnerTable, workspace.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspace.OwnerTable, workspace.OwnerColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -877,7 +877,7 @@ func (c *WorkspaceMemberClient) QueryWorkspace(_m *WorkspaceMember) *WorkspaceQu
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workspacemember.Table, workspacemember.FieldID, id),
 			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, workspacemember.WorkspaceTable, workspacemember.WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspacemember.WorkspaceTable, workspacemember.WorkspaceColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -893,7 +893,7 @@ func (c *WorkspaceMemberClient) QueryUser(_m *WorkspaceMember) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workspacemember.Table, workspacemember.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, workspacemember.UserTable, workspacemember.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspacemember.UserTable, workspacemember.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

@@ -34,9 +34,8 @@ type WorkspaceMember struct {
 	DeletedAt *utils.DateTime `json:"deleted_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkspaceMemberQuery when eager-loading is set.
-	Edges             WorkspaceMemberEdges `json:"edges"`
-	workspace_members *int64
-	selectValues      sql.SelectValues
+	Edges        WorkspaceMemberEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // WorkspaceMemberEdges holds the relations/edges for other nodes in the graph.
@@ -83,8 +82,6 @@ func (*WorkspaceMember) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case workspacemember.FieldCreatedAt, workspacemember.FieldUpdatedAt:
 			values[i] = new(utils.DateTime)
-		case workspacemember.ForeignKeys[0]: // workspace_members
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -142,13 +139,6 @@ func (_m *WorkspaceMember) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DeletedAt = new(utils.DateTime)
 				*_m.DeletedAt = *value.S.(*utils.DateTime)
-			}
-		case workspacemember.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field workspace_members", value)
-			} else if value.Valid {
-				_m.workspace_members = new(int64)
-				*_m.workspace_members = int64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

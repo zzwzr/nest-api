@@ -128,7 +128,7 @@
                   v-model="form.database.port"
                   :min="1"
                   :max="65535"
-                  controls-position="right"
+                  :controls="false"
                   style="width: 100%"
                 />
               </el-form-item>
@@ -166,7 +166,7 @@
                     show-password
                     placeholder="超级用户密码"
                   />
-                  <el-button :loading="testing" @click="handleTestConnection">测试连接</el-button>
+                  <el-button class="install-action-btn" :loading="testing" @click="handleTestConnection">测试连接</el-button>
                 </div>
               </el-form-item>
             </div>
@@ -190,7 +190,7 @@
                     show-password
                     placeholder="至少 6 位"
                   />
-                  <el-button @click="regenerateAppPassword">重新生成</el-button>
+                  <el-button class="install-action-btn" @click="regenerateAppPassword">重新生成</el-button>
                 </div>
               </el-form-item>
             </div>
@@ -296,6 +296,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
+import { markAppInstalled } from '@/router'
 import { fetchInstallStatus, submitInstall, testDatabaseConnection } from '@/api/install'
 import type { InstallCredentials, InstallPayload } from '@/types/install'
 
@@ -473,6 +474,7 @@ async function handleSubmit() {
         password: form.app_database.password,
       },
     }
+    markAppInstalled()
     ElMessage.success('安装成功')
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '安装失败')
@@ -482,6 +484,7 @@ async function handleSubmit() {
 }
 
 function goLogin() {
+  markAppInstalled()
   router.push('/login')
 }
 
@@ -489,6 +492,9 @@ onMounted(async () => {
   try {
     const status = await fetchInstallStatus()
     alreadyInstalled.value = status.installed
+    if (status.installed) {
+      markAppInstalled()
+    }
   } catch {
     // 后端未启动时仍展示安装表单
   }
@@ -517,21 +523,33 @@ onMounted(async () => {
   color: var(--color-text);
 }
 
-.install-page :deep(.el-input__wrapper),
-.install-page :deep(.el-select__wrapper) {
+/* ── 文本输入框（不含下拉框） ── */
+.install-form :deep(.el-input .el-input__wrapper) {
   background-color: #ffffff !important;
-  color: var(--color-text);
   box-shadow: 0 0 0 1px var(--color-border) inset !important;
 }
 
-.install-page :deep(.el-input__inner),
-.install-page :deep(.el-select__selected-item),
-.install-page :deep(.el-select__placeholder) {
+.install-form :deep(.el-input .el-input__inner) {
   color: var(--color-text) !important;
   -webkit-text-fill-color: var(--color-text) !important;
 }
 
-.install-page :deep(.el-input-number .el-input__wrapper) {
+.install-form :deep(.el-input .el-input__inner::placeholder) {
+  color: var(--color-text-secondary) !important;
+  -webkit-text-fill-color: var(--color-text-secondary) !important;
+}
+
+/* ── 下拉框：占位符浅色，选中值为深色 ── */
+.install-form :deep(.el-select .el-select__placeholder.is-transparent) {
+  color: var(--color-text-secondary);
+}
+
+.install-form :deep(.el-select .el-select__selected-item.el-select__placeholder:not(.is-transparent)) {
+  color: var(--color-text) !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+}
+
+.install-form :deep(.el-input-number .el-input__wrapper) {
   background-color: #ffffff !important;
 }
 
@@ -730,6 +748,28 @@ onMounted(async () => {
   flex: 1;
 }
 
+.password-field :deep(.install-action-btn.el-button) {
+  --el-button-bg-color: #ffffff;
+  --el-button-border-color: #e2e8f0;
+  --el-button-text-color: #1e293b;
+  --el-button-hover-bg-color: #f8fafc;
+  --el-button-hover-border-color: #cbd5e1;
+  --el-button-hover-text-color: #1e293b;
+  --el-button-active-bg-color: #f1f5f9;
+  --el-button-active-border-color: #cbd5e1;
+  --el-button-active-text-color: #1e293b;
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+.password-field :deep(.install-action-btn.el-button:hover),
+.password-field :deep(.install-action-btn.el-button:focus) {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
 .install-form :deep(.el-form-item) {
   margin-bottom: 20px;
 }
@@ -890,9 +930,16 @@ onMounted(async () => {
 </style>
 
 <style>
+/* 弹出层外框（el-popper），非输入框本身 */
+.install-popper.el-select__popper {
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .install-popper.el-select-dropdown {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: none;
+  box-shadow: none;
 }
 
 .install-popper .el-select-dropdown__item {

@@ -34,9 +34,8 @@ type Project struct {
 	DeletedAt *utils.DateTime `json:"deleted_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectQuery when eager-loading is set.
-	Edges              ProjectEdges `json:"edges"`
-	workspace_projects *int64
-	selectValues       sql.SelectValues
+	Edges        ProjectEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ProjectEdges holds the relations/edges for other nodes in the graph.
@@ -85,8 +84,6 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case project.FieldCreatedAt, project.FieldUpdatedAt:
 			values[i] = new(utils.DateTime)
-		case project.ForeignKeys[0]: // workspace_projects
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -144,13 +141,6 @@ func (_m *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DeletedAt = new(utils.DateTime)
 				*_m.DeletedAt = *value.S.(*utils.DateTime)
-			}
-		case project.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field workspace_projects", value)
-			} else if value.Valid {
-				_m.workspace_projects = new(int64)
-				*_m.workspace_projects = int64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

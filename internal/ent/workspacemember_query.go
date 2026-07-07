@@ -26,7 +26,6 @@ type WorkspaceMemberQuery struct {
 	predicates    []predicate.WorkspaceMember
 	withWorkspace *WorkspaceQuery
 	withUser      *UserQuery
-	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,7 +76,7 @@ func (_q *WorkspaceMemberQuery) QueryWorkspace() *WorkspaceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workspacemember.Table, workspacemember.FieldID, selector),
 			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, workspacemember.WorkspaceTable, workspacemember.WorkspaceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspacemember.WorkspaceTable, workspacemember.WorkspaceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -99,7 +98,7 @@ func (_q *WorkspaceMemberQuery) QueryUser() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(workspacemember.Table, workspacemember.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, workspacemember.UserTable, workspacemember.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, workspacemember.UserTable, workspacemember.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -406,16 +405,12 @@ func (_q *WorkspaceMemberQuery) prepareQuery(ctx context.Context) error {
 func (_q *WorkspaceMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*WorkspaceMember, error) {
 	var (
 		nodes       = []*WorkspaceMember{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withWorkspace != nil,
 			_q.withUser != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, workspacemember.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*WorkspaceMember).scanValues(nil, columns)
 	}

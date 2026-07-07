@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createProject as apiCreateProject, fetchProjects } from '@/api/project'
 import { createWorkspace as apiCreateWorkspace, fetchWorkspaces } from '@/api/workspace'
+import { readWorkspaceLayout, writeWorkspaceLayout } from '@/utils/workspace-layout-storage'
 import type { ApiTreeNode, AppModule, ProjectItem, WorkspaceItem } from '@/types/workspace'
 
 const mockApiTree: ApiTreeNode[] = [
@@ -42,14 +43,16 @@ const mockApiTree: ApiTreeNode[] = [
   },
 ]
 
+const storedLayout = readWorkspaceLayout()
+
 const workspaces = ref<WorkspaceItem[]>([])
 const projects = ref<ProjectItem[]>([])
 const loadingWorkspaces = ref(false)
 const loadingProjects = ref(false)
 
 const activeModule = ref<AppModule>('api')
-const activeWorkspaceId = ref<number | null>(null)
-const activeProjectId = ref<number | null>(null)
+const activeWorkspaceId = ref<number | null>(storedLayout.workspaceId)
+const activeProjectId = ref<number | null>(storedLayout.projectId)
 const expandedNodeIds = ref<Set<string>>(new Set(['api-root-1', 'api-root-2']))
 const selectedApiId = ref<string | null>(null)
 
@@ -199,6 +202,10 @@ export function useWorkspaceContext() {
 
   watch(activeWorkspaceId, () => {
     loadProjects()
+  })
+
+  watch([activeWorkspaceId, activeProjectId], ([workspaceId, projectId]) => {
+    writeWorkspaceLayout({ workspaceId, projectId })
   })
 
   return {

@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { ArrowDown, Folder, Plus, Search } from '@element-plus/icons-vue'
 import { useLocale } from '@/composables/useLocale'
 import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
+import {
+  clampPanelWidth,
+  readWorkspaceLayout,
+  writeWorkspaceLayout,
+} from '@/utils/workspace-layout-storage'
 import type { ApiTreeNode, HttpMethod } from '@/types/workspace'
 
 const { t } = useLocale()
@@ -79,10 +84,50 @@ const flatApiNodes = computed(() => renderNodes(filteredApiTree.value))
 function handleCreateProject() {
   openCreateProject()
 }
+
+const panelWidth = ref(readWorkspaceLayout().panelWidth)
+const isResizing = ref(false)
+let resizeStartX = 0
+let resizeStartWidth = panelWidth.value
+
+function onResizeMove(event: MouseEvent) {
+  panelWidth.value = clampPanelWidth(resizeStartWidth + event.clientX - resizeStartX)
+}
+
+function stopResize() {
+  isResizing.value = false
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup', stopResize)
+}
+
+function startResize(event: MouseEvent) {
+  event.preventDefault()
+  isResizing.value = true
+  resizeStartX = event.clientX
+  resizeStartWidth = panelWidth.value
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+  document.addEventListener('mousemove', onResizeMove)
+  document.addEventListener('mouseup', stopResize)
+}
+
+onBeforeUnmount(() => {
+  stopResize()
+})
+
+watch(panelWidth, (width) => {
+  writeWorkspaceLayout({ panelWidth: width })
+})
 </script>
 
 <template>
-  <aside class="context-panel">
+  <aside
+    class="context-panel"
+    :class="{ 'context-panel--resizing': isResizing }"
+    :style="{ width: `${panelWidth}px` }"
+  >
     <div class="context-panel__header">
       <div class="context-panel__search">
         <el-icon :size="16"><Search /></el-icon>
@@ -101,25 +146,23 @@ function handleCreateProject() {
         v-if="contextMode === 'workspace'"
         type="button"
         class="context-panel__create-btn"
+        :title="t('workspace.createProject')"
         @click="handleCreateProject"
       >
         <el-icon :size="16"><Plus /></el-icon>
-        <span>{{ t('workspace.createProject') }}</span>
       </button>
       <button
         v-else
         type="button"
         class="context-panel__add-btn"
+        :title="t('workspace.addApi')"
       >
         <el-icon :size="16"><Plus /></el-icon>
-        <span>{{ t('workspace.addApi') }}</span>
-        <el-icon :size="12"><ArrowDown /></el-icon>
       </button>
     </div>
 
     <!-- Project list (workspace mode) -->
     <div v-if="contextMode === 'workspace'" class="context-panel__body" v-loading="loadingProjects">
-      <div class="context-panel__section-title">{{ t('workspace.projectList') }}</div>
       <ul class="context-panel__list">
         <li
           v-for="item in filteredProjects"
@@ -194,12 +237,20 @@ function handleCreateProject() {
         </li>
       </ul>
     </div>
+
+    <div
+      class="context-panel__resize-handle"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize panel"
+      @mousedown="startResize"
+    />
   </aside>
 </template>
 
 <style scoped>
 .context-panel {
-  width: 280px;
+  position: relative;
   flex-shrink: 0;
   border-right: 1px solid var(--color-border);
   background: var(--color-sidebar);
@@ -208,15 +259,45 @@ function handleCreateProject() {
   overflow: hidden;
 }
 
+.context-panel__resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+  touch-action: none;
+}
+
+.context-panel__resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.context-panel__resize-handle:hover::after,
+.context-panel--resizing .context-panel__resize-handle::after {
+  background: var(--color-primary);
+}
+
 .context-panel__header {
   padding: 12px 14px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
 .context-panel__search {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -244,15 +325,14 @@ function handleCreateProject() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 14px;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   border: 1px dashed var(--color-border);
   border-radius: 8px;
   background: transparent;
   color: var(--color-primary-light);
-  font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
@@ -266,15 +346,14 @@ function handleCreateProject() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 14px;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   border: none;
   border-radius: 8px;
   background: var(--color-primary);
   color: #fff;
-  font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
@@ -287,15 +366,6 @@ function handleCreateProject() {
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
-}
-
-.context-panel__section-title {
-  padding: 6px 16px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .context-panel__list,

@@ -71,7 +71,7 @@ export default {
     deleteProjectConfirm: '确定删除项目「{name}」吗？',
     deleteProjectSuccess: '项目已删除',
     deleteProjectFailed: '删除项目失败',
-    addApi: '接口',
+    addApi: 'API',
     noProjects: '暂无项目',
     noApis: '暂无接口',
     apiList: '接口列表',

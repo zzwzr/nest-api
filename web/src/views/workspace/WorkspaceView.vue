@@ -62,23 +62,6 @@ const mockApiRows = [
       </div>
     </div>
 
-    <div v-if="!showProjectManage" class="workspace-main__toolbar">
-      <nav class="workspace-main__subnav">
-        <a class="workspace-main__subnav-item workspace-main__subnav-item--active" href="#">
-          {{ t('workspace.subnav.api') }}
-        </a>
-        <a v-if="activeModule === 'api'" class="workspace-main__subnav-item" href="#">
-          {{ t('workspace.subnav.group') }}
-        </a>
-      </nav>
-
-      <div v-if="activeModule === 'api' && activeProject" class="workspace-main__actions">
-        <button type="button" class="workspace-main__btn workspace-main__btn--primary">
-          + {{ t('workspace.addApi') }}
-        </button>
-      </div>
-    </div>
-
     <div class="workspace-main__content">
       <template v-if="showProjectManage">
         <ProjectManagePanel />
@@ -182,74 +165,6 @@ const mockApiRows = [
 .workspace-main__tab-close:hover {
   background: var(--color-hover);
   color: var(--color-text);
-}
-
-.workspace-main__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.workspace-main__subnav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.workspace-main__subnav-item {
-  font-size: 15px;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  padding-bottom: 2px;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.workspace-main__subnav-item:hover {
-  color: var(--color-text);
-}
-
-.workspace-main__subnav-item--active {
-  color: var(--color-primary-light);
-  border-bottom-color: var(--color-primary);
-  font-weight: 500;
-}
-
-.workspace-main__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.workspace-main__btn {
-  height: 36px;
-  padding: 0 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.workspace-main__btn:hover {
-  background: var(--color-hover);
-}
-
-.workspace-main__btn--primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-}
-
-.workspace-main__btn--primary:hover {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary-light);
 }
 
 .workspace-main__content {

@@ -7,6 +7,10 @@ import (
 	"fmt"
 
 	"nest-api/internal/ent"
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/environmentvariable"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
@@ -70,6 +74,114 @@ func (f TraverseFunc) Traverse(ctx context.Context, q ent.Query) error {
 		return err
 	}
 	return f(ctx, query)
+}
+
+// The APIFunc type is an adapter to allow the use of ordinary function as a Querier.
+type APIFunc func(context.Context, *ent.APIQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f APIFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.APIQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.APIQuery", q)
+}
+
+// The TraverseAPI type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAPI func(context.Context, *ent.APIQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAPI) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAPI) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.APIQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.APIQuery", q)
+}
+
+// The EnvironmentFunc type is an adapter to allow the use of ordinary function as a Querier.
+type EnvironmentFunc func(context.Context, *ent.EnvironmentQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f EnvironmentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.EnvironmentQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.EnvironmentQuery", q)
+}
+
+// The TraverseEnvironment type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseEnvironment func(context.Context, *ent.EnvironmentQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseEnvironment) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseEnvironment) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.EnvironmentQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.EnvironmentQuery", q)
+}
+
+// The EnvironmentVariableFunc type is an adapter to allow the use of ordinary function as a Querier.
+type EnvironmentVariableFunc func(context.Context, *ent.EnvironmentVariableQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f EnvironmentVariableFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.EnvironmentVariableQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.EnvironmentVariableQuery", q)
+}
+
+// The TraverseEnvironmentVariable type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseEnvironmentVariable func(context.Context, *ent.EnvironmentVariableQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseEnvironmentVariable) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseEnvironmentVariable) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.EnvironmentVariableQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.EnvironmentVariableQuery", q)
+}
+
+// The FolderFunc type is an adapter to allow the use of ordinary function as a Querier.
+type FolderFunc func(context.Context, *ent.FolderQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f FolderFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.FolderQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.FolderQuery", q)
+}
+
+// The TraverseFolder type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseFolder func(context.Context, *ent.FolderQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseFolder) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseFolder) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.FolderQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.FolderQuery", q)
 }
 
 // The ProjectFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -183,6 +295,14 @@ func (f TraverseWorkspaceMember) Traverse(ctx context.Context, q ent.Query) erro
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
+	case *ent.APIQuery:
+		return &query[*ent.APIQuery, predicate.API, api.OrderOption]{typ: ent.TypeAPI, tq: q}, nil
+	case *ent.EnvironmentQuery:
+		return &query[*ent.EnvironmentQuery, predicate.Environment, environment.OrderOption]{typ: ent.TypeEnvironment, tq: q}, nil
+	case *ent.EnvironmentVariableQuery:
+		return &query[*ent.EnvironmentVariableQuery, predicate.EnvironmentVariable, environmentvariable.OrderOption]{typ: ent.TypeEnvironmentVariable, tq: q}, nil
+	case *ent.FolderQuery:
+		return &query[*ent.FolderQuery, predicate.Folder, folder.OrderOption]{typ: ent.TypeFolder, tq: q}, nil
 	case *ent.ProjectQuery:
 		return &query[*ent.ProjectQuery, predicate.Project, project.OrderOption]{typ: ent.TypeProject, tq: q}, nil
 	case *ent.UserQuery:

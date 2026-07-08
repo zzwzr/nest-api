@@ -6,6 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/environmentvariable"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -226,6 +230,81 @@ func (_c *UserCreate) AddCreatedProjects(v ...*Project) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddCreatedProjectIDs(ids...)
+}
+
+// AddCreatedFolderIDs adds the "created_folders" edge to the Folder entity by IDs.
+func (_c *UserCreate) AddCreatedFolderIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddCreatedFolderIDs(ids...)
+	return _c
+}
+
+// AddCreatedFolders adds the "created_folders" edges to the Folder entity.
+func (_c *UserCreate) AddCreatedFolders(v ...*Folder) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCreatedFolderIDs(ids...)
+}
+
+// AddCreatedInterfaceIDs adds the "created_interfaces" edge to the API entity by IDs.
+func (_c *UserCreate) AddCreatedInterfaceIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddCreatedInterfaceIDs(ids...)
+	return _c
+}
+
+// AddCreatedInterfaces adds the "created_interfaces" edges to the API entity.
+func (_c *UserCreate) AddCreatedInterfaces(v ...*API) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCreatedInterfaceIDs(ids...)
+}
+
+// AddUpdatedInterfaceIDs adds the "updated_interfaces" edge to the API entity by IDs.
+func (_c *UserCreate) AddUpdatedInterfaceIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddUpdatedInterfaceIDs(ids...)
+	return _c
+}
+
+// AddUpdatedInterfaces adds the "updated_interfaces" edges to the API entity.
+func (_c *UserCreate) AddUpdatedInterfaces(v ...*API) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUpdatedInterfaceIDs(ids...)
+}
+
+// AddCreatedEnvironmentIDs adds the "created_environments" edge to the Environment entity by IDs.
+func (_c *UserCreate) AddCreatedEnvironmentIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddCreatedEnvironmentIDs(ids...)
+	return _c
+}
+
+// AddCreatedEnvironments adds the "created_environments" edges to the Environment entity.
+func (_c *UserCreate) AddCreatedEnvironments(v ...*Environment) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCreatedEnvironmentIDs(ids...)
+}
+
+// AddCreatedEnvironmentVariableIDs adds the "created_environment_variables" edge to the EnvironmentVariable entity by IDs.
+func (_c *UserCreate) AddCreatedEnvironmentVariableIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddCreatedEnvironmentVariableIDs(ids...)
+	return _c
+}
+
+// AddCreatedEnvironmentVariables adds the "created_environment_variables" edges to the EnvironmentVariable entity.
+func (_c *UserCreate) AddCreatedEnvironmentVariables(v ...*EnvironmentVariable) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCreatedEnvironmentVariableIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -498,6 +577,86 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CreatedFoldersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CreatedFoldersTable,
+			Columns: []string{user.CreatedFoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CreatedInterfacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CreatedInterfacesTable,
+			Columns: []string{user.CreatedInterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UpdatedInterfacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.UpdatedInterfacesTable,
+			Columns: []string{user.UpdatedInterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CreatedEnvironmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CreatedEnvironmentsTable,
+			Columns: []string{user.CreatedEnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CreatedEnvironmentVariablesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CreatedEnvironmentVariablesTable,
+			Columns: []string{user.CreatedEnvironmentVariablesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environmentvariable.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

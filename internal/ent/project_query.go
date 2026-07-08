@@ -4,8 +4,12 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
@@ -20,12 +24,15 @@ import (
 // ProjectQuery is the builder for querying Project entities.
 type ProjectQuery struct {
 	config
-	ctx           *QueryContext
-	order         []project.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.Project
-	withWorkspace *WorkspaceQuery
-	withCreator   *UserQuery
+	ctx              *QueryContext
+	order            []project.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Project
+	withWorkspace    *WorkspaceQuery
+	withCreator      *UserQuery
+	withFolders      *FolderQuery
+	withInterfaces   *APIQuery
+	withEnvironments *EnvironmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +106,72 @@ func (_q *ProjectQuery) QueryCreator() *UserQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, project.CreatorTable, project.CreatorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFolders chains the current query on the "folders" edge.
+func (_q *ProjectQuery) QueryFolders() *FolderQuery {
+	query := (&FolderClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(folder.Table, folder.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.FoldersTable, project.FoldersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInterfaces chains the current query on the "interfaces" edge.
+func (_q *ProjectQuery) QueryInterfaces() *APIQuery {
+	query := (&APIClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.InterfacesTable, project.InterfacesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEnvironments chains the current query on the "environments" edge.
+func (_q *ProjectQuery) QueryEnvironments() *EnvironmentQuery {
+	query := (&EnvironmentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.EnvironmentsTable, project.EnvironmentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +366,16 @@ func (_q *ProjectQuery) Clone() *ProjectQuery {
 		return nil
 	}
 	return &ProjectQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]project.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.Project{}, _q.predicates...),
-		withWorkspace: _q.withWorkspace.Clone(),
-		withCreator:   _q.withCreator.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]project.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.Project{}, _q.predicates...),
+		withWorkspace:    _q.withWorkspace.Clone(),
+		withCreator:      _q.withCreator.Clone(),
+		withFolders:      _q.withFolders.Clone(),
+		withInterfaces:   _q.withInterfaces.Clone(),
+		withEnvironments: _q.withEnvironments.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -325,6 +401,39 @@ func (_q *ProjectQuery) WithCreator(opts ...func(*UserQuery)) *ProjectQuery {
 		opt(query)
 	}
 	_q.withCreator = query
+	return _q
+}
+
+// WithFolders tells the query-builder to eager-load the nodes that are connected to
+// the "folders" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithFolders(opts ...func(*FolderQuery)) *ProjectQuery {
+	query := (&FolderClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withFolders = query
+	return _q
+}
+
+// WithInterfaces tells the query-builder to eager-load the nodes that are connected to
+// the "interfaces" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithInterfaces(opts ...func(*APIQuery)) *ProjectQuery {
+	query := (&APIClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInterfaces = query
+	return _q
+}
+
+// WithEnvironments tells the query-builder to eager-load the nodes that are connected to
+// the "environments" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithEnvironments(opts ...func(*EnvironmentQuery)) *ProjectQuery {
+	query := (&EnvironmentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEnvironments = query
 	return _q
 }
 
@@ -406,9 +515,12 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [5]bool{
 			_q.withWorkspace != nil,
 			_q.withCreator != nil,
+			_q.withFolders != nil,
+			_q.withInterfaces != nil,
+			_q.withEnvironments != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -438,6 +550,27 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	if query := _q.withCreator; query != nil {
 		if err := _q.loadCreator(ctx, query, nodes, nil,
 			func(n *Project, e *User) { n.Edges.Creator = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withFolders; query != nil {
+		if err := _q.loadFolders(ctx, query, nodes,
+			func(n *Project) { n.Edges.Folders = []*Folder{} },
+			func(n *Project, e *Folder) { n.Edges.Folders = append(n.Edges.Folders, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInterfaces; query != nil {
+		if err := _q.loadInterfaces(ctx, query, nodes,
+			func(n *Project) { n.Edges.Interfaces = []*API{} },
+			func(n *Project, e *API) { n.Edges.Interfaces = append(n.Edges.Interfaces, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withEnvironments; query != nil {
+		if err := _q.loadEnvironments(ctx, query, nodes,
+			func(n *Project) { n.Edges.Environments = []*Environment{} },
+			func(n *Project, e *Environment) { n.Edges.Environments = append(n.Edges.Environments, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -499,6 +632,96 @@ func (_q *ProjectQuery) loadCreator(ctx context.Context, query *UserQuery, nodes
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadFolders(ctx context.Context, query *FolderQuery, nodes []*Project, init func(*Project), assign func(*Project, *Folder)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(folder.FieldProjectID)
+	}
+	query.Where(predicate.Folder(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.FoldersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadInterfaces(ctx context.Context, query *APIQuery, nodes []*Project, init func(*Project), assign func(*Project, *API)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(api.FieldProjectID)
+	}
+	query.Where(predicate.API(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.InterfacesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadEnvironments(ctx context.Context, query *EnvironmentQuery, nodes []*Project, init func(*Project), assign func(*Project, *Environment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(environment.FieldProjectID)
+	}
+	query.Where(predicate.Environment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.EnvironmentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

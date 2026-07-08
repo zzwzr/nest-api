@@ -6,6 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -28,15 +31,39 @@ func (_c *ProjectCreate) SetWorkspaceID(v int64) *ProjectCreate {
 	return _c
 }
 
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_c *ProjectCreate) SetNillableWorkspaceID(v *int64) *ProjectCreate {
+	if v != nil {
+		_c.SetWorkspaceID(*v)
+	}
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *ProjectCreate) SetName(v string) *ProjectCreate {
 	_c.mutation.SetName(v)
 	return _c
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_c *ProjectCreate) SetNillableName(v *string) *ProjectCreate {
+	if v != nil {
+		_c.SetName(*v)
+	}
+	return _c
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (_c *ProjectCreate) SetCreatedBy(v int64) *ProjectCreate {
 	_c.mutation.SetCreatedBy(v)
+	return _c
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (_c *ProjectCreate) SetNillableCreatedBy(v *int64) *ProjectCreate {
+	if v != nil {
+		_c.SetCreatedBy(*v)
+	}
 	return _c
 }
 
@@ -104,6 +131,51 @@ func (_c *ProjectCreate) SetCreator(v *User) *ProjectCreate {
 	return _c.SetCreatorID(v.ID)
 }
 
+// AddFolderIDs adds the "folders" edge to the Folder entity by IDs.
+func (_c *ProjectCreate) AddFolderIDs(ids ...int64) *ProjectCreate {
+	_c.mutation.AddFolderIDs(ids...)
+	return _c
+}
+
+// AddFolders adds the "folders" edges to the Folder entity.
+func (_c *ProjectCreate) AddFolders(v ...*Folder) *ProjectCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddFolderIDs(ids...)
+}
+
+// AddInterfaceIDs adds the "interfaces" edge to the API entity by IDs.
+func (_c *ProjectCreate) AddInterfaceIDs(ids ...int64) *ProjectCreate {
+	_c.mutation.AddInterfaceIDs(ids...)
+	return _c
+}
+
+// AddInterfaces adds the "interfaces" edges to the API entity.
+func (_c *ProjectCreate) AddInterfaces(v ...*API) *ProjectCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddInterfaceIDs(ids...)
+}
+
+// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
+func (_c *ProjectCreate) AddEnvironmentIDs(ids ...int64) *ProjectCreate {
+	_c.mutation.AddEnvironmentIDs(ids...)
+	return _c
+}
+
+// AddEnvironments adds the "environments" edges to the Environment entity.
+func (_c *ProjectCreate) AddEnvironments(v ...*Environment) *ProjectCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEnvironmentIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_c *ProjectCreate) Mutation() *ProjectMutation {
 	return _c.mutation
@@ -141,6 +213,18 @@ func (_c *ProjectCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *ProjectCreate) defaults() error {
+	if _, ok := _c.mutation.WorkspaceID(); !ok {
+		v := project.DefaultWorkspaceID
+		_c.mutation.SetWorkspaceID(v)
+	}
+	if _, ok := _c.mutation.Name(); !ok {
+		v := project.DefaultName
+		_c.mutation.SetName(v)
+	}
+	if _, ok := _c.mutation.CreatedBy(); !ok {
+		v := project.DefaultCreatedBy
+		_c.mutation.SetCreatedBy(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if project.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized project.DefaultCreatedAt (forgotten import ent/runtime?)")
@@ -271,6 +355,54 @@ func (_c *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CreatedBy = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.FoldersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.FoldersTable,
+			Columns: []string{project.FoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.InterfacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InterfacesTable,
+			Columns: []string{project.InterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EnvironmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.EnvironmentsTable,
+			Columns: []string{project.EnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

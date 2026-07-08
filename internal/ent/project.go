@@ -44,9 +44,15 @@ type ProjectEdges struct {
 	Workspace *Workspace `json:"workspace,omitempty"`
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
+	// Folders holds the value of the folders edge.
+	Folders []*Folder `json:"folders,omitempty"`
+	// Interfaces holds the value of the interfaces edge.
+	Interfaces []*API `json:"interfaces,omitempty"`
+	// Environments holds the value of the environments edge.
+	Environments []*Environment `json:"environments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [5]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -69,6 +75,33 @@ func (e ProjectEdges) CreatorOrErr() (*User, error) {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
+}
+
+// FoldersOrErr returns the Folders value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) FoldersOrErr() ([]*Folder, error) {
+	if e.loadedTypes[2] {
+		return e.Folders, nil
+	}
+	return nil, &NotLoadedError{edge: "folders"}
+}
+
+// InterfacesOrErr returns the Interfaces value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) InterfacesOrErr() ([]*API, error) {
+	if e.loadedTypes[3] {
+		return e.Interfaces, nil
+	}
+	return nil, &NotLoadedError{edge: "interfaces"}
+}
+
+// EnvironmentsOrErr returns the Environments value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) EnvironmentsOrErr() ([]*Environment, error) {
+	if e.loadedTypes[4] {
+		return e.Environments, nil
+	}
+	return nil, &NotLoadedError{edge: "environments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -163,6 +196,21 @@ func (_m *Project) QueryWorkspace() *WorkspaceQuery {
 // QueryCreator queries the "creator" edge of the Project entity.
 func (_m *Project) QueryCreator() *UserQuery {
 	return NewProjectClient(_m.config).QueryCreator(_m)
+}
+
+// QueryFolders queries the "folders" edge of the Project entity.
+func (_m *Project) QueryFolders() *FolderQuery {
+	return NewProjectClient(_m.config).QueryFolders(_m)
+}
+
+// QueryInterfaces queries the "interfaces" edge of the Project entity.
+func (_m *Project) QueryInterfaces() *APIQuery {
+	return NewProjectClient(_m.config).QueryInterfaces(_m)
+}
+
+// QueryEnvironments queries the "environments" edge of the Project entity.
+func (_m *Project) QueryEnvironments() *EnvironmentQuery {
+	return NewProjectClient(_m.config).QueryEnvironments(_m)
 }
 
 // Update returns a builder for updating this Project.

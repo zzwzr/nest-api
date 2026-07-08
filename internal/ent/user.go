@@ -54,9 +54,19 @@ type UserEdges struct {
 	WorkspaceMemberships []*WorkspaceMember `json:"workspace_memberships,omitempty"`
 	// CreatedProjects holds the value of the created_projects edge.
 	CreatedProjects []*Project `json:"created_projects,omitempty"`
+	// CreatedFolders holds the value of the created_folders edge.
+	CreatedFolders []*Folder `json:"created_folders,omitempty"`
+	// CreatedInterfaces holds the value of the created_interfaces edge.
+	CreatedInterfaces []*API `json:"created_interfaces,omitempty"`
+	// UpdatedInterfaces holds the value of the updated_interfaces edge.
+	UpdatedInterfaces []*API `json:"updated_interfaces,omitempty"`
+	// CreatedEnvironments holds the value of the created_environments edge.
+	CreatedEnvironments []*Environment `json:"created_environments,omitempty"`
+	// CreatedEnvironmentVariables holds the value of the created_environment_variables edge.
+	CreatedEnvironmentVariables []*EnvironmentVariable `json:"created_environment_variables,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [8]bool
 }
 
 // OwnedWorkspacesOrErr returns the OwnedWorkspaces value or an error if the edge
@@ -84,6 +94,51 @@ func (e UserEdges) CreatedProjectsOrErr() ([]*Project, error) {
 		return e.CreatedProjects, nil
 	}
 	return nil, &NotLoadedError{edge: "created_projects"}
+}
+
+// CreatedFoldersOrErr returns the CreatedFolders value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CreatedFoldersOrErr() ([]*Folder, error) {
+	if e.loadedTypes[3] {
+		return e.CreatedFolders, nil
+	}
+	return nil, &NotLoadedError{edge: "created_folders"}
+}
+
+// CreatedInterfacesOrErr returns the CreatedInterfaces value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CreatedInterfacesOrErr() ([]*API, error) {
+	if e.loadedTypes[4] {
+		return e.CreatedInterfaces, nil
+	}
+	return nil, &NotLoadedError{edge: "created_interfaces"}
+}
+
+// UpdatedInterfacesOrErr returns the UpdatedInterfaces value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) UpdatedInterfacesOrErr() ([]*API, error) {
+	if e.loadedTypes[5] {
+		return e.UpdatedInterfaces, nil
+	}
+	return nil, &NotLoadedError{edge: "updated_interfaces"}
+}
+
+// CreatedEnvironmentsOrErr returns the CreatedEnvironments value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CreatedEnvironmentsOrErr() ([]*Environment, error) {
+	if e.loadedTypes[6] {
+		return e.CreatedEnvironments, nil
+	}
+	return nil, &NotLoadedError{edge: "created_environments"}
+}
+
+// CreatedEnvironmentVariablesOrErr returns the CreatedEnvironmentVariables value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CreatedEnvironmentVariablesOrErr() ([]*EnvironmentVariable, error) {
+	if e.loadedTypes[7] {
+		return e.CreatedEnvironmentVariables, nil
+	}
+	return nil, &NotLoadedError{edge: "created_environment_variables"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -215,6 +270,31 @@ func (_m *User) QueryWorkspaceMemberships() *WorkspaceMemberQuery {
 // QueryCreatedProjects queries the "created_projects" edge of the User entity.
 func (_m *User) QueryCreatedProjects() *ProjectQuery {
 	return NewUserClient(_m.config).QueryCreatedProjects(_m)
+}
+
+// QueryCreatedFolders queries the "created_folders" edge of the User entity.
+func (_m *User) QueryCreatedFolders() *FolderQuery {
+	return NewUserClient(_m.config).QueryCreatedFolders(_m)
+}
+
+// QueryCreatedInterfaces queries the "created_interfaces" edge of the User entity.
+func (_m *User) QueryCreatedInterfaces() *APIQuery {
+	return NewUserClient(_m.config).QueryCreatedInterfaces(_m)
+}
+
+// QueryUpdatedInterfaces queries the "updated_interfaces" edge of the User entity.
+func (_m *User) QueryUpdatedInterfaces() *APIQuery {
+	return NewUserClient(_m.config).QueryUpdatedInterfaces(_m)
+}
+
+// QueryCreatedEnvironments queries the "created_environments" edge of the User entity.
+func (_m *User) QueryCreatedEnvironments() *EnvironmentQuery {
+	return NewUserClient(_m.config).QueryCreatedEnvironments(_m)
+}
+
+// QueryCreatedEnvironmentVariables queries the "created_environment_variables" edge of the User entity.
+func (_m *User) QueryCreatedEnvironmentVariables() *EnvironmentVariableQuery {
+	return NewUserClient(_m.config).QueryCreatedEnvironmentVariables(_m)
 }
 
 // Update returns a builder for updating this User.

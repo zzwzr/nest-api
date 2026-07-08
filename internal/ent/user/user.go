@@ -43,6 +43,16 @@ const (
 	EdgeWorkspaceMemberships = "workspace_memberships"
 	// EdgeCreatedProjects holds the string denoting the created_projects edge name in mutations.
 	EdgeCreatedProjects = "created_projects"
+	// EdgeCreatedFolders holds the string denoting the created_folders edge name in mutations.
+	EdgeCreatedFolders = "created_folders"
+	// EdgeCreatedInterfaces holds the string denoting the created_interfaces edge name in mutations.
+	EdgeCreatedInterfaces = "created_interfaces"
+	// EdgeUpdatedInterfaces holds the string denoting the updated_interfaces edge name in mutations.
+	EdgeUpdatedInterfaces = "updated_interfaces"
+	// EdgeCreatedEnvironments holds the string denoting the created_environments edge name in mutations.
+	EdgeCreatedEnvironments = "created_environments"
+	// EdgeCreatedEnvironmentVariables holds the string denoting the created_environment_variables edge name in mutations.
+	EdgeCreatedEnvironmentVariables = "created_environment_variables"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// OwnedWorkspacesTable is the table that holds the owned_workspaces relation/edge.
@@ -66,6 +76,41 @@ const (
 	CreatedProjectsInverseTable = "projects"
 	// CreatedProjectsColumn is the table column denoting the created_projects relation/edge.
 	CreatedProjectsColumn = "created_by"
+	// CreatedFoldersTable is the table that holds the created_folders relation/edge.
+	CreatedFoldersTable = "folders"
+	// CreatedFoldersInverseTable is the table name for the Folder entity.
+	// It exists in this package in order to avoid circular dependency with the "folder" package.
+	CreatedFoldersInverseTable = "folders"
+	// CreatedFoldersColumn is the table column denoting the created_folders relation/edge.
+	CreatedFoldersColumn = "created_by"
+	// CreatedInterfacesTable is the table that holds the created_interfaces relation/edge.
+	CreatedInterfacesTable = "interfaces"
+	// CreatedInterfacesInverseTable is the table name for the API entity.
+	// It exists in this package in order to avoid circular dependency with the "api" package.
+	CreatedInterfacesInverseTable = "interfaces"
+	// CreatedInterfacesColumn is the table column denoting the created_interfaces relation/edge.
+	CreatedInterfacesColumn = "created_by"
+	// UpdatedInterfacesTable is the table that holds the updated_interfaces relation/edge.
+	UpdatedInterfacesTable = "interfaces"
+	// UpdatedInterfacesInverseTable is the table name for the API entity.
+	// It exists in this package in order to avoid circular dependency with the "api" package.
+	UpdatedInterfacesInverseTable = "interfaces"
+	// UpdatedInterfacesColumn is the table column denoting the updated_interfaces relation/edge.
+	UpdatedInterfacesColumn = "updated_by"
+	// CreatedEnvironmentsTable is the table that holds the created_environments relation/edge.
+	CreatedEnvironmentsTable = "environments"
+	// CreatedEnvironmentsInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	CreatedEnvironmentsInverseTable = "environments"
+	// CreatedEnvironmentsColumn is the table column denoting the created_environments relation/edge.
+	CreatedEnvironmentsColumn = "created_by"
+	// CreatedEnvironmentVariablesTable is the table that holds the created_environment_variables relation/edge.
+	CreatedEnvironmentVariablesTable = "environment_variables"
+	// CreatedEnvironmentVariablesInverseTable is the table name for the EnvironmentVariable entity.
+	// It exists in this package in order to avoid circular dependency with the "environmentvariable" package.
+	CreatedEnvironmentVariablesInverseTable = "environment_variables"
+	// CreatedEnvironmentVariablesColumn is the table column denoting the created_environment_variables relation/edge.
+	CreatedEnvironmentVariablesColumn = "created_by"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -244,6 +289,76 @@ func ByCreatedProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCreatedProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCreatedFoldersCount orders the results by created_folders count.
+func ByCreatedFoldersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCreatedFoldersStep(), opts...)
+	}
+}
+
+// ByCreatedFolders orders the results by created_folders terms.
+func ByCreatedFolders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCreatedFoldersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCreatedInterfacesCount orders the results by created_interfaces count.
+func ByCreatedInterfacesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCreatedInterfacesStep(), opts...)
+	}
+}
+
+// ByCreatedInterfaces orders the results by created_interfaces terms.
+func ByCreatedInterfaces(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCreatedInterfacesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByUpdatedInterfacesCount orders the results by updated_interfaces count.
+func ByUpdatedInterfacesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUpdatedInterfacesStep(), opts...)
+	}
+}
+
+// ByUpdatedInterfaces orders the results by updated_interfaces terms.
+func ByUpdatedInterfaces(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUpdatedInterfacesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCreatedEnvironmentsCount orders the results by created_environments count.
+func ByCreatedEnvironmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCreatedEnvironmentsStep(), opts...)
+	}
+}
+
+// ByCreatedEnvironments orders the results by created_environments terms.
+func ByCreatedEnvironments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCreatedEnvironmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCreatedEnvironmentVariablesCount orders the results by created_environment_variables count.
+func ByCreatedEnvironmentVariablesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCreatedEnvironmentVariablesStep(), opts...)
+	}
+}
+
+// ByCreatedEnvironmentVariables orders the results by created_environment_variables terms.
+func ByCreatedEnvironmentVariables(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCreatedEnvironmentVariablesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOwnedWorkspacesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -263,5 +378,40 @@ func newCreatedProjectsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatedProjectsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, CreatedProjectsTable, CreatedProjectsColumn),
+	)
+}
+func newCreatedFoldersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatedFoldersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CreatedFoldersTable, CreatedFoldersColumn),
+	)
+}
+func newCreatedInterfacesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatedInterfacesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CreatedInterfacesTable, CreatedInterfacesColumn),
+	)
+}
+func newUpdatedInterfacesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UpdatedInterfacesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UpdatedInterfacesTable, UpdatedInterfacesColumn),
+	)
+}
+func newCreatedEnvironmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatedEnvironmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CreatedEnvironmentsTable, CreatedEnvironmentsColumn),
+	)
+}
+func newCreatedEnvironmentVariablesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatedEnvironmentVariablesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CreatedEnvironmentVariablesTable, CreatedEnvironmentVariablesColumn),
 	)
 }

@@ -28,9 +28,25 @@ func (_c *WorkspaceMemberCreate) SetWorkspaceID(v int64) *WorkspaceMemberCreate 
 	return _c
 }
 
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_c *WorkspaceMemberCreate) SetNillableWorkspaceID(v *int64) *WorkspaceMemberCreate {
+	if v != nil {
+		_c.SetWorkspaceID(*v)
+	}
+	return _c
+}
+
 // SetUserID sets the "user_id" field.
 func (_c *WorkspaceMemberCreate) SetUserID(v int64) *WorkspaceMemberCreate {
 	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_c *WorkspaceMemberCreate) SetNillableUserID(v *int64) *WorkspaceMemberCreate {
+	if v != nil {
+		_c.SetUserID(*v)
+	}
 	return _c
 }
 
@@ -143,6 +159,14 @@ func (_c *WorkspaceMemberCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *WorkspaceMemberCreate) defaults() error {
+	if _, ok := _c.mutation.WorkspaceID(); !ok {
+		v := workspacemember.DefaultWorkspaceID
+		_c.mutation.SetWorkspaceID(v)
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		v := workspacemember.DefaultUserID
+		_c.mutation.SetUserID(v)
+	}
 	if _, ok := _c.mutation.Role(); !ok {
 		v := workspacemember.DefaultRole
 		_c.mutation.SetRole(v)

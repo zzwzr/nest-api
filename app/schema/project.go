@@ -28,13 +28,16 @@ func (Project) Fields() []ent.Field {
 			Comment("主键"),
 
 		field.Int64("workspace_id").
+			Default(0).
 			Comment("工作空间 ID"),
 
 		field.String("name").
 			MaxLen(100).
+			Default("").
 			Comment("项目名称"),
 
 		field.Int64("created_by").
+			Default(0).
 			Comment("创建者用户 ID"),
 
 		field.Time("created_at").
@@ -77,5 +80,8 @@ func (Project) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("created_by"),
+		edge.To("folders", Folder.Type),
+		edge.To("interfaces", API.Type),
+		edge.To("environments", Environment.Type),
 	}
 }

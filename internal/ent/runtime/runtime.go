@@ -4,6 +4,10 @@ package runtime
 
 import (
 	"nest-api/app/schema"
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/environmentvariable"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -15,6 +19,200 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	apiMixin := schema.API{}.Mixin()
+	apiMixinHooks0 := apiMixin[0].Hooks()
+	api.Hooks[0] = apiMixinHooks0[0]
+	apiMixinInters0 := apiMixin[0].Interceptors()
+	api.Interceptors[0] = apiMixinInters0[0]
+	apiFields := schema.API{}.Fields()
+	_ = apiFields
+	// apiDescProjectID is the schema descriptor for project_id field.
+	apiDescProjectID := apiFields[1].Descriptor()
+	// api.DefaultProjectID holds the default value on creation for the project_id field.
+	api.DefaultProjectID = apiDescProjectID.Default.(int64)
+	// apiDescFolderID is the schema descriptor for folder_id field.
+	apiDescFolderID := apiFields[2].Descriptor()
+	// api.DefaultFolderID holds the default value on creation for the folder_id field.
+	api.DefaultFolderID = apiDescFolderID.Default.(int64)
+	// apiDescName is the schema descriptor for name field.
+	apiDescName := apiFields[3].Descriptor()
+	// api.DefaultName holds the default value on creation for the name field.
+	api.DefaultName = apiDescName.Default.(string)
+	// api.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	api.NameValidator = apiDescName.Validators[0].(func(string) error)
+	// apiDescMethod is the schema descriptor for method field.
+	apiDescMethod := apiFields[4].Descriptor()
+	// api.DefaultMethod holds the default value on creation for the method field.
+	api.DefaultMethod = apiDescMethod.Default.(string)
+	// api.MethodValidator is a validator for the "method" field. It is called by the builders before save.
+	api.MethodValidator = apiDescMethod.Validators[0].(func(string) error)
+	// apiDescURL is the schema descriptor for url field.
+	apiDescURL := apiFields[5].Descriptor()
+	// api.DefaultURL holds the default value on creation for the url field.
+	api.DefaultURL = apiDescURL.Default.(string)
+	// api.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	api.URLValidator = apiDescURL.Validators[0].(func(string) error)
+	// apiDescStatus is the schema descriptor for status field.
+	apiDescStatus := apiFields[6].Descriptor()
+	// api.DefaultStatus holds the default value on creation for the status field.
+	api.DefaultStatus = apiDescStatus.Default.(uint8)
+	// apiDescSortOrder is the schema descriptor for sort_order field.
+	apiDescSortOrder := apiFields[7].Descriptor()
+	// api.DefaultSortOrder holds the default value on creation for the sort_order field.
+	api.DefaultSortOrder = apiDescSortOrder.Default.(int)
+	// apiDescCreatedBy is the schema descriptor for created_by field.
+	apiDescCreatedBy := apiFields[8].Descriptor()
+	// api.DefaultCreatedBy holds the default value on creation for the created_by field.
+	api.DefaultCreatedBy = apiDescCreatedBy.Default.(int64)
+	// apiDescUpdatedBy is the schema descriptor for updated_by field.
+	apiDescUpdatedBy := apiFields[9].Descriptor()
+	// api.DefaultUpdatedBy holds the default value on creation for the updated_by field.
+	api.DefaultUpdatedBy = apiDescUpdatedBy.Default.(int64)
+	// apiDescCreatedAt is the schema descriptor for created_at field.
+	apiDescCreatedAt := apiFields[10].Descriptor()
+	// api.DefaultCreatedAt holds the default value on creation for the created_at field.
+	api.DefaultCreatedAt = apiDescCreatedAt.Default.(func() utils.DateTime)
+	// apiDescUpdatedAt is the schema descriptor for updated_at field.
+	apiDescUpdatedAt := apiFields[11].Descriptor()
+	// api.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	api.DefaultUpdatedAt = apiDescUpdatedAt.Default.(func() utils.DateTime)
+	// api.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	api.UpdateDefaultUpdatedAt = apiDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// apiDescID is the schema descriptor for id field.
+	apiDescID := apiFields[0].Descriptor()
+	// api.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	api.IDValidator = apiDescID.Validators[0].(func(int64) error)
+	environmentMixin := schema.Environment{}.Mixin()
+	environmentMixinHooks0 := environmentMixin[0].Hooks()
+	environment.Hooks[0] = environmentMixinHooks0[0]
+	environmentMixinInters0 := environmentMixin[0].Interceptors()
+	environment.Interceptors[0] = environmentMixinInters0[0]
+	environmentFields := schema.Environment{}.Fields()
+	_ = environmentFields
+	// environmentDescProjectID is the schema descriptor for project_id field.
+	environmentDescProjectID := environmentFields[1].Descriptor()
+	// environment.DefaultProjectID holds the default value on creation for the project_id field.
+	environment.DefaultProjectID = environmentDescProjectID.Default.(int64)
+	// environmentDescName is the schema descriptor for name field.
+	environmentDescName := environmentFields[2].Descriptor()
+	// environment.DefaultName holds the default value on creation for the name field.
+	environment.DefaultName = environmentDescName.Default.(string)
+	// environment.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	environment.NameValidator = environmentDescName.Validators[0].(func(string) error)
+	// environmentDescBaseURL is the schema descriptor for base_url field.
+	environmentDescBaseURL := environmentFields[3].Descriptor()
+	// environment.DefaultBaseURL holds the default value on creation for the base_url field.
+	environment.DefaultBaseURL = environmentDescBaseURL.Default.(string)
+	// environment.BaseURLValidator is a validator for the "base_url" field. It is called by the builders before save.
+	environment.BaseURLValidator = environmentDescBaseURL.Validators[0].(func(string) error)
+	// environmentDescIsDefault is the schema descriptor for is_default field.
+	environmentDescIsDefault := environmentFields[4].Descriptor()
+	// environment.DefaultIsDefault holds the default value on creation for the is_default field.
+	environment.DefaultIsDefault = environmentDescIsDefault.Default.(bool)
+	// environmentDescCreatedBy is the schema descriptor for created_by field.
+	environmentDescCreatedBy := environmentFields[5].Descriptor()
+	// environment.DefaultCreatedBy holds the default value on creation for the created_by field.
+	environment.DefaultCreatedBy = environmentDescCreatedBy.Default.(int64)
+	// environmentDescCreatedAt is the schema descriptor for created_at field.
+	environmentDescCreatedAt := environmentFields[6].Descriptor()
+	// environment.DefaultCreatedAt holds the default value on creation for the created_at field.
+	environment.DefaultCreatedAt = environmentDescCreatedAt.Default.(func() utils.DateTime)
+	// environmentDescUpdatedAt is the schema descriptor for updated_at field.
+	environmentDescUpdatedAt := environmentFields[7].Descriptor()
+	// environment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	environment.DefaultUpdatedAt = environmentDescUpdatedAt.Default.(func() utils.DateTime)
+	// environment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	environment.UpdateDefaultUpdatedAt = environmentDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// environmentDescID is the schema descriptor for id field.
+	environmentDescID := environmentFields[0].Descriptor()
+	// environment.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	environment.IDValidator = environmentDescID.Validators[0].(func(int64) error)
+	environmentvariableMixin := schema.EnvironmentVariable{}.Mixin()
+	environmentvariableMixinHooks0 := environmentvariableMixin[0].Hooks()
+	environmentvariable.Hooks[0] = environmentvariableMixinHooks0[0]
+	environmentvariableMixinInters0 := environmentvariableMixin[0].Interceptors()
+	environmentvariable.Interceptors[0] = environmentvariableMixinInters0[0]
+	environmentvariableFields := schema.EnvironmentVariable{}.Fields()
+	_ = environmentvariableFields
+	// environmentvariableDescEnvironmentID is the schema descriptor for environment_id field.
+	environmentvariableDescEnvironmentID := environmentvariableFields[1].Descriptor()
+	// environmentvariable.DefaultEnvironmentID holds the default value on creation for the environment_id field.
+	environmentvariable.DefaultEnvironmentID = environmentvariableDescEnvironmentID.Default.(int64)
+	// environmentvariableDescKey is the schema descriptor for key field.
+	environmentvariableDescKey := environmentvariableFields[2].Descriptor()
+	// environmentvariable.DefaultKey holds the default value on creation for the key field.
+	environmentvariable.DefaultKey = environmentvariableDescKey.Default.(string)
+	// environmentvariable.KeyValidator is a validator for the "key" field. It is called by the builders before save.
+	environmentvariable.KeyValidator = environmentvariableDescKey.Validators[0].(func(string) error)
+	// environmentvariableDescValue is the schema descriptor for value field.
+	environmentvariableDescValue := environmentvariableFields[3].Descriptor()
+	// environmentvariable.DefaultValue holds the default value on creation for the value field.
+	environmentvariable.DefaultValue = environmentvariableDescValue.Default.(string)
+	// environmentvariable.ValueValidator is a validator for the "value" field. It is called by the builders before save.
+	environmentvariable.ValueValidator = environmentvariableDescValue.Validators[0].(func(string) error)
+	// environmentvariableDescDescription is the schema descriptor for description field.
+	environmentvariableDescDescription := environmentvariableFields[4].Descriptor()
+	// environmentvariable.DefaultDescription holds the default value on creation for the description field.
+	environmentvariable.DefaultDescription = environmentvariableDescDescription.Default.(string)
+	// environmentvariable.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	environmentvariable.DescriptionValidator = environmentvariableDescDescription.Validators[0].(func(string) error)
+	// environmentvariableDescCreatedBy is the schema descriptor for created_by field.
+	environmentvariableDescCreatedBy := environmentvariableFields[5].Descriptor()
+	// environmentvariable.DefaultCreatedBy holds the default value on creation for the created_by field.
+	environmentvariable.DefaultCreatedBy = environmentvariableDescCreatedBy.Default.(int64)
+	// environmentvariableDescCreatedAt is the schema descriptor for created_at field.
+	environmentvariableDescCreatedAt := environmentvariableFields[6].Descriptor()
+	// environmentvariable.DefaultCreatedAt holds the default value on creation for the created_at field.
+	environmentvariable.DefaultCreatedAt = environmentvariableDescCreatedAt.Default.(func() utils.DateTime)
+	// environmentvariableDescUpdatedAt is the schema descriptor for updated_at field.
+	environmentvariableDescUpdatedAt := environmentvariableFields[7].Descriptor()
+	// environmentvariable.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	environmentvariable.DefaultUpdatedAt = environmentvariableDescUpdatedAt.Default.(func() utils.DateTime)
+	// environmentvariable.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	environmentvariable.UpdateDefaultUpdatedAt = environmentvariableDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// environmentvariableDescID is the schema descriptor for id field.
+	environmentvariableDescID := environmentvariableFields[0].Descriptor()
+	// environmentvariable.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	environmentvariable.IDValidator = environmentvariableDescID.Validators[0].(func(int64) error)
+	folderMixin := schema.Folder{}.Mixin()
+	folderMixinHooks0 := folderMixin[0].Hooks()
+	folder.Hooks[0] = folderMixinHooks0[0]
+	folderMixinInters0 := folderMixin[0].Interceptors()
+	folder.Interceptors[0] = folderMixinInters0[0]
+	folderFields := schema.Folder{}.Fields()
+	_ = folderFields
+	// folderDescProjectID is the schema descriptor for project_id field.
+	folderDescProjectID := folderFields[1].Descriptor()
+	// folder.DefaultProjectID holds the default value on creation for the project_id field.
+	folder.DefaultProjectID = folderDescProjectID.Default.(int64)
+	// folderDescParentID is the schema descriptor for parent_id field.
+	folderDescParentID := folderFields[2].Descriptor()
+	// folder.DefaultParentID holds the default value on creation for the parent_id field.
+	folder.DefaultParentID = folderDescParentID.Default.(int64)
+	// folderDescName is the schema descriptor for name field.
+	folderDescName := folderFields[3].Descriptor()
+	// folder.DefaultName holds the default value on creation for the name field.
+	folder.DefaultName = folderDescName.Default.(string)
+	// folder.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	folder.NameValidator = folderDescName.Validators[0].(func(string) error)
+	// folderDescSortOrder is the schema descriptor for sort_order field.
+	folderDescSortOrder := folderFields[4].Descriptor()
+	// folder.DefaultSortOrder holds the default value on creation for the sort_order field.
+	folder.DefaultSortOrder = folderDescSortOrder.Default.(int)
+	// folderDescCreatedAt is the schema descriptor for created_at field.
+	folderDescCreatedAt := folderFields[6].Descriptor()
+	// folder.DefaultCreatedAt holds the default value on creation for the created_at field.
+	folder.DefaultCreatedAt = folderDescCreatedAt.Default.(func() utils.DateTime)
+	// folderDescUpdatedAt is the schema descriptor for updated_at field.
+	folderDescUpdatedAt := folderFields[7].Descriptor()
+	// folder.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	folder.DefaultUpdatedAt = folderDescUpdatedAt.Default.(func() utils.DateTime)
+	// folder.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	folder.UpdateDefaultUpdatedAt = folderDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// folderDescID is the schema descriptor for id field.
+	folderDescID := folderFields[0].Descriptor()
+	// folder.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	folder.IDValidator = folderDescID.Validators[0].(func(int64) error)
 	projectMixin := schema.Project{}.Mixin()
 	projectMixinHooks0 := projectMixin[0].Hooks()
 	project.Hooks[0] = projectMixinHooks0[0]
@@ -22,10 +220,20 @@ func init() {
 	project.Interceptors[0] = projectMixinInters0[0]
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
+	// projectDescWorkspaceID is the schema descriptor for workspace_id field.
+	projectDescWorkspaceID := projectFields[1].Descriptor()
+	// project.DefaultWorkspaceID holds the default value on creation for the workspace_id field.
+	project.DefaultWorkspaceID = projectDescWorkspaceID.Default.(int64)
 	// projectDescName is the schema descriptor for name field.
 	projectDescName := projectFields[2].Descriptor()
+	// project.DefaultName holds the default value on creation for the name field.
+	project.DefaultName = projectDescName.Default.(string)
 	// project.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	project.NameValidator = projectDescName.Validators[0].(func(string) error)
+	// projectDescCreatedBy is the schema descriptor for created_by field.
+	projectDescCreatedBy := projectFields[3].Descriptor()
+	// project.DefaultCreatedBy holds the default value on creation for the created_by field.
+	project.DefaultCreatedBy = projectDescCreatedBy.Default.(int64)
 	// projectDescCreatedAt is the schema descriptor for created_at field.
 	projectDescCreatedAt := projectFields[4].Descriptor()
 	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -114,8 +322,14 @@ func init() {
 	_ = workspaceFields
 	// workspaceDescName is the schema descriptor for name field.
 	workspaceDescName := workspaceFields[1].Descriptor()
+	// workspace.DefaultName holds the default value on creation for the name field.
+	workspace.DefaultName = workspaceDescName.Default.(string)
 	// workspace.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	workspace.NameValidator = workspaceDescName.Validators[0].(func(string) error)
+	// workspaceDescOwnerID is the schema descriptor for owner_id field.
+	workspaceDescOwnerID := workspaceFields[2].Descriptor()
+	// workspace.DefaultOwnerID holds the default value on creation for the owner_id field.
+	workspace.DefaultOwnerID = workspaceDescOwnerID.Default.(int64)
 	// workspaceDescCreatedAt is the schema descriptor for created_at field.
 	workspaceDescCreatedAt := workspaceFields[3].Descriptor()
 	// workspace.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -137,6 +351,14 @@ func init() {
 	workspacemember.Interceptors[0] = workspacememberMixinInters0[0]
 	workspacememberFields := schema.WorkspaceMember{}.Fields()
 	_ = workspacememberFields
+	// workspacememberDescWorkspaceID is the schema descriptor for workspace_id field.
+	workspacememberDescWorkspaceID := workspacememberFields[1].Descriptor()
+	// workspacemember.DefaultWorkspaceID holds the default value on creation for the workspace_id field.
+	workspacemember.DefaultWorkspaceID = workspacememberDescWorkspaceID.Default.(int64)
+	// workspacememberDescUserID is the schema descriptor for user_id field.
+	workspacememberDescUserID := workspacememberFields[2].Descriptor()
+	// workspacemember.DefaultUserID holds the default value on creation for the user_id field.
+	workspacemember.DefaultUserID = workspacememberDescUserID.Default.(int64)
 	// workspacememberDescRole is the schema descriptor for role field.
 	workspacememberDescRole := workspacememberFields[3].Descriptor()
 	// workspacemember.DefaultRole holds the default value on creation for the role field.

@@ -29,9 +29,25 @@ func (_c *WorkspaceCreate) SetName(v string) *WorkspaceCreate {
 	return _c
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableName(v *string) *WorkspaceCreate {
+	if v != nil {
+		_c.SetName(*v)
+	}
+	return _c
+}
+
 // SetOwnerID sets the "owner_id" field.
 func (_c *WorkspaceCreate) SetOwnerID(v int64) *WorkspaceCreate {
 	_c.mutation.SetOwnerID(v)
+	return _c
+}
+
+// SetNillableOwnerID sets the "owner_id" field if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableOwnerID(v *int64) *WorkspaceCreate {
+	if v != nil {
+		_c.SetOwnerID(*v)
+	}
 	return _c
 }
 
@@ -155,6 +171,14 @@ func (_c *WorkspaceCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *WorkspaceCreate) defaults() error {
+	if _, ok := _c.mutation.Name(); !ok {
+		v := workspace.DefaultName
+		_c.mutation.SetName(v)
+	}
+	if _, ok := _c.mutation.OwnerID(); !ok {
+		v := workspace.DefaultOwnerID
+		_c.mutation.SetOwnerID(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if workspace.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized workspace.DefaultCreatedAt (forgotten import ent/runtime?)")

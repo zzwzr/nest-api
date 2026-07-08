@@ -28,9 +28,11 @@ func (WorkspaceMember) Fields() []ent.Field {
 			Comment("主键"),
 
 		field.Int64("workspace_id").
+			Default(0).
 			Comment("工作空间 ID"),
 
 		field.Int64("user_id").
+			Default(0).
 			Comment("用户 ID"),
 
 		field.Uint8("role").

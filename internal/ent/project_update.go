@@ -6,6 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
@@ -128,6 +131,51 @@ func (_u *ProjectUpdate) SetCreator(v *User) *ProjectUpdate {
 	return _u.SetCreatorID(v.ID)
 }
 
+// AddFolderIDs adds the "folders" edge to the Folder entity by IDs.
+func (_u *ProjectUpdate) AddFolderIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.AddFolderIDs(ids...)
+	return _u
+}
+
+// AddFolders adds the "folders" edges to the Folder entity.
+func (_u *ProjectUpdate) AddFolders(v ...*Folder) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFolderIDs(ids...)
+}
+
+// AddInterfaceIDs adds the "interfaces" edge to the API entity by IDs.
+func (_u *ProjectUpdate) AddInterfaceIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.AddInterfaceIDs(ids...)
+	return _u
+}
+
+// AddInterfaces adds the "interfaces" edges to the API entity.
+func (_u *ProjectUpdate) AddInterfaces(v ...*API) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInterfaceIDs(ids...)
+}
+
+// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
+func (_u *ProjectUpdate) AddEnvironmentIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.AddEnvironmentIDs(ids...)
+	return _u
+}
+
+// AddEnvironments adds the "environments" edges to the Environment entity.
+func (_u *ProjectUpdate) AddEnvironments(v ...*Environment) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEnvironmentIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_u *ProjectUpdate) Mutation() *ProjectMutation {
 	return _u.mutation
@@ -143,6 +191,69 @@ func (_u *ProjectUpdate) ClearWorkspace() *ProjectUpdate {
 func (_u *ProjectUpdate) ClearCreator() *ProjectUpdate {
 	_u.mutation.ClearCreator()
 	return _u
+}
+
+// ClearFolders clears all "folders" edges to the Folder entity.
+func (_u *ProjectUpdate) ClearFolders() *ProjectUpdate {
+	_u.mutation.ClearFolders()
+	return _u
+}
+
+// RemoveFolderIDs removes the "folders" edge to Folder entities by IDs.
+func (_u *ProjectUpdate) RemoveFolderIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.RemoveFolderIDs(ids...)
+	return _u
+}
+
+// RemoveFolders removes "folders" edges to Folder entities.
+func (_u *ProjectUpdate) RemoveFolders(v ...*Folder) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFolderIDs(ids...)
+}
+
+// ClearInterfaces clears all "interfaces" edges to the API entity.
+func (_u *ProjectUpdate) ClearInterfaces() *ProjectUpdate {
+	_u.mutation.ClearInterfaces()
+	return _u
+}
+
+// RemoveInterfaceIDs removes the "interfaces" edge to API entities by IDs.
+func (_u *ProjectUpdate) RemoveInterfaceIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.RemoveInterfaceIDs(ids...)
+	return _u
+}
+
+// RemoveInterfaces removes "interfaces" edges to API entities.
+func (_u *ProjectUpdate) RemoveInterfaces(v ...*API) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInterfaceIDs(ids...)
+}
+
+// ClearEnvironments clears all "environments" edges to the Environment entity.
+func (_u *ProjectUpdate) ClearEnvironments() *ProjectUpdate {
+	_u.mutation.ClearEnvironments()
+	return _u
+}
+
+// RemoveEnvironmentIDs removes the "environments" edge to Environment entities by IDs.
+func (_u *ProjectUpdate) RemoveEnvironmentIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.RemoveEnvironmentIDs(ids...)
+	return _u
+}
+
+// RemoveEnvironments removes "environments" edges to Environment entities.
+func (_u *ProjectUpdate) RemoveEnvironments(v ...*Environment) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEnvironmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -288,6 +399,141 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.FoldersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.FoldersTable,
+			Columns: []string{project.FoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFoldersIDs(); len(nodes) > 0 && !_u.mutation.FoldersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.FoldersTable,
+			Columns: []string{project.FoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FoldersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.FoldersTable,
+			Columns: []string{project.FoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InterfacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InterfacesTable,
+			Columns: []string{project.InterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInterfacesIDs(); len(nodes) > 0 && !_u.mutation.InterfacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InterfacesTable,
+			Columns: []string{project.InterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InterfacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InterfacesTable,
+			Columns: []string{project.InterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EnvironmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.EnvironmentsTable,
+			Columns: []string{project.EnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEnvironmentsIDs(); len(nodes) > 0 && !_u.mutation.EnvironmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.EnvironmentsTable,
+			Columns: []string{project.EnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EnvironmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.EnvironmentsTable,
+			Columns: []string{project.EnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -406,6 +652,51 @@ func (_u *ProjectUpdateOne) SetCreator(v *User) *ProjectUpdateOne {
 	return _u.SetCreatorID(v.ID)
 }
 
+// AddFolderIDs adds the "folders" edge to the Folder entity by IDs.
+func (_u *ProjectUpdateOne) AddFolderIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.AddFolderIDs(ids...)
+	return _u
+}
+
+// AddFolders adds the "folders" edges to the Folder entity.
+func (_u *ProjectUpdateOne) AddFolders(v ...*Folder) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFolderIDs(ids...)
+}
+
+// AddInterfaceIDs adds the "interfaces" edge to the API entity by IDs.
+func (_u *ProjectUpdateOne) AddInterfaceIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.AddInterfaceIDs(ids...)
+	return _u
+}
+
+// AddInterfaces adds the "interfaces" edges to the API entity.
+func (_u *ProjectUpdateOne) AddInterfaces(v ...*API) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInterfaceIDs(ids...)
+}
+
+// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
+func (_u *ProjectUpdateOne) AddEnvironmentIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.AddEnvironmentIDs(ids...)
+	return _u
+}
+
+// AddEnvironments adds the "environments" edges to the Environment entity.
+func (_u *ProjectUpdateOne) AddEnvironments(v ...*Environment) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEnvironmentIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_u *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return _u.mutation
@@ -421,6 +712,69 @@ func (_u *ProjectUpdateOne) ClearWorkspace() *ProjectUpdateOne {
 func (_u *ProjectUpdateOne) ClearCreator() *ProjectUpdateOne {
 	_u.mutation.ClearCreator()
 	return _u
+}
+
+// ClearFolders clears all "folders" edges to the Folder entity.
+func (_u *ProjectUpdateOne) ClearFolders() *ProjectUpdateOne {
+	_u.mutation.ClearFolders()
+	return _u
+}
+
+// RemoveFolderIDs removes the "folders" edge to Folder entities by IDs.
+func (_u *ProjectUpdateOne) RemoveFolderIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.RemoveFolderIDs(ids...)
+	return _u
+}
+
+// RemoveFolders removes "folders" edges to Folder entities.
+func (_u *ProjectUpdateOne) RemoveFolders(v ...*Folder) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFolderIDs(ids...)
+}
+
+// ClearInterfaces clears all "interfaces" edges to the API entity.
+func (_u *ProjectUpdateOne) ClearInterfaces() *ProjectUpdateOne {
+	_u.mutation.ClearInterfaces()
+	return _u
+}
+
+// RemoveInterfaceIDs removes the "interfaces" edge to API entities by IDs.
+func (_u *ProjectUpdateOne) RemoveInterfaceIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.RemoveInterfaceIDs(ids...)
+	return _u
+}
+
+// RemoveInterfaces removes "interfaces" edges to API entities.
+func (_u *ProjectUpdateOne) RemoveInterfaces(v ...*API) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInterfaceIDs(ids...)
+}
+
+// ClearEnvironments clears all "environments" edges to the Environment entity.
+func (_u *ProjectUpdateOne) ClearEnvironments() *ProjectUpdateOne {
+	_u.mutation.ClearEnvironments()
+	return _u
+}
+
+// RemoveEnvironmentIDs removes the "environments" edge to Environment entities by IDs.
+func (_u *ProjectUpdateOne) RemoveEnvironmentIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.RemoveEnvironmentIDs(ids...)
+	return _u
+}
+
+// RemoveEnvironments removes "environments" edges to Environment entities.
+func (_u *ProjectUpdateOne) RemoveEnvironments(v ...*Environment) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEnvironmentIDs(ids...)
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -589,6 +943,141 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FoldersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.FoldersTable,
+			Columns: []string{project.FoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFoldersIDs(); len(nodes) > 0 && !_u.mutation.FoldersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.FoldersTable,
+			Columns: []string{project.FoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FoldersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.FoldersTable,
+			Columns: []string{project.FoldersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(folder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InterfacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InterfacesTable,
+			Columns: []string{project.InterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInterfacesIDs(); len(nodes) > 0 && !_u.mutation.InterfacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InterfacesTable,
+			Columns: []string{project.InterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InterfacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InterfacesTable,
+			Columns: []string{project.InterfacesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(api.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EnvironmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.EnvironmentsTable,
+			Columns: []string{project.EnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEnvironmentsIDs(); len(nodes) > 0 && !_u.mutation.EnvironmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.EnvironmentsTable,
+			Columns: []string{project.EnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EnvironmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.EnvironmentsTable,
+			Columns: []string{project.EnvironmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

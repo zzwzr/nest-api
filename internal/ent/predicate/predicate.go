@@ -6,6 +6,18 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// API is the predicate function for api builders.
+type API func(*sql.Selector)
+
+// Environment is the predicate function for environment builders.
+type Environment func(*sql.Selector)
+
+// EnvironmentVariable is the predicate function for environmentvariable builders.
+type EnvironmentVariable func(*sql.Selector)
+
+// Folder is the predicate function for folder builders.
+type Folder func(*sql.Selector)
+
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
 

@@ -143,6 +143,7 @@ onMounted(async () => {
                 <el-select
                   :placeholder="t('admin.selectUser')"
                   style="width: 100%"
+                  popper-class="app-action-dropdown"
                   :loading="transferringId === row.id"
                   @change="(value: number) => handleTransfer(row, value)"
                 >

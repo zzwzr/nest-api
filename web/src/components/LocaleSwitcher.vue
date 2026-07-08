@@ -17,7 +17,7 @@ function handleSelect(code: LocaleCode) {
     placement="bottom-end"
     :width="120"
     trigger="click"
-    popper-class="locale-switcher-popover"
+    popper-class="app-action-dropdown locale-switcher-popover"
   >
     <template #reference>
       <button type="button" class="locale-switcher" aria-label="Language">

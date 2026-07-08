@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AppContextPanel from '@/components/AppContextPanel.vue'
 import AppModuleSidebar from '@/components/AppModuleSidebar.vue'
 import AppTopbar from '@/components/AppTopbar.vue'
@@ -9,8 +9,13 @@ import CreateWorkspaceDialog from '@/components/CreateWorkspaceDialog.vue'
 import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
 
 const route = useRoute()
+const router = useRouter()
 const { bootstrap } = useWorkspaceContext()
 const showOverlay = computed(() => route.meta.overlay === true)
+
+function closeOverlay() {
+  router.push('/home')
+}
 
 onMounted(() => {
   bootstrap()
@@ -29,6 +34,15 @@ onMounted(() => {
       <main class="app-layout__main">
         <router-view />
       </main>
+
+      <Transition name="app-layout__backdrop">
+        <div
+          v-if="showOverlay"
+          class="app-layout__backdrop"
+          aria-hidden="true"
+          @click="closeOverlay"
+        />
+      </Transition>
 
       <router-view v-slot="{ Component }" name="overlay">
         <Transition name="app-layout__overlay">
@@ -74,7 +88,14 @@ onMounted(() => {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  background: var(--color-bg);
+  background: var(--color-workspace-content);
+}
+
+.app-layout__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 110;
+  cursor: pointer;
 }
 
 .app-layout__overlay {
@@ -82,7 +103,7 @@ onMounted(() => {
   top: 0;
   left: 0;
   bottom: 0;
-  width: min(760px, 62vw);
+  width: min(1120px, 94vw);
   z-index: 120;
   background: var(--color-bg);
   border-right: 1px solid var(--color-border);

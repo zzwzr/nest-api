@@ -12,6 +12,14 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// API is the client for interacting with the API builders.
+	API *APIClient
+	// Environment is the client for interacting with the Environment builders.
+	Environment *EnvironmentClient
+	// EnvironmentVariable is the client for interacting with the EnvironmentVariable builders.
+	EnvironmentVariable *EnvironmentVariableClient
+	// Folder is the client for interacting with the Folder builders.
+	Folder *FolderClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -151,6 +159,10 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.API = NewAPIClient(tx.config)
+	tx.Environment = NewEnvironmentClient(tx.config)
+	tx.EnvironmentVariable = NewEnvironmentVariableClient(tx.config)
+	tx.Folder = NewFolderClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.Workspace = NewWorkspaceClient(tx.config)
@@ -164,7 +176,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Project.QueryXXX(), the query will be executed
+// applies a query, for example: API.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

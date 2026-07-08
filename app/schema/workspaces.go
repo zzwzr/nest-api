@@ -29,9 +29,11 @@ func (Workspace) Fields() []ent.Field {
 
 		field.String("name").
 			MaxLen(100).
+			Default("").
 			Comment("工作空间名称"),
 
 		field.Int64("owner_id").
+			Default(0).
 			Comment("拥有者用户 ID"),
 
 		field.Time("created_at").

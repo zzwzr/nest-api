@@ -107,5 +107,10 @@ func (User) Edges() []ent.Edge {
 		edge.To("owned_workspaces", Workspace.Type),
 		edge.To("workspace_memberships", WorkspaceMember.Type),
 		edge.To("created_projects", Project.Type),
+		edge.To("created_folders", Folder.Type),
+		edge.To("created_interfaces", API.Type),
+		edge.To("updated_interfaces", API.Type),
+		edge.To("created_environments", Environment.Type),
+		edge.To("created_environment_variables", EnvironmentVariable.Type),
 	}
 }

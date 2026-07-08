@@ -78,6 +78,10 @@ func ValidColumn(column string) bool {
 var (
 	Hooks        [1]ent.Hook
 	Interceptors [1]ent.Interceptor
+	// DefaultWorkspaceID holds the default value on creation for the "workspace_id" field.
+	DefaultWorkspaceID int64
+	// DefaultUserID holds the default value on creation for the "user_id" field.
+	DefaultUserID int64
 	// DefaultRole holds the default value on creation for the "role" field.
 	DefaultRole uint8
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.

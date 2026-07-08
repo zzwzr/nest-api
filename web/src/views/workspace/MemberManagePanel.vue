@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchMembers, inviteMember, removeMember, updateMemberRole } from '@/api/member'
 import { useLocale } from '@/composables/useLocale'
@@ -132,8 +131,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="member-panel">
-    <div class="member-panel__toolbar">
+  <div class="member-panel workspace-panel">
+    <div class="member-panel__toolbar workspace-panel__toolbar">
       <div>
         <h2>{{ t('member.title') }}</h2>
         <p v-if="activeWorkspace">
@@ -141,12 +140,11 @@ onMounted(() => {
         </p>
       </div>
       <el-button type="primary" @click="inviteVisible = true">
-        <el-icon><Plus /></el-icon>
         {{ t('member.invite') }}
       </el-button>
     </div>
 
-    <el-table v-loading="loading" :data="members" stripe class="member-panel__table">
+    <el-table v-loading="loading" :data="members" class="workspace-data-table">
       <el-table-column prop="name" :label="t('member.columns.name')" min-width="120" />
       <el-table-column prop="account" :label="t('member.columns.account')" min-width="140" />
       <el-table-column :label="t('member.columns.role')" width="160">
@@ -156,6 +154,7 @@ onMounted(() => {
             :model-value="row.role"
             :loading="updatingId === row.id"
             style="width: 130px"
+            popper-class="app-action-dropdown"
             @change="(value: WorkspaceRole) => handleRoleChange(row, value)"
           >
             <el-option
@@ -194,7 +193,7 @@ onMounted(() => {
           />
         </el-form-item>
         <el-form-item :label="t('member.columns.role')" required>
-          <el-select v-model="inviteForm.role" style="width: 100%">
+          <el-select v-model="inviteForm.role" style="width: 100%" popper-class="app-action-dropdown">
             <el-option
               v-for="item in roleOptions"
               :key="item.value"
@@ -216,31 +215,10 @@ onMounted(() => {
 
 <style scoped>
 .member-panel {
-  padding: 20px;
+  padding: 10px 8px 20px;
 }
 
 .member-panel__toolbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.member-panel__toolbar h2 {
-  margin: 0 0 6px;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.member-panel__toolbar p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-}
-
-.member-panel__table {
-  width: 100%;
+  margin-bottom: 12px;
 }
 </style>

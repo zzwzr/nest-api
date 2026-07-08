@@ -84,8 +84,12 @@ func ValidColumn(column string) bool {
 var (
 	Hooks        [1]ent.Hook
 	Interceptors [1]ent.Interceptor
+	// DefaultName holds the default value on creation for the "name" field.
+	DefaultName string
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultOwnerID holds the default value on creation for the "owner_id" field.
+	DefaultOwnerID int64
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() utils.DateTime
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

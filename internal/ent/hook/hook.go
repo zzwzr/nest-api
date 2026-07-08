@@ -8,6 +8,54 @@ import (
 	"nest-api/internal/ent"
 )
 
+// The APIFunc type is an adapter to allow the use of ordinary
+// function as API mutator.
+type APIFunc func(context.Context, *ent.APIMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f APIFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.APIMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.APIMutation", m)
+}
+
+// The EnvironmentFunc type is an adapter to allow the use of ordinary
+// function as Environment mutator.
+type EnvironmentFunc func(context.Context, *ent.EnvironmentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EnvironmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EnvironmentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EnvironmentMutation", m)
+}
+
+// The EnvironmentVariableFunc type is an adapter to allow the use of ordinary
+// function as EnvironmentVariable mutator.
+type EnvironmentVariableFunc func(context.Context, *ent.EnvironmentVariableMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EnvironmentVariableFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EnvironmentVariableMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EnvironmentVariableMutation", m)
+}
+
+// The FolderFunc type is an adapter to allow the use of ordinary
+// function as Folder mutator.
+type FolderFunc func(context.Context, *ent.FolderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FolderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FolderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FolderMutation", m)
+}
+
 // The ProjectFunc type is an adapter to allow the use of ordinary
 // function as Project mutator.
 type ProjectFunc func(context.Context, *ent.ProjectMutation) (ent.Value, error)

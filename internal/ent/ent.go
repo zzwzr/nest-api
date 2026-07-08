@@ -6,6 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/environmentvariable"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -76,10 +80,14 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			project.Table:         project.ValidColumn,
-			user.Table:            user.ValidColumn,
-			workspace.Table:       workspace.ValidColumn,
-			workspacemember.Table: workspacemember.ValidColumn,
+			api.Table:                 api.ValidColumn,
+			environment.Table:         environment.ValidColumn,
+			environmentvariable.Table: environmentvariable.ValidColumn,
+			folder.Table:              folder.ValidColumn,
+			project.Table:             project.ValidColumn,
+			user.Table:                user.ValidColumn,
+			workspace.Table:           workspace.ValidColumn,
+			workspacemember.Table:     workspacemember.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

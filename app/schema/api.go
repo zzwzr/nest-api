@@ -1,0 +1,128 @@
+package schema
+
+import (
+	"nest-api/app/schema/mixin"
+	"nest-api/internal/utils"
+
+	"entgo.io/ent"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+)
+
+type API struct {
+	ent.Schema
+}
+
+func (API) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "interfaces"},
+	}
+}
+
+func (API) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.SoftDeleteMixin{},
+	}
+}
+
+func (API) Fields() []ent.Field {
+	return []ent.Field{
+		field.Int64("id").
+			Positive().
+			Unique().
+			Comment("主键"),
+
+		field.Int64("project_id").
+			Default(0).
+			Comment("项目 ID"),
+
+		field.Int64("folder_id").
+			Default(0).
+			Comment("所属文件夹 ID"),
+
+		field.String("name").
+			MaxLen(100).
+			Default("").
+			Comment("接口名称"),
+
+		field.String("method").
+			MaxLen(10).
+			Default("").
+			Comment("HTTP 方法"),
+
+		field.String("url").
+			MaxLen(500).
+			Default("").
+			Comment("接口路径"),
+
+		field.Uint8("status").
+			Default(2).
+			Comment("状态：1=已发布，2=测试中"),
+
+		field.Int("sort_order").
+			Default(0).
+			Comment("排序"),
+
+		field.Int64("created_by").
+			Default(0).
+			Comment("创建者用户 ID"),
+
+		field.Int64("updated_by").
+			Default(0).
+			Comment("最后修改者用户 ID"),
+
+		field.Time("created_at").
+			GoType(utils.DateTime{}).
+			Default(utils.Now).
+			SchemaType(map[string]string{
+				dialect.Postgres: "timestamp(0) without time zone",
+			}).
+			Comment("创建时间"),
+
+		field.Time("updated_at").
+			GoType(utils.DateTime{}).
+			Default(utils.Now).
+			UpdateDefault(utils.Now).
+			SchemaType(map[string]string{
+				dialect.Postgres: "timestamp(0) without time zone",
+			}).
+			Comment("更新时间"),
+
+		field.Time("deleted_at").
+			Optional().
+			Nillable().
+			GoType(utils.DateTime{}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "timestamp(0) without time zone",
+			}).
+			Comment("删除时间"),
+	}
+}
+
+func (API) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("project", Project.Type).
+			Ref("interfaces").
+			Unique().
+			Required().
+			Field("project_id"),
+		edge.From("folder", Folder.Type).
+			Ref("interfaces").
+			Unique().
+			Required().
+			Field("folder_id"),
+		edge.From("creator", User.Type).
+			Ref("created_interfaces").
+			Unique().
+			Required().
+			Field("created_by"),
+		edge.From("updater", User.Type).
+			Ref("updated_interfaces").
+			Unique().
+			Required().
+			Field("updated_by"),
+	}
+}

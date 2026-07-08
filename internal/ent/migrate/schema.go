@@ -3,20 +3,165 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
 
 var (
-	// ProjectsColumns holds the columns for the "projects" table.
-	ProjectsColumns = []*schema.Column{
+	// InterfacesColumns holds the columns for the "interfaces" table.
+	InterfacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "name", Type: field.TypeString, Size: 100},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "method", Type: field.TypeString, Size: 10, Default: ""},
+		{Name: "url", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "status", Type: field.TypeUint8, Default: 2},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "folder_id", Type: field.TypeInt64, Default: 0},
+		{Name: "project_id", Type: field.TypeInt64, Default: 0},
+		{Name: "created_by", Type: field.TypeInt64, Default: 0},
+		{Name: "updated_by", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfacesTable holds the schema information for the "interfaces" table.
+	InterfacesTable = &schema.Table{
+		Name:       "interfaces",
+		Columns:    InterfacesColumns,
+		PrimaryKey: []*schema.Column{InterfacesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interfaces_folders_interfaces",
+				Columns:    []*schema.Column{InterfacesColumns[9]},
+				RefColumns: []*schema.Column{FoldersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "interfaces_projects_interfaces",
+				Columns:    []*schema.Column{InterfacesColumns[10]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "interfaces_users_created_interfaces",
+				Columns:    []*schema.Column{InterfacesColumns[11]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "interfaces_users_updated_interfaces",
+				Columns:    []*schema.Column{InterfacesColumns[12]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// EnvironmentsColumns holds the columns for the "environments" table.
+	EnvironmentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "base_url", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "is_default", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "project_id", Type: field.TypeInt64, Default: 0},
+		{Name: "created_by", Type: field.TypeInt64, Default: 0},
+	}
+	// EnvironmentsTable holds the schema information for the "environments" table.
+	EnvironmentsTable = &schema.Table{
+		Name:       "environments",
+		Columns:    EnvironmentsColumns,
+		PrimaryKey: []*schema.Column{EnvironmentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "environments_projects_environments",
+				Columns:    []*schema.Column{EnvironmentsColumns[7]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "environments_users_created_environments",
+				Columns:    []*schema.Column{EnvironmentsColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// EnvironmentVariablesColumns holds the columns for the "environment_variables" table.
+	EnvironmentVariablesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "key", Type: field.TypeString, Size: 200, Default: ""},
+		{Name: "value", Type: field.TypeString, Size: 2000, Default: ""},
+		{Name: "description", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "environment_id", Type: field.TypeInt64, Default: 0},
+		{Name: "created_by", Type: field.TypeInt64, Default: 0},
+	}
+	// EnvironmentVariablesTable holds the schema information for the "environment_variables" table.
+	EnvironmentVariablesTable = &schema.Table{
+		Name:       "environment_variables",
+		Columns:    EnvironmentVariablesColumns,
+		PrimaryKey: []*schema.Column{EnvironmentVariablesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "environment_variables_environments_variables",
+				Columns:    []*schema.Column{EnvironmentVariablesColumns[7]},
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "environment_variables_users_created_environment_variables",
+				Columns:    []*schema.Column{EnvironmentVariablesColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// FoldersColumns holds the columns for the "folders" table.
+	FoldersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "parent_id", Type: field.TypeInt64, Default: 0},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "project_id", Type: field.TypeInt64, Default: 0},
 		{Name: "created_by", Type: field.TypeInt64},
-		{Name: "workspace_id", Type: field.TypeInt64},
+	}
+	// FoldersTable holds the schema information for the "folders" table.
+	FoldersTable = &schema.Table{
+		Name:       "folders",
+		Columns:    FoldersColumns,
+		PrimaryKey: []*schema.Column{FoldersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "folders_projects_folders",
+				Columns:    []*schema.Column{FoldersColumns[7]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "folders_users_created_folders",
+				Columns:    []*schema.Column{FoldersColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ProjectsColumns holds the columns for the "projects" table.
+	ProjectsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "created_by", Type: field.TypeInt64, Default: 0},
+		{Name: "workspace_id", Type: field.TypeInt64, Default: 0},
 	}
 	// ProjectsTable holds the schema information for the "projects" table.
 	ProjectsTable = &schema.Table{
@@ -62,11 +207,11 @@ var (
 	// WorkspacesColumns holds the columns for the "workspaces" table.
 	WorkspacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "name", Type: field.TypeString, Size: 100},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
-		{Name: "owner_id", Type: field.TypeInt64},
+		{Name: "owner_id", Type: field.TypeInt64, Default: 0},
 	}
 	// WorkspacesTable holds the schema information for the "workspaces" table.
 	WorkspacesTable = &schema.Table{
@@ -89,8 +234,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
-		{Name: "user_id", Type: field.TypeInt64},
-		{Name: "workspace_id", Type: field.TypeInt64},
+		{Name: "user_id", Type: field.TypeInt64, Default: 0},
+		{Name: "workspace_id", Type: field.TypeInt64, Default: 0},
 	}
 	// WorkspaceMembersTable holds the schema information for the "workspace_members" table.
 	WorkspaceMembersTable = &schema.Table{
@@ -114,6 +259,10 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		InterfacesTable,
+		EnvironmentsTable,
+		EnvironmentVariablesTable,
+		FoldersTable,
 		ProjectsTable,
 		UsersTable,
 		WorkspacesTable,
@@ -122,6 +271,28 @@ var (
 )
 
 func init() {
+	InterfacesTable.ForeignKeys[0].RefTable = FoldersTable
+	InterfacesTable.ForeignKeys[1].RefTable = ProjectsTable
+	InterfacesTable.ForeignKeys[2].RefTable = UsersTable
+	InterfacesTable.ForeignKeys[3].RefTable = UsersTable
+	InterfacesTable.Annotation = &entsql.Annotation{
+		Table: "interfaces",
+	}
+	EnvironmentsTable.ForeignKeys[0].RefTable = ProjectsTable
+	EnvironmentsTable.ForeignKeys[1].RefTable = UsersTable
+	EnvironmentsTable.Annotation = &entsql.Annotation{
+		Table: "environments",
+	}
+	EnvironmentVariablesTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	EnvironmentVariablesTable.ForeignKeys[1].RefTable = UsersTable
+	EnvironmentVariablesTable.Annotation = &entsql.Annotation{
+		Table: "environment_variables",
+	}
+	FoldersTable.ForeignKeys[0].RefTable = ProjectsTable
+	FoldersTable.ForeignKeys[1].RefTable = UsersTable
+	FoldersTable.Annotation = &entsql.Annotation{
+		Table: "folders",
+	}
 	ProjectsTable.ForeignKeys[0].RefTable = UsersTable
 	ProjectsTable.ForeignKeys[1].RefTable = WorkspacesTable
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable

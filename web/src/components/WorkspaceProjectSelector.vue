@@ -168,7 +168,6 @@ function handleCreateProject() {
       </ul>
       <div class="ws-project-popover__footer">
         <button type="button" class="ws-project-popover__create" @click="handleCreateProject">
-          <el-icon :size="16"><Plus /></el-icon>
           <span>{{ t('workspace.createProject') }}</span>
         </button>
       </div>

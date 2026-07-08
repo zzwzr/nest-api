@@ -11,6 +11,10 @@ import (
 
 	"nest-api/internal/ent/migrate"
 
+	"nest-api/internal/ent/api"
+	"nest-api/internal/ent/environment"
+	"nest-api/internal/ent/environmentvariable"
+	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -27,6 +31,14 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// API is the client for interacting with the API builders.
+	API *APIClient
+	// Environment is the client for interacting with the Environment builders.
+	Environment *EnvironmentClient
+	// EnvironmentVariable is the client for interacting with the EnvironmentVariable builders.
+	EnvironmentVariable *EnvironmentVariableClient
+	// Folder is the client for interacting with the Folder builders.
+	Folder *FolderClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -46,6 +58,10 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.API = NewAPIClient(c.config)
+	c.Environment = NewEnvironmentClient(c.config)
+	c.EnvironmentVariable = NewEnvironmentVariableClient(c.config)
+	c.Folder = NewFolderClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
@@ -140,12 +156,16 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		Project:         NewProjectClient(cfg),
-		User:            NewUserClient(cfg),
-		Workspace:       NewWorkspaceClient(cfg),
-		WorkspaceMember: NewWorkspaceMemberClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		API:                 NewAPIClient(cfg),
+		Environment:         NewEnvironmentClient(cfg),
+		EnvironmentVariable: NewEnvironmentVariableClient(cfg),
+		Folder:              NewFolderClient(cfg),
+		Project:             NewProjectClient(cfg),
+		User:                NewUserClient(cfg),
+		Workspace:           NewWorkspaceClient(cfg),
+		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
 	}, nil
 }
 
@@ -163,19 +183,23 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		Project:         NewProjectClient(cfg),
-		User:            NewUserClient(cfg),
-		Workspace:       NewWorkspaceClient(cfg),
-		WorkspaceMember: NewWorkspaceMemberClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		API:                 NewAPIClient(cfg),
+		Environment:         NewEnvironmentClient(cfg),
+		EnvironmentVariable: NewEnvironmentVariableClient(cfg),
+		Folder:              NewFolderClient(cfg),
+		Project:             NewProjectClient(cfg),
+		User:                NewUserClient(cfg),
+		Workspace:           NewWorkspaceClient(cfg),
+		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Project.
+//		API.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -197,24 +221,36 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Project.Use(hooks...)
-	c.User.Use(hooks...)
-	c.Workspace.Use(hooks...)
-	c.WorkspaceMember.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.Project, c.User,
+		c.Workspace, c.WorkspaceMember,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Project.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
-	c.Workspace.Intercept(interceptors...)
-	c.WorkspaceMember.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.Project, c.User,
+		c.Workspace, c.WorkspaceMember,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *APIMutation:
+		return c.API.mutate(ctx, m)
+	case *EnvironmentMutation:
+		return c.Environment.mutate(ctx, m)
+	case *EnvironmentVariableMutation:
+		return c.EnvironmentVariable.mutate(ctx, m)
+	case *FolderMutation:
+		return c.Folder.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
 	case *UserMutation:
@@ -225,6 +261,738 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.WorkspaceMember.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// APIClient is a client for the API schema.
+type APIClient struct {
+	config
+}
+
+// NewAPIClient returns a client for the API from the given config.
+func NewAPIClient(c config) *APIClient {
+	return &APIClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `api.Hooks(f(g(h())))`.
+func (c *APIClient) Use(hooks ...Hook) {
+	c.hooks.API = append(c.hooks.API, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `api.Intercept(f(g(h())))`.
+func (c *APIClient) Intercept(interceptors ...Interceptor) {
+	c.inters.API = append(c.inters.API, interceptors...)
+}
+
+// Create returns a builder for creating a API entity.
+func (c *APIClient) Create() *APICreate {
+	mutation := newAPIMutation(c.config, OpCreate)
+	return &APICreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of API entities.
+func (c *APIClient) CreateBulk(builders ...*APICreate) *APICreateBulk {
+	return &APICreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *APIClient) MapCreateBulk(slice any, setFunc func(*APICreate, int)) *APICreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &APICreateBulk{err: fmt.Errorf("calling to APIClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*APICreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &APICreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for API.
+func (c *APIClient) Update() *APIUpdate {
+	mutation := newAPIMutation(c.config, OpUpdate)
+	return &APIUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *APIClient) UpdateOne(_m *API) *APIUpdateOne {
+	mutation := newAPIMutation(c.config, OpUpdateOne, withAPI(_m))
+	return &APIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *APIClient) UpdateOneID(id int64) *APIUpdateOne {
+	mutation := newAPIMutation(c.config, OpUpdateOne, withAPIID(id))
+	return &APIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for API.
+func (c *APIClient) Delete() *APIDelete {
+	mutation := newAPIMutation(c.config, OpDelete)
+	return &APIDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *APIClient) DeleteOne(_m *API) *APIDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *APIClient) DeleteOneID(id int64) *APIDeleteOne {
+	builder := c.Delete().Where(api.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &APIDeleteOne{builder}
+}
+
+// Query returns a query builder for API.
+func (c *APIClient) Query() *APIQuery {
+	return &APIQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAPI},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a API entity by its id.
+func (c *APIClient) Get(ctx context.Context, id int64) (*API, error) {
+	return c.Query().Where(api.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *APIClient) GetX(ctx context.Context, id int64) *API {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a API.
+func (c *APIClient) QueryProject(_m *API) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, api.ProjectTable, api.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFolder queries the folder edge of a API.
+func (c *APIClient) QueryFolder(_m *API) *FolderQuery {
+	query := (&FolderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(folder.Table, folder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, api.FolderTable, api.FolderColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreator queries the creator edge of a API.
+func (c *APIClient) QueryCreator(_m *API) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, api.CreatorTable, api.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUpdater queries the updater edge of a API.
+func (c *APIClient) QueryUpdater(_m *API) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, api.UpdaterTable, api.UpdaterColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *APIClient) Hooks() []Hook {
+	hooks := c.hooks.API
+	return append(hooks[:len(hooks):len(hooks)], api.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *APIClient) Interceptors() []Interceptor {
+	inters := c.inters.API
+	return append(inters[:len(inters):len(inters)], api.Interceptors[:]...)
+}
+
+func (c *APIClient) mutate(ctx context.Context, m *APIMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&APICreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&APIUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&APIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&APIDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown API mutation op: %q", m.Op())
+	}
+}
+
+// EnvironmentClient is a client for the Environment schema.
+type EnvironmentClient struct {
+	config
+}
+
+// NewEnvironmentClient returns a client for the Environment from the given config.
+func NewEnvironmentClient(c config) *EnvironmentClient {
+	return &EnvironmentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `environment.Hooks(f(g(h())))`.
+func (c *EnvironmentClient) Use(hooks ...Hook) {
+	c.hooks.Environment = append(c.hooks.Environment, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `environment.Intercept(f(g(h())))`.
+func (c *EnvironmentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Environment = append(c.inters.Environment, interceptors...)
+}
+
+// Create returns a builder for creating a Environment entity.
+func (c *EnvironmentClient) Create() *EnvironmentCreate {
+	mutation := newEnvironmentMutation(c.config, OpCreate)
+	return &EnvironmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Environment entities.
+func (c *EnvironmentClient) CreateBulk(builders ...*EnvironmentCreate) *EnvironmentCreateBulk {
+	return &EnvironmentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EnvironmentClient) MapCreateBulk(slice any, setFunc func(*EnvironmentCreate, int)) *EnvironmentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EnvironmentCreateBulk{err: fmt.Errorf("calling to EnvironmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EnvironmentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EnvironmentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Environment.
+func (c *EnvironmentClient) Update() *EnvironmentUpdate {
+	mutation := newEnvironmentMutation(c.config, OpUpdate)
+	return &EnvironmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EnvironmentClient) UpdateOne(_m *Environment) *EnvironmentUpdateOne {
+	mutation := newEnvironmentMutation(c.config, OpUpdateOne, withEnvironment(_m))
+	return &EnvironmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EnvironmentClient) UpdateOneID(id int64) *EnvironmentUpdateOne {
+	mutation := newEnvironmentMutation(c.config, OpUpdateOne, withEnvironmentID(id))
+	return &EnvironmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Environment.
+func (c *EnvironmentClient) Delete() *EnvironmentDelete {
+	mutation := newEnvironmentMutation(c.config, OpDelete)
+	return &EnvironmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EnvironmentClient) DeleteOne(_m *Environment) *EnvironmentDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EnvironmentClient) DeleteOneID(id int64) *EnvironmentDeleteOne {
+	builder := c.Delete().Where(environment.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EnvironmentDeleteOne{builder}
+}
+
+// Query returns a query builder for Environment.
+func (c *EnvironmentClient) Query() *EnvironmentQuery {
+	return &EnvironmentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEnvironment},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Environment entity by its id.
+func (c *EnvironmentClient) Get(ctx context.Context, id int64) (*Environment, error) {
+	return c.Query().Where(environment.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EnvironmentClient) GetX(ctx context.Context, id int64) *Environment {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a Environment.
+func (c *EnvironmentClient) QueryProject(_m *Environment) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, environment.ProjectTable, environment.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreator queries the creator edge of a Environment.
+func (c *EnvironmentClient) QueryCreator(_m *Environment) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, environment.CreatorTable, environment.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryVariables queries the variables edge of a Environment.
+func (c *EnvironmentClient) QueryVariables(_m *Environment) *EnvironmentVariableQuery {
+	query := (&EnvironmentVariableClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(environmentvariable.Table, environmentvariable.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.VariablesTable, environment.VariablesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EnvironmentClient) Hooks() []Hook {
+	hooks := c.hooks.Environment
+	return append(hooks[:len(hooks):len(hooks)], environment.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *EnvironmentClient) Interceptors() []Interceptor {
+	inters := c.inters.Environment
+	return append(inters[:len(inters):len(inters)], environment.Interceptors[:]...)
+}
+
+func (c *EnvironmentClient) mutate(ctx context.Context, m *EnvironmentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EnvironmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EnvironmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EnvironmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EnvironmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Environment mutation op: %q", m.Op())
+	}
+}
+
+// EnvironmentVariableClient is a client for the EnvironmentVariable schema.
+type EnvironmentVariableClient struct {
+	config
+}
+
+// NewEnvironmentVariableClient returns a client for the EnvironmentVariable from the given config.
+func NewEnvironmentVariableClient(c config) *EnvironmentVariableClient {
+	return &EnvironmentVariableClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `environmentvariable.Hooks(f(g(h())))`.
+func (c *EnvironmentVariableClient) Use(hooks ...Hook) {
+	c.hooks.EnvironmentVariable = append(c.hooks.EnvironmentVariable, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `environmentvariable.Intercept(f(g(h())))`.
+func (c *EnvironmentVariableClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EnvironmentVariable = append(c.inters.EnvironmentVariable, interceptors...)
+}
+
+// Create returns a builder for creating a EnvironmentVariable entity.
+func (c *EnvironmentVariableClient) Create() *EnvironmentVariableCreate {
+	mutation := newEnvironmentVariableMutation(c.config, OpCreate)
+	return &EnvironmentVariableCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EnvironmentVariable entities.
+func (c *EnvironmentVariableClient) CreateBulk(builders ...*EnvironmentVariableCreate) *EnvironmentVariableCreateBulk {
+	return &EnvironmentVariableCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EnvironmentVariableClient) MapCreateBulk(slice any, setFunc func(*EnvironmentVariableCreate, int)) *EnvironmentVariableCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EnvironmentVariableCreateBulk{err: fmt.Errorf("calling to EnvironmentVariableClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EnvironmentVariableCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EnvironmentVariableCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EnvironmentVariable.
+func (c *EnvironmentVariableClient) Update() *EnvironmentVariableUpdate {
+	mutation := newEnvironmentVariableMutation(c.config, OpUpdate)
+	return &EnvironmentVariableUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EnvironmentVariableClient) UpdateOne(_m *EnvironmentVariable) *EnvironmentVariableUpdateOne {
+	mutation := newEnvironmentVariableMutation(c.config, OpUpdateOne, withEnvironmentVariable(_m))
+	return &EnvironmentVariableUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EnvironmentVariableClient) UpdateOneID(id int64) *EnvironmentVariableUpdateOne {
+	mutation := newEnvironmentVariableMutation(c.config, OpUpdateOne, withEnvironmentVariableID(id))
+	return &EnvironmentVariableUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EnvironmentVariable.
+func (c *EnvironmentVariableClient) Delete() *EnvironmentVariableDelete {
+	mutation := newEnvironmentVariableMutation(c.config, OpDelete)
+	return &EnvironmentVariableDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EnvironmentVariableClient) DeleteOne(_m *EnvironmentVariable) *EnvironmentVariableDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EnvironmentVariableClient) DeleteOneID(id int64) *EnvironmentVariableDeleteOne {
+	builder := c.Delete().Where(environmentvariable.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EnvironmentVariableDeleteOne{builder}
+}
+
+// Query returns a query builder for EnvironmentVariable.
+func (c *EnvironmentVariableClient) Query() *EnvironmentVariableQuery {
+	return &EnvironmentVariableQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEnvironmentVariable},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EnvironmentVariable entity by its id.
+func (c *EnvironmentVariableClient) Get(ctx context.Context, id int64) (*EnvironmentVariable, error) {
+	return c.Query().Where(environmentvariable.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EnvironmentVariableClient) GetX(ctx context.Context, id int64) *EnvironmentVariable {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEnvironment queries the environment edge of a EnvironmentVariable.
+func (c *EnvironmentVariableClient) QueryEnvironment(_m *EnvironmentVariable) *EnvironmentQuery {
+	query := (&EnvironmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environmentvariable.Table, environmentvariable.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, environmentvariable.EnvironmentTable, environmentvariable.EnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreator queries the creator edge of a EnvironmentVariable.
+func (c *EnvironmentVariableClient) QueryCreator(_m *EnvironmentVariable) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environmentvariable.Table, environmentvariable.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, environmentvariable.CreatorTable, environmentvariable.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *EnvironmentVariableClient) Hooks() []Hook {
+	hooks := c.hooks.EnvironmentVariable
+	return append(hooks[:len(hooks):len(hooks)], environmentvariable.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *EnvironmentVariableClient) Interceptors() []Interceptor {
+	inters := c.inters.EnvironmentVariable
+	return append(inters[:len(inters):len(inters)], environmentvariable.Interceptors[:]...)
+}
+
+func (c *EnvironmentVariableClient) mutate(ctx context.Context, m *EnvironmentVariableMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EnvironmentVariableCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EnvironmentVariableUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EnvironmentVariableUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EnvironmentVariableDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EnvironmentVariable mutation op: %q", m.Op())
+	}
+}
+
+// FolderClient is a client for the Folder schema.
+type FolderClient struct {
+	config
+}
+
+// NewFolderClient returns a client for the Folder from the given config.
+func NewFolderClient(c config) *FolderClient {
+	return &FolderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `folder.Hooks(f(g(h())))`.
+func (c *FolderClient) Use(hooks ...Hook) {
+	c.hooks.Folder = append(c.hooks.Folder, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `folder.Intercept(f(g(h())))`.
+func (c *FolderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Folder = append(c.inters.Folder, interceptors...)
+}
+
+// Create returns a builder for creating a Folder entity.
+func (c *FolderClient) Create() *FolderCreate {
+	mutation := newFolderMutation(c.config, OpCreate)
+	return &FolderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Folder entities.
+func (c *FolderClient) CreateBulk(builders ...*FolderCreate) *FolderCreateBulk {
+	return &FolderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *FolderClient) MapCreateBulk(slice any, setFunc func(*FolderCreate, int)) *FolderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &FolderCreateBulk{err: fmt.Errorf("calling to FolderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*FolderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &FolderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Folder.
+func (c *FolderClient) Update() *FolderUpdate {
+	mutation := newFolderMutation(c.config, OpUpdate)
+	return &FolderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FolderClient) UpdateOne(_m *Folder) *FolderUpdateOne {
+	mutation := newFolderMutation(c.config, OpUpdateOne, withFolder(_m))
+	return &FolderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FolderClient) UpdateOneID(id int64) *FolderUpdateOne {
+	mutation := newFolderMutation(c.config, OpUpdateOne, withFolderID(id))
+	return &FolderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Folder.
+func (c *FolderClient) Delete() *FolderDelete {
+	mutation := newFolderMutation(c.config, OpDelete)
+	return &FolderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *FolderClient) DeleteOne(_m *Folder) *FolderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *FolderClient) DeleteOneID(id int64) *FolderDeleteOne {
+	builder := c.Delete().Where(folder.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FolderDeleteOne{builder}
+}
+
+// Query returns a query builder for Folder.
+func (c *FolderClient) Query() *FolderQuery {
+	return &FolderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeFolder},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Folder entity by its id.
+func (c *FolderClient) Get(ctx context.Context, id int64) (*Folder, error) {
+	return c.Query().Where(folder.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FolderClient) GetX(ctx context.Context, id int64) *Folder {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a Folder.
+func (c *FolderClient) QueryProject(_m *Folder) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(folder.Table, folder.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, folder.ProjectTable, folder.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreator queries the creator edge of a Folder.
+func (c *FolderClient) QueryCreator(_m *Folder) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(folder.Table, folder.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, folder.CreatorTable, folder.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInterfaces queries the interfaces edge of a Folder.
+func (c *FolderClient) QueryInterfaces(_m *Folder) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(folder.Table, folder.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, folder.InterfacesTable, folder.InterfacesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *FolderClient) Hooks() []Hook {
+	hooks := c.hooks.Folder
+	return append(hooks[:len(hooks):len(hooks)], folder.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *FolderClient) Interceptors() []Interceptor {
+	inters := c.inters.Folder
+	return append(inters[:len(inters):len(inters)], folder.Interceptors[:]...)
+}
+
+func (c *FolderClient) mutate(ctx context.Context, m *FolderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&FolderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&FolderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&FolderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&FolderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Folder mutation op: %q", m.Op())
 	}
 }
 
@@ -361,6 +1129,54 @@ func (c *ProjectClient) QueryCreator(_m *Project) *UserQuery {
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, project.CreatorTable, project.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFolders queries the folders edge of a Project.
+func (c *ProjectClient) QueryFolders(_m *Project) *FolderQuery {
+	query := (&FolderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(folder.Table, folder.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.FoldersTable, project.FoldersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInterfaces queries the interfaces edge of a Project.
+func (c *ProjectClient) QueryInterfaces(_m *Project) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.InterfacesTable, project.InterfacesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironments queries the environments edge of a Project.
+func (c *ProjectClient) QueryEnvironments(_m *Project) *EnvironmentQuery {
+	query := (&EnvironmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.EnvironmentsTable, project.EnvironmentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -544,6 +1360,86 @@ func (c *UserClient) QueryCreatedProjects(_m *User) *ProjectQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedProjectsTable, user.CreatedProjectsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedFolders queries the created_folders edge of a User.
+func (c *UserClient) QueryCreatedFolders(_m *User) *FolderQuery {
+	query := (&FolderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(folder.Table, folder.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedFoldersTable, user.CreatedFoldersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedInterfaces queries the created_interfaces edge of a User.
+func (c *UserClient) QueryCreatedInterfaces(_m *User) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedInterfacesTable, user.CreatedInterfacesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUpdatedInterfaces queries the updated_interfaces edge of a User.
+func (c *UserClient) QueryUpdatedInterfaces(_m *User) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.UpdatedInterfacesTable, user.UpdatedInterfacesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedEnvironments queries the created_environments edge of a User.
+func (c *UserClient) QueryCreatedEnvironments(_m *User) *EnvironmentQuery {
+	query := (&EnvironmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedEnvironmentsTable, user.CreatedEnvironmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedEnvironmentVariables queries the created_environment_variables edge of a User.
+func (c *UserClient) QueryCreatedEnvironmentVariables(_m *User) *EnvironmentVariableQuery {
+	query := (&EnvironmentVariableClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(environmentvariable.Table, environmentvariable.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedEnvironmentVariablesTable, user.CreatedEnvironmentVariablesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -931,9 +1827,11 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Project, User, Workspace, WorkspaceMember []ent.Hook
+		API, Environment, EnvironmentVariable, Folder, Project, User, Workspace,
+		WorkspaceMember []ent.Hook
 	}
 	inters struct {
-		Project, User, Workspace, WorkspaceMember []ent.Interceptor
+		API, Environment, EnvironmentVariable, Folder, Project, User, Workspace,
+		WorkspaceMember []ent.Interceptor
 	}
 )

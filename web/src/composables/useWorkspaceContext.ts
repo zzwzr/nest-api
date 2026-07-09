@@ -21,11 +21,13 @@ import { readWorkspaceLayout, writeWorkspaceLayout } from '@/utils/workspace-lay
 import type { StoredWorkspaceTab } from '@/utils/workspace-layout-storage'
 import type {
   InterfaceItem,
+  InterfaceDetail,
   ApiTreeNode,
   AppModule,
   EnvironmentItem,
   EnvironmentVariableItem,
   HttpMethod,
+  InterfaceStatus,
   ProjectItem,
   WorkspaceItem,
   WorkspaceTab,
@@ -458,6 +460,15 @@ export function useWorkspaceContext() {
     if (removedActive) {
       activateTab(tabId)
     }
+  }
+
+  function closeOtherTabs(tabId: string) {
+    if (!workspaceTabs.value.some((item) => item.id === tabId)) return
+
+    workspaceTabs.value = workspaceTabs.value.filter(
+      (item) => item.id === tabId || item.closable === false,
+    )
+    activateTab(tabId)
   }
 
   function closeAllTabs() {
@@ -909,7 +920,7 @@ export function useWorkspaceContext() {
     name: string,
     method: HttpMethod,
     url = '',
-    status: 1 | 2 = 1,
+    status: InterfaceStatus = 1,
   ) {
     if (!activeWorkspaceId.value || !activeProjectId.value) return
     await createInterface(activeWorkspaceId.value, activeProjectId.value, {
@@ -928,7 +939,19 @@ export function useWorkspaceContext() {
 
   async function submitUpdateInterface(
     interfaceId: number,
-    payload: { name: string; method: HttpMethod; url?: string; status?: number },
+    payload: {
+      folder_id?: number
+      name: string
+      method: HttpMethod
+      url?: string
+      status?: number
+      request_headers?: InterfaceDetail['request_headers']
+      request_body?: InterfaceDetail['request_body']
+      query_params?: InterfaceDetail['query_params']
+      response_headers?: InterfaceDetail['response_headers']
+      response_results?: InterfaceDetail['response_results']
+      response_examples?: InterfaceDetail['response_examples']
+    },
   ) {
     if (!activeWorkspaceId.value || !activeProjectId.value) return
     await updateInterface(
@@ -937,7 +960,10 @@ export function useWorkspaceContext() {
       interfaceId,
       payload,
     )
+    const tab = workspaceTabs.value.find((item) => item.id === `api-${interfaceId}`)
+    if (tab) tab.dirty = false
     await refreshApiData()
+    syncTabLabels()
   }
 
   async function submitDeleteInterface(interfaceId: number) {
@@ -1126,6 +1152,7 @@ export function useWorkspaceContext() {
     closeTab,
     closeTabsLeft,
     closeTabsRight,
+    closeOtherTabs,
     closeAllTabs,
     markActiveTabDirty,
     toggleNode,

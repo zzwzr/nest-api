@@ -27,6 +27,10 @@ const (
 	FieldURL = "url"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldRequestBodyFormat holds the string denoting the request_body_format field in the database.
+	FieldRequestBodyFormat = "request_body_format"
+	// FieldRequestBodyDataType holds the string denoting the request_body_data_type field in the database.
+	FieldRequestBodyDataType = "request_body_data_type"
 	// FieldSortOrder holds the string denoting the sort_order field in the database.
 	FieldSortOrder = "sort_order"
 	// FieldCreatedBy holds the string denoting the created_by field in the database.
@@ -47,6 +51,18 @@ const (
 	EdgeCreator = "creator"
 	// EdgeUpdater holds the string denoting the updater edge name in mutations.
 	EdgeUpdater = "updater"
+	// EdgeResponseHeaders holds the string denoting the response_headers edge name in mutations.
+	EdgeResponseHeaders = "response_headers"
+	// EdgeResponseResults holds the string denoting the response_results edge name in mutations.
+	EdgeResponseResults = "response_results"
+	// EdgeResponseExamples holds the string denoting the response_examples edge name in mutations.
+	EdgeResponseExamples = "response_examples"
+	// EdgeRequestHeaders holds the string denoting the request_headers edge name in mutations.
+	EdgeRequestHeaders = "request_headers"
+	// EdgeQueryParams holds the string denoting the query_params edge name in mutations.
+	EdgeQueryParams = "query_params"
+	// EdgeBodyFields holds the string denoting the body_fields edge name in mutations.
+	EdgeBodyFields = "body_fields"
 	// Table holds the table name of the api in the database.
 	Table = "interfaces"
 	// ProjectTable is the table that holds the project relation/edge.
@@ -77,6 +93,48 @@ const (
 	UpdaterInverseTable = "users"
 	// UpdaterColumn is the table column denoting the updater relation/edge.
 	UpdaterColumn = "updated_by"
+	// ResponseHeadersTable is the table that holds the response_headers relation/edge.
+	ResponseHeadersTable = "interface_headers"
+	// ResponseHeadersInverseTable is the table name for the InterfaceHeader entity.
+	// It exists in this package in order to avoid circular dependency with the "interfaceheader" package.
+	ResponseHeadersInverseTable = "interface_headers"
+	// ResponseHeadersColumn is the table column denoting the response_headers relation/edge.
+	ResponseHeadersColumn = "interface_id"
+	// ResponseResultsTable is the table that holds the response_results relation/edge.
+	ResponseResultsTable = "interface_results"
+	// ResponseResultsInverseTable is the table name for the InterfaceResult entity.
+	// It exists in this package in order to avoid circular dependency with the "interfaceresult" package.
+	ResponseResultsInverseTable = "interface_results"
+	// ResponseResultsColumn is the table column denoting the response_results relation/edge.
+	ResponseResultsColumn = "interface_id"
+	// ResponseExamplesTable is the table that holds the response_examples relation/edge.
+	ResponseExamplesTable = "interface_examples"
+	// ResponseExamplesInverseTable is the table name for the InterfaceExample entity.
+	// It exists in this package in order to avoid circular dependency with the "interfaceexample" package.
+	ResponseExamplesInverseTable = "interface_examples"
+	// ResponseExamplesColumn is the table column denoting the response_examples relation/edge.
+	ResponseExamplesColumn = "interface_id"
+	// RequestHeadersTable is the table that holds the request_headers relation/edge.
+	RequestHeadersTable = "interface_request_headers"
+	// RequestHeadersInverseTable is the table name for the InterfaceRequestHeader entity.
+	// It exists in this package in order to avoid circular dependency with the "interfacerequestheader" package.
+	RequestHeadersInverseTable = "interface_request_headers"
+	// RequestHeadersColumn is the table column denoting the request_headers relation/edge.
+	RequestHeadersColumn = "interface_id"
+	// QueryParamsTable is the table that holds the query_params relation/edge.
+	QueryParamsTable = "interface_query_params"
+	// QueryParamsInverseTable is the table name for the InterfaceQueryParam entity.
+	// It exists in this package in order to avoid circular dependency with the "interfacequeryparam" package.
+	QueryParamsInverseTable = "interface_query_params"
+	// QueryParamsColumn is the table column denoting the query_params relation/edge.
+	QueryParamsColumn = "interface_id"
+	// BodyFieldsTable is the table that holds the body_fields relation/edge.
+	BodyFieldsTable = "interface_body_fields"
+	// BodyFieldsInverseTable is the table name for the InterfaceBodyField entity.
+	// It exists in this package in order to avoid circular dependency with the "interfacebodyfield" package.
+	BodyFieldsInverseTable = "interface_body_fields"
+	// BodyFieldsColumn is the table column denoting the body_fields relation/edge.
+	BodyFieldsColumn = "interface_id"
 )
 
 // Columns holds all SQL columns for api fields.
@@ -88,6 +146,8 @@ var Columns = []string{
 	FieldMethod,
 	FieldURL,
 	FieldStatus,
+	FieldRequestBodyFormat,
+	FieldRequestBodyDataType,
 	FieldSortOrder,
 	FieldCreatedBy,
 	FieldUpdatedBy,
@@ -132,6 +192,14 @@ var (
 	URLValidator func(string) error
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus uint8
+	// DefaultRequestBodyFormat holds the default value on creation for the "request_body_format" field.
+	DefaultRequestBodyFormat string
+	// RequestBodyFormatValidator is a validator for the "request_body_format" field. It is called by the builders before save.
+	RequestBodyFormatValidator func(string) error
+	// DefaultRequestBodyDataType holds the default value on creation for the "request_body_data_type" field.
+	DefaultRequestBodyDataType string
+	// RequestBodyDataTypeValidator is a validator for the "request_body_data_type" field. It is called by the builders before save.
+	RequestBodyDataTypeValidator func(string) error
 	// DefaultSortOrder holds the default value on creation for the "sort_order" field.
 	DefaultSortOrder int
 	// DefaultCreatedBy holds the default value on creation for the "created_by" field.
@@ -184,6 +252,16 @@ func ByURL(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByRequestBodyFormat orders the results by the request_body_format field.
+func ByRequestBodyFormat(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequestBodyFormat, opts...).ToFunc()
+}
+
+// ByRequestBodyDataType orders the results by the request_body_data_type field.
+func ByRequestBodyDataType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequestBodyDataType, opts...).ToFunc()
 }
 
 // BySortOrder orders the results by the sort_order field.
@@ -243,6 +321,90 @@ func ByUpdaterField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUpdaterStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByResponseHeadersCount orders the results by response_headers count.
+func ByResponseHeadersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newResponseHeadersStep(), opts...)
+	}
+}
+
+// ByResponseHeaders orders the results by response_headers terms.
+func ByResponseHeaders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newResponseHeadersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByResponseResultsCount orders the results by response_results count.
+func ByResponseResultsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newResponseResultsStep(), opts...)
+	}
+}
+
+// ByResponseResults orders the results by response_results terms.
+func ByResponseResults(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newResponseResultsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByResponseExamplesCount orders the results by response_examples count.
+func ByResponseExamplesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newResponseExamplesStep(), opts...)
+	}
+}
+
+// ByResponseExamples orders the results by response_examples terms.
+func ByResponseExamples(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newResponseExamplesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByRequestHeadersCount orders the results by request_headers count.
+func ByRequestHeadersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRequestHeadersStep(), opts...)
+	}
+}
+
+// ByRequestHeaders orders the results by request_headers terms.
+func ByRequestHeaders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRequestHeadersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByQueryParamsCount orders the results by query_params count.
+func ByQueryParamsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newQueryParamsStep(), opts...)
+	}
+}
+
+// ByQueryParams orders the results by query_params terms.
+func ByQueryParams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newQueryParamsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByBodyFieldsCount orders the results by body_fields count.
+func ByBodyFieldsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newBodyFieldsStep(), opts...)
+	}
+}
+
+// ByBodyFields orders the results by body_fields terms.
+func ByBodyFields(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBodyFieldsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newProjectStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -269,5 +431,47 @@ func newUpdaterStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UpdaterInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, UpdaterTable, UpdaterColumn),
+	)
+}
+func newResponseHeadersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ResponseHeadersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ResponseHeadersTable, ResponseHeadersColumn),
+	)
+}
+func newResponseResultsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ResponseResultsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ResponseResultsTable, ResponseResultsColumn),
+	)
+}
+func newResponseExamplesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ResponseExamplesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ResponseExamplesTable, ResponseExamplesColumn),
+	)
+}
+func newRequestHeadersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RequestHeadersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RequestHeadersTable, RequestHeadersColumn),
+	)
+}
+func newQueryParamsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(QueryParamsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, QueryParamsTable, QueryParamsColumn),
+	)
+}
+func newBodyFieldsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BodyFieldsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, BodyFieldsTable, BodyFieldsColumn),
 	)
 }

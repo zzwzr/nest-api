@@ -8,6 +8,12 @@ import (
 	"fmt"
 	"nest-api/internal/ent/api"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/utils"
@@ -103,6 +109,34 @@ func (_c *APICreate) SetStatus(v uint8) *APICreate {
 func (_c *APICreate) SetNillableStatus(v *uint8) *APICreate {
 	if v != nil {
 		_c.SetStatus(*v)
+	}
+	return _c
+}
+
+// SetRequestBodyFormat sets the "request_body_format" field.
+func (_c *APICreate) SetRequestBodyFormat(v string) *APICreate {
+	_c.mutation.SetRequestBodyFormat(v)
+	return _c
+}
+
+// SetNillableRequestBodyFormat sets the "request_body_format" field if the given value is not nil.
+func (_c *APICreate) SetNillableRequestBodyFormat(v *string) *APICreate {
+	if v != nil {
+		_c.SetRequestBodyFormat(*v)
+	}
+	return _c
+}
+
+// SetRequestBodyDataType sets the "request_body_data_type" field.
+func (_c *APICreate) SetRequestBodyDataType(v string) *APICreate {
+	_c.mutation.SetRequestBodyDataType(v)
+	return _c
+}
+
+// SetNillableRequestBodyDataType sets the "request_body_data_type" field if the given value is not nil.
+func (_c *APICreate) SetNillableRequestBodyDataType(v *string) *APICreate {
+	if v != nil {
+		_c.SetRequestBodyDataType(*v)
 	}
 	return _c
 }
@@ -229,6 +263,96 @@ func (_c *APICreate) SetUpdater(v *User) *APICreate {
 	return _c.SetUpdaterID(v.ID)
 }
 
+// AddResponseHeaderIDs adds the "response_headers" edge to the InterfaceHeader entity by IDs.
+func (_c *APICreate) AddResponseHeaderIDs(ids ...int64) *APICreate {
+	_c.mutation.AddResponseHeaderIDs(ids...)
+	return _c
+}
+
+// AddResponseHeaders adds the "response_headers" edges to the InterfaceHeader entity.
+func (_c *APICreate) AddResponseHeaders(v ...*InterfaceHeader) *APICreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddResponseHeaderIDs(ids...)
+}
+
+// AddResponseResultIDs adds the "response_results" edge to the InterfaceResult entity by IDs.
+func (_c *APICreate) AddResponseResultIDs(ids ...int64) *APICreate {
+	_c.mutation.AddResponseResultIDs(ids...)
+	return _c
+}
+
+// AddResponseResults adds the "response_results" edges to the InterfaceResult entity.
+func (_c *APICreate) AddResponseResults(v ...*InterfaceResult) *APICreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddResponseResultIDs(ids...)
+}
+
+// AddResponseExampleIDs adds the "response_examples" edge to the InterfaceExample entity by IDs.
+func (_c *APICreate) AddResponseExampleIDs(ids ...int64) *APICreate {
+	_c.mutation.AddResponseExampleIDs(ids...)
+	return _c
+}
+
+// AddResponseExamples adds the "response_examples" edges to the InterfaceExample entity.
+func (_c *APICreate) AddResponseExamples(v ...*InterfaceExample) *APICreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddResponseExampleIDs(ids...)
+}
+
+// AddRequestHeaderIDs adds the "request_headers" edge to the InterfaceRequestHeader entity by IDs.
+func (_c *APICreate) AddRequestHeaderIDs(ids ...int64) *APICreate {
+	_c.mutation.AddRequestHeaderIDs(ids...)
+	return _c
+}
+
+// AddRequestHeaders adds the "request_headers" edges to the InterfaceRequestHeader entity.
+func (_c *APICreate) AddRequestHeaders(v ...*InterfaceRequestHeader) *APICreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRequestHeaderIDs(ids...)
+}
+
+// AddQueryParamIDs adds the "query_params" edge to the InterfaceQueryParam entity by IDs.
+func (_c *APICreate) AddQueryParamIDs(ids ...int64) *APICreate {
+	_c.mutation.AddQueryParamIDs(ids...)
+	return _c
+}
+
+// AddQueryParams adds the "query_params" edges to the InterfaceQueryParam entity.
+func (_c *APICreate) AddQueryParams(v ...*InterfaceQueryParam) *APICreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddQueryParamIDs(ids...)
+}
+
+// AddBodyFieldIDs adds the "body_fields" edge to the InterfaceBodyField entity by IDs.
+func (_c *APICreate) AddBodyFieldIDs(ids ...int64) *APICreate {
+	_c.mutation.AddBodyFieldIDs(ids...)
+	return _c
+}
+
+// AddBodyFields adds the "body_fields" edges to the InterfaceBodyField entity.
+func (_c *APICreate) AddBodyFields(v ...*InterfaceBodyField) *APICreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddBodyFieldIDs(ids...)
+}
+
 // Mutation returns the APIMutation object of the builder.
 func (_c *APICreate) Mutation() *APIMutation {
 	return _c.mutation
@@ -289,6 +413,14 @@ func (_c *APICreate) defaults() error {
 	if _, ok := _c.mutation.Status(); !ok {
 		v := api.DefaultStatus
 		_c.mutation.SetStatus(v)
+	}
+	if _, ok := _c.mutation.RequestBodyFormat(); !ok {
+		v := api.DefaultRequestBodyFormat
+		_c.mutation.SetRequestBodyFormat(v)
+	}
+	if _, ok := _c.mutation.RequestBodyDataType(); !ok {
+		v := api.DefaultRequestBodyDataType
+		_c.mutation.SetRequestBodyDataType(v)
 	}
 	if _, ok := _c.mutation.SortOrder(); !ok {
 		v := api.DefaultSortOrder
@@ -353,6 +485,22 @@ func (_c *APICreate) check() error {
 	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "API.status"`)}
+	}
+	if _, ok := _c.mutation.RequestBodyFormat(); !ok {
+		return &ValidationError{Name: "request_body_format", err: errors.New(`ent: missing required field "API.request_body_format"`)}
+	}
+	if v, ok := _c.mutation.RequestBodyFormat(); ok {
+		if err := api.RequestBodyFormatValidator(v); err != nil {
+			return &ValidationError{Name: "request_body_format", err: fmt.Errorf(`ent: validator failed for field "API.request_body_format": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.RequestBodyDataType(); !ok {
+		return &ValidationError{Name: "request_body_data_type", err: errors.New(`ent: missing required field "API.request_body_data_type"`)}
+	}
+	if v, ok := _c.mutation.RequestBodyDataType(); ok {
+		if err := api.RequestBodyDataTypeValidator(v); err != nil {
+			return &ValidationError{Name: "request_body_data_type", err: fmt.Errorf(`ent: validator failed for field "API.request_body_data_type": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.SortOrder(); !ok {
 		return &ValidationError{Name: "sort_order", err: errors.New(`ent: missing required field "API.sort_order"`)}
@@ -433,6 +581,14 @@ func (_c *APICreate) createSpec() (*API, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(api.FieldStatus, field.TypeUint8, value)
 		_node.Status = value
+	}
+	if value, ok := _c.mutation.RequestBodyFormat(); ok {
+		_spec.SetField(api.FieldRequestBodyFormat, field.TypeString, value)
+		_node.RequestBodyFormat = value
+	}
+	if value, ok := _c.mutation.RequestBodyDataType(); ok {
+		_spec.SetField(api.FieldRequestBodyDataType, field.TypeString, value)
+		_node.RequestBodyDataType = value
 	}
 	if value, ok := _c.mutation.SortOrder(); ok {
 		_spec.SetField(api.FieldSortOrder, field.TypeInt, value)
@@ -516,6 +672,102 @@ func (_c *APICreate) createSpec() (*API, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.UpdatedBy = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ResponseHeadersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseHeadersTable,
+			Columns: []string{api.ResponseHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ResponseResultsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseResultsTable,
+			Columns: []string{api.ResponseResultsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceresult.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ResponseExamplesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseExamplesTable,
+			Columns: []string{api.ResponseExamplesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceexample.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RequestHeadersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.RequestHeadersTable,
+			Columns: []string{api.RequestHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacerequestheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.QueryParamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.QueryParamsTable,
+			Columns: []string{api.QueryParamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacequeryparam.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.BodyFieldsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.BodyFieldsTable,
+			Columns: []string{api.BodyFieldsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

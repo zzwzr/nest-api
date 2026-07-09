@@ -18,6 +18,27 @@ type EnvironmentVariable func(*sql.Selector)
 // Folder is the predicate function for folder builders.
 type Folder func(*sql.Selector)
 
+// InterfaceBodyField is the predicate function for interfacebodyfield builders.
+type InterfaceBodyField func(*sql.Selector)
+
+// InterfaceExample is the predicate function for interfaceexample builders.
+type InterfaceExample func(*sql.Selector)
+
+// InterfaceField is the predicate function for interfacefield builders.
+type InterfaceField func(*sql.Selector)
+
+// InterfaceHeader is the predicate function for interfaceheader builders.
+type InterfaceHeader func(*sql.Selector)
+
+// InterfaceQueryParam is the predicate function for interfacequeryparam builders.
+type InterfaceQueryParam func(*sql.Selector)
+
+// InterfaceRequestHeader is the predicate function for interfacerequestheader builders.
+type InterfaceRequestHeader func(*sql.Selector)
+
+// InterfaceResult is the predicate function for interfaceresult builders.
+type InterfaceResult func(*sql.Selector)
+
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
 

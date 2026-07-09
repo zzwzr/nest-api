@@ -13,7 +13,7 @@ import (
 type Handler struct{}
 
 func (*Handler) ListUsers(c *gin.Context) {
-	data, err := Service{}.ListUsers(c.Request.Context())
+	data, err := (Service{}).ListUsers(c.Request.Context())
 	if err != nil {
 		logger.Error("admin list users failed", err)
 		response.Fail(c, err)
@@ -24,7 +24,7 @@ func (*Handler) ListUsers(c *gin.Context) {
 }
 
 func (*Handler) ListWorkspaces(c *gin.Context) {
-	data, err := Service{}.ListWorkspaces(c.Request.Context())
+	data, err := (Service{}).ListWorkspaces(c.Request.Context())
 	if err != nil {
 		logger.Error("admin list workspaces failed", err)
 		response.Fail(c, err)

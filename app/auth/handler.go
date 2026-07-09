@@ -19,7 +19,7 @@ func (*Handler) Register(c *gin.Context) {
 		return
 	}
 
-	data, err := Service{}.Register(c.Request.Context(), params)
+	data, err := (Service{}).Register(c.Request.Context(), params)
 	if err != nil {
 		logger.Error("register failed", err)
 		response.Fail(c, err)
@@ -36,7 +36,7 @@ func (*Handler) Login(c *gin.Context) {
 		return
 	}
 
-	data, err := Service{}.Login(c.Request.Context(), params)
+	data, err := (Service{}).Login(c.Request.Context(), params)
 	if err != nil {
 		logger.Error("login failed", err)
 		response.Fail(c, err)
@@ -48,7 +48,7 @@ func (*Handler) Login(c *gin.Context) {
 
 func (*Handler) Me(c *gin.Context) {
 	userID := utils.GetUserID(c)
-	data, err := Service{}.Me(c.Request.Context(), userID)
+	data, err := (Service{}).Me(c.Request.Context(), userID)
 	if err != nil {
 		response.Fail(c, err)
 		return

@@ -31,8 +31,12 @@ type API struct {
 	Method string `json:"method,omitempty"`
 	// 接口路径
 	URL string `json:"url,omitempty"`
-	// 状态：1=已发布，2=测试中
+	// 状态：1: 已发布, 2: 测试中, 3: 开发中, 4: 异常, 5: 维护, 6: 废弃
 	Status uint8 `json:"status,omitempty"`
+	// 请求体格式：form-data, json, xml, raw, binary
+	RequestBodyFormat string `json:"request_body_format,omitempty"`
+	// 请求体数据类型
+	RequestBodyDataType string `json:"request_body_data_type,omitempty"`
 	// 排序
 	SortOrder int `json:"sort_order,omitempty"`
 	// 创建者用户 ID
@@ -61,9 +65,21 @@ type APIEdges struct {
 	Creator *User `json:"creator,omitempty"`
 	// Updater holds the value of the updater edge.
 	Updater *User `json:"updater,omitempty"`
+	// ResponseHeaders holds the value of the response_headers edge.
+	ResponseHeaders []*InterfaceHeader `json:"response_headers,omitempty"`
+	// ResponseResults holds the value of the response_results edge.
+	ResponseResults []*InterfaceResult `json:"response_results,omitempty"`
+	// ResponseExamples holds the value of the response_examples edge.
+	ResponseExamples []*InterfaceExample `json:"response_examples,omitempty"`
+	// RequestHeaders holds the value of the request_headers edge.
+	RequestHeaders []*InterfaceRequestHeader `json:"request_headers,omitempty"`
+	// QueryParams holds the value of the query_params edge.
+	QueryParams []*InterfaceQueryParam `json:"query_params,omitempty"`
+	// BodyFields holds the value of the body_fields edge.
+	BodyFields []*InterfaceBodyField `json:"body_fields,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [10]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -110,6 +126,60 @@ func (e APIEdges) UpdaterOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "updater"}
 }
 
+// ResponseHeadersOrErr returns the ResponseHeaders value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIEdges) ResponseHeadersOrErr() ([]*InterfaceHeader, error) {
+	if e.loadedTypes[4] {
+		return e.ResponseHeaders, nil
+	}
+	return nil, &NotLoadedError{edge: "response_headers"}
+}
+
+// ResponseResultsOrErr returns the ResponseResults value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIEdges) ResponseResultsOrErr() ([]*InterfaceResult, error) {
+	if e.loadedTypes[5] {
+		return e.ResponseResults, nil
+	}
+	return nil, &NotLoadedError{edge: "response_results"}
+}
+
+// ResponseExamplesOrErr returns the ResponseExamples value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIEdges) ResponseExamplesOrErr() ([]*InterfaceExample, error) {
+	if e.loadedTypes[6] {
+		return e.ResponseExamples, nil
+	}
+	return nil, &NotLoadedError{edge: "response_examples"}
+}
+
+// RequestHeadersOrErr returns the RequestHeaders value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIEdges) RequestHeadersOrErr() ([]*InterfaceRequestHeader, error) {
+	if e.loadedTypes[7] {
+		return e.RequestHeaders, nil
+	}
+	return nil, &NotLoadedError{edge: "request_headers"}
+}
+
+// QueryParamsOrErr returns the QueryParams value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIEdges) QueryParamsOrErr() ([]*InterfaceQueryParam, error) {
+	if e.loadedTypes[8] {
+		return e.QueryParams, nil
+	}
+	return nil, &NotLoadedError{edge: "query_params"}
+}
+
+// BodyFieldsOrErr returns the BodyFields value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIEdges) BodyFieldsOrErr() ([]*InterfaceBodyField, error) {
+	if e.loadedTypes[9] {
+		return e.BodyFields, nil
+	}
+	return nil, &NotLoadedError{edge: "body_fields"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*API) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -119,7 +189,7 @@ func (*API) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(utils.DateTime)}
 		case api.FieldID, api.FieldProjectID, api.FieldFolderID, api.FieldStatus, api.FieldSortOrder, api.FieldCreatedBy, api.FieldUpdatedBy:
 			values[i] = new(sql.NullInt64)
-		case api.FieldName, api.FieldMethod, api.FieldURL:
+		case api.FieldName, api.FieldMethod, api.FieldURL, api.FieldRequestBodyFormat, api.FieldRequestBodyDataType:
 			values[i] = new(sql.NullString)
 		case api.FieldCreatedAt, api.FieldUpdatedAt:
 			values[i] = new(utils.DateTime)
@@ -179,6 +249,18 @@ func (_m *API) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = uint8(value.Int64)
+			}
+		case api.FieldRequestBodyFormat:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field request_body_format", values[i])
+			} else if value.Valid {
+				_m.RequestBodyFormat = value.String
+			}
+		case api.FieldRequestBodyDataType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field request_body_data_type", values[i])
+			} else if value.Valid {
+				_m.RequestBodyDataType = value.String
 			}
 		case api.FieldSortOrder:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -250,6 +332,36 @@ func (_m *API) QueryUpdater() *UserQuery {
 	return NewAPIClient(_m.config).QueryUpdater(_m)
 }
 
+// QueryResponseHeaders queries the "response_headers" edge of the API entity.
+func (_m *API) QueryResponseHeaders() *InterfaceHeaderQuery {
+	return NewAPIClient(_m.config).QueryResponseHeaders(_m)
+}
+
+// QueryResponseResults queries the "response_results" edge of the API entity.
+func (_m *API) QueryResponseResults() *InterfaceResultQuery {
+	return NewAPIClient(_m.config).QueryResponseResults(_m)
+}
+
+// QueryResponseExamples queries the "response_examples" edge of the API entity.
+func (_m *API) QueryResponseExamples() *InterfaceExampleQuery {
+	return NewAPIClient(_m.config).QueryResponseExamples(_m)
+}
+
+// QueryRequestHeaders queries the "request_headers" edge of the API entity.
+func (_m *API) QueryRequestHeaders() *InterfaceRequestHeaderQuery {
+	return NewAPIClient(_m.config).QueryRequestHeaders(_m)
+}
+
+// QueryQueryParams queries the "query_params" edge of the API entity.
+func (_m *API) QueryQueryParams() *InterfaceQueryParamQuery {
+	return NewAPIClient(_m.config).QueryQueryParams(_m)
+}
+
+// QueryBodyFields queries the "body_fields" edge of the API entity.
+func (_m *API) QueryBodyFields() *InterfaceBodyFieldQuery {
+	return NewAPIClient(_m.config).QueryBodyFields(_m)
+}
+
 // Update returns a builder for updating this API.
 // Note that you need to call API.Unwrap() before calling this method if this API
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -290,6 +402,12 @@ func (_m *API) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("request_body_format=")
+	builder.WriteString(_m.RequestBodyFormat)
+	builder.WriteString(", ")
+	builder.WriteString("request_body_data_type=")
+	builder.WriteString(_m.RequestBodyDataType)
 	builder.WriteString(", ")
 	builder.WriteString("sort_order=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SortOrder))

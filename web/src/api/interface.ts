@@ -1,9 +1,25 @@
 import http, { getData } from '@/utils/request'
-import type { InterfaceItem } from '@/types/workspace'
+import type { InterfaceDetail, InterfaceItem } from '@/types/workspace'
 
 export function fetchInterfaces(workspaceId: number, projectId: number) {
   return getData<InterfaceItem[]>(
     http.get('/v1/interfaces', { params: { workspace_id: workspaceId, project_id: projectId } }),
+  )
+}
+
+export function fetchInterfaceDetail(
+  workspaceId: number,
+  projectId: number,
+  interfaceId: number,
+) {
+  return getData<InterfaceDetail>(
+    http.get('/v1/interfaces/detail', {
+      params: {
+        workspace_id: workspaceId,
+        project_id: projectId,
+        interface_id: interfaceId,
+      },
+    }),
   )
 }
 
@@ -32,10 +48,17 @@ export function updateInterface(
   projectId: number,
   interfaceId: number,
   payload: {
+    folder_id?: number
     name: string
     method: string
     url?: string
     status?: number
+    request_headers?: InterfaceDetail['request_headers']
+    request_body?: InterfaceDetail['request_body']
+    query_params?: InterfaceDetail['query_params']
+    response_headers?: InterfaceDetail['response_headers']
+    response_results?: InterfaceDetail['response_results']
+    response_examples?: InterfaceDetail['response_examples']
   },
 ) {
   return getData<null>(

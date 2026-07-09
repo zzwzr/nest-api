@@ -18,7 +18,7 @@ func (*Handler) List(c *gin.Context) {
 		return
 	}
 
-	list, err := Service{}.List(c.Request.Context(), utils.GetUserID(c), params)
+	list, err := (Service{}).List(c.Request.Context(), utils.GetUserID(c), params)
 	if err != nil {
 		logger.Error("member list failed", err)
 		response.Fail(c, err)

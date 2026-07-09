@@ -8,6 +8,13 @@ import (
 	"nest-api/internal/ent/environment"
 	"nest-api/internal/ent/environmentvariable"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfacefield"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -56,24 +63,36 @@ func init() {
 	apiDescStatus := apiFields[6].Descriptor()
 	// api.DefaultStatus holds the default value on creation for the status field.
 	api.DefaultStatus = apiDescStatus.Default.(uint8)
+	// apiDescRequestBodyFormat is the schema descriptor for request_body_format field.
+	apiDescRequestBodyFormat := apiFields[7].Descriptor()
+	// api.DefaultRequestBodyFormat holds the default value on creation for the request_body_format field.
+	api.DefaultRequestBodyFormat = apiDescRequestBodyFormat.Default.(string)
+	// api.RequestBodyFormatValidator is a validator for the "request_body_format" field. It is called by the builders before save.
+	api.RequestBodyFormatValidator = apiDescRequestBodyFormat.Validators[0].(func(string) error)
+	// apiDescRequestBodyDataType is the schema descriptor for request_body_data_type field.
+	apiDescRequestBodyDataType := apiFields[8].Descriptor()
+	// api.DefaultRequestBodyDataType holds the default value on creation for the request_body_data_type field.
+	api.DefaultRequestBodyDataType = apiDescRequestBodyDataType.Default.(string)
+	// api.RequestBodyDataTypeValidator is a validator for the "request_body_data_type" field. It is called by the builders before save.
+	api.RequestBodyDataTypeValidator = apiDescRequestBodyDataType.Validators[0].(func(string) error)
 	// apiDescSortOrder is the schema descriptor for sort_order field.
-	apiDescSortOrder := apiFields[7].Descriptor()
+	apiDescSortOrder := apiFields[9].Descriptor()
 	// api.DefaultSortOrder holds the default value on creation for the sort_order field.
 	api.DefaultSortOrder = apiDescSortOrder.Default.(int)
 	// apiDescCreatedBy is the schema descriptor for created_by field.
-	apiDescCreatedBy := apiFields[8].Descriptor()
+	apiDescCreatedBy := apiFields[10].Descriptor()
 	// api.DefaultCreatedBy holds the default value on creation for the created_by field.
 	api.DefaultCreatedBy = apiDescCreatedBy.Default.(int64)
 	// apiDescUpdatedBy is the schema descriptor for updated_by field.
-	apiDescUpdatedBy := apiFields[9].Descriptor()
+	apiDescUpdatedBy := apiFields[11].Descriptor()
 	// api.DefaultUpdatedBy holds the default value on creation for the updated_by field.
 	api.DefaultUpdatedBy = apiDescUpdatedBy.Default.(int64)
 	// apiDescCreatedAt is the schema descriptor for created_at field.
-	apiDescCreatedAt := apiFields[10].Descriptor()
+	apiDescCreatedAt := apiFields[12].Descriptor()
 	// api.DefaultCreatedAt holds the default value on creation for the created_at field.
 	api.DefaultCreatedAt = apiDescCreatedAt.Default.(func() utils.DateTime)
 	// apiDescUpdatedAt is the schema descriptor for updated_at field.
-	apiDescUpdatedAt := apiFields[11].Descriptor()
+	apiDescUpdatedAt := apiFields[13].Descriptor()
 	// api.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	api.DefaultUpdatedAt = apiDescUpdatedAt.Default.(func() utils.DateTime)
 	// api.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -213,6 +232,405 @@ func init() {
 	folderDescID := folderFields[0].Descriptor()
 	// folder.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	folder.IDValidator = folderDescID.Validators[0].(func(int64) error)
+	interfacebodyfieldMixin := schema.InterfaceBodyField{}.Mixin()
+	interfacebodyfieldMixinHooks0 := interfacebodyfieldMixin[0].Hooks()
+	interfacebodyfield.Hooks[0] = interfacebodyfieldMixinHooks0[0]
+	interfacebodyfieldMixinInters0 := interfacebodyfieldMixin[0].Interceptors()
+	interfacebodyfield.Interceptors[0] = interfacebodyfieldMixinInters0[0]
+	interfacebodyfieldFields := schema.InterfaceBodyField{}.Fields()
+	_ = interfacebodyfieldFields
+	// interfacebodyfieldDescInterfaceID is the schema descriptor for interface_id field.
+	interfacebodyfieldDescInterfaceID := interfacebodyfieldFields[1].Descriptor()
+	// interfacebodyfield.DefaultInterfaceID holds the default value on creation for the interface_id field.
+	interfacebodyfield.DefaultInterfaceID = interfacebodyfieldDescInterfaceID.Default.(int64)
+	// interfacebodyfieldDescParentID is the schema descriptor for parent_id field.
+	interfacebodyfieldDescParentID := interfacebodyfieldFields[2].Descriptor()
+	// interfacebodyfield.DefaultParentID holds the default value on creation for the parent_id field.
+	interfacebodyfield.DefaultParentID = interfacebodyfieldDescParentID.Default.(int64)
+	// interfacebodyfieldDescName is the schema descriptor for name field.
+	interfacebodyfieldDescName := interfacebodyfieldFields[3].Descriptor()
+	// interfacebodyfield.DefaultName holds the default value on creation for the name field.
+	interfacebodyfield.DefaultName = interfacebodyfieldDescName.Default.(string)
+	// interfacebodyfield.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	interfacebodyfield.NameValidator = interfacebodyfieldDescName.Validators[0].(func(string) error)
+	// interfacebodyfieldDescType is the schema descriptor for type field.
+	interfacebodyfieldDescType := interfacebodyfieldFields[4].Descriptor()
+	// interfacebodyfield.DefaultType holds the default value on creation for the type field.
+	interfacebodyfield.DefaultType = interfacebodyfieldDescType.Default.(string)
+	// interfacebodyfield.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	interfacebodyfield.TypeValidator = interfacebodyfieldDescType.Validators[0].(func(string) error)
+	// interfacebodyfieldDescRequired is the schema descriptor for required field.
+	interfacebodyfieldDescRequired := interfacebodyfieldFields[5].Descriptor()
+	// interfacebodyfield.DefaultRequired holds the default value on creation for the required field.
+	interfacebodyfield.DefaultRequired = interfacebodyfieldDescRequired.Default.(bool)
+	// interfacebodyfieldDescDescription is the schema descriptor for description field.
+	interfacebodyfieldDescDescription := interfacebodyfieldFields[6].Descriptor()
+	// interfacebodyfield.DefaultDescription holds the default value on creation for the description field.
+	interfacebodyfield.DefaultDescription = interfacebodyfieldDescDescription.Default.(string)
+	// interfacebodyfield.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	interfacebodyfield.DescriptionValidator = interfacebodyfieldDescDescription.Validators[0].(func(string) error)
+	// interfacebodyfieldDescExample is the schema descriptor for example field.
+	interfacebodyfieldDescExample := interfacebodyfieldFields[7].Descriptor()
+	// interfacebodyfield.DefaultExample holds the default value on creation for the example field.
+	interfacebodyfield.DefaultExample = interfacebodyfieldDescExample.Default.(string)
+	// interfacebodyfield.ExampleValidator is a validator for the "example" field. It is called by the builders before save.
+	interfacebodyfield.ExampleValidator = interfacebodyfieldDescExample.Validators[0].(func(string) error)
+	// interfacebodyfieldDescSortOrder is the schema descriptor for sort_order field.
+	interfacebodyfieldDescSortOrder := interfacebodyfieldFields[8].Descriptor()
+	// interfacebodyfield.DefaultSortOrder holds the default value on creation for the sort_order field.
+	interfacebodyfield.DefaultSortOrder = interfacebodyfieldDescSortOrder.Default.(int)
+	// interfacebodyfieldDescCreatedAt is the schema descriptor for created_at field.
+	interfacebodyfieldDescCreatedAt := interfacebodyfieldFields[9].Descriptor()
+	// interfacebodyfield.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interfacebodyfield.DefaultCreatedAt = interfacebodyfieldDescCreatedAt.Default.(func() utils.DateTime)
+	// interfacebodyfieldDescUpdatedAt is the schema descriptor for updated_at field.
+	interfacebodyfieldDescUpdatedAt := interfacebodyfieldFields[10].Descriptor()
+	// interfacebodyfield.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interfacebodyfield.DefaultUpdatedAt = interfacebodyfieldDescUpdatedAt.Default.(func() utils.DateTime)
+	// interfacebodyfield.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interfacebodyfield.UpdateDefaultUpdatedAt = interfacebodyfieldDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// interfacebodyfieldDescID is the schema descriptor for id field.
+	interfacebodyfieldDescID := interfacebodyfieldFields[0].Descriptor()
+	// interfacebodyfield.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	interfacebodyfield.IDValidator = interfacebodyfieldDescID.Validators[0].(func(int64) error)
+	interfaceexampleMixin := schema.InterfaceExample{}.Mixin()
+	interfaceexampleMixinHooks0 := interfaceexampleMixin[0].Hooks()
+	interfaceexample.Hooks[0] = interfaceexampleMixinHooks0[0]
+	interfaceexampleMixinInters0 := interfaceexampleMixin[0].Interceptors()
+	interfaceexample.Interceptors[0] = interfaceexampleMixinInters0[0]
+	interfaceexampleFields := schema.InterfaceExample{}.Fields()
+	_ = interfaceexampleFields
+	// interfaceexampleDescInterfaceID is the schema descriptor for interface_id field.
+	interfaceexampleDescInterfaceID := interfaceexampleFields[1].Descriptor()
+	// interfaceexample.DefaultInterfaceID holds the default value on creation for the interface_id field.
+	interfaceexample.DefaultInterfaceID = interfaceexampleDescInterfaceID.Default.(int64)
+	// interfaceexampleDescName is the schema descriptor for name field.
+	interfaceexampleDescName := interfaceexampleFields[2].Descriptor()
+	// interfaceexample.DefaultName holds the default value on creation for the name field.
+	interfaceexample.DefaultName = interfaceexampleDescName.Default.(string)
+	// interfaceexample.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	interfaceexample.NameValidator = interfaceexampleDescName.Validators[0].(func(string) error)
+	// interfaceexampleDescStatusCode is the schema descriptor for status_code field.
+	interfaceexampleDescStatusCode := interfaceexampleFields[3].Descriptor()
+	// interfaceexample.DefaultStatusCode holds the default value on creation for the status_code field.
+	interfaceexample.DefaultStatusCode = interfaceexampleDescStatusCode.Default.(int)
+	// interfaceexampleDescContentType is the schema descriptor for content_type field.
+	interfaceexampleDescContentType := interfaceexampleFields[4].Descriptor()
+	// interfaceexample.DefaultContentType holds the default value on creation for the content_type field.
+	interfaceexample.DefaultContentType = interfaceexampleDescContentType.Default.(string)
+	// interfaceexample.ContentTypeValidator is a validator for the "content_type" field. It is called by the builders before save.
+	interfaceexample.ContentTypeValidator = interfaceexampleDescContentType.Validators[0].(func(string) error)
+	// interfaceexampleDescRaw is the schema descriptor for raw field.
+	interfaceexampleDescRaw := interfaceexampleFields[5].Descriptor()
+	// interfaceexample.DefaultRaw holds the default value on creation for the raw field.
+	interfaceexample.DefaultRaw = interfaceexampleDescRaw.Default.(string)
+	// interfaceexampleDescSortOrder is the schema descriptor for sort_order field.
+	interfaceexampleDescSortOrder := interfaceexampleFields[6].Descriptor()
+	// interfaceexample.DefaultSortOrder holds the default value on creation for the sort_order field.
+	interfaceexample.DefaultSortOrder = interfaceexampleDescSortOrder.Default.(int)
+	// interfaceexampleDescCreatedAt is the schema descriptor for created_at field.
+	interfaceexampleDescCreatedAt := interfaceexampleFields[7].Descriptor()
+	// interfaceexample.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interfaceexample.DefaultCreatedAt = interfaceexampleDescCreatedAt.Default.(func() utils.DateTime)
+	// interfaceexampleDescUpdatedAt is the schema descriptor for updated_at field.
+	interfaceexampleDescUpdatedAt := interfaceexampleFields[8].Descriptor()
+	// interfaceexample.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interfaceexample.DefaultUpdatedAt = interfaceexampleDescUpdatedAt.Default.(func() utils.DateTime)
+	// interfaceexample.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interfaceexample.UpdateDefaultUpdatedAt = interfaceexampleDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// interfaceexampleDescID is the schema descriptor for id field.
+	interfaceexampleDescID := interfaceexampleFields[0].Descriptor()
+	// interfaceexample.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	interfaceexample.IDValidator = interfaceexampleDescID.Validators[0].(func(int64) error)
+	interfacefieldMixin := schema.InterfaceField{}.Mixin()
+	interfacefieldMixinHooks0 := interfacefieldMixin[0].Hooks()
+	interfacefield.Hooks[0] = interfacefieldMixinHooks0[0]
+	interfacefieldMixinInters0 := interfacefieldMixin[0].Interceptors()
+	interfacefield.Interceptors[0] = interfacefieldMixinInters0[0]
+	interfacefieldFields := schema.InterfaceField{}.Fields()
+	_ = interfacefieldFields
+	// interfacefieldDescResultID is the schema descriptor for result_id field.
+	interfacefieldDescResultID := interfacefieldFields[1].Descriptor()
+	// interfacefield.DefaultResultID holds the default value on creation for the result_id field.
+	interfacefield.DefaultResultID = interfacefieldDescResultID.Default.(int64)
+	// interfacefieldDescParentID is the schema descriptor for parent_id field.
+	interfacefieldDescParentID := interfacefieldFields[2].Descriptor()
+	// interfacefield.DefaultParentID holds the default value on creation for the parent_id field.
+	interfacefield.DefaultParentID = interfacefieldDescParentID.Default.(int64)
+	// interfacefieldDescName is the schema descriptor for name field.
+	interfacefieldDescName := interfacefieldFields[3].Descriptor()
+	// interfacefield.DefaultName holds the default value on creation for the name field.
+	interfacefield.DefaultName = interfacefieldDescName.Default.(string)
+	// interfacefield.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	interfacefield.NameValidator = interfacefieldDescName.Validators[0].(func(string) error)
+	// interfacefieldDescType is the schema descriptor for type field.
+	interfacefieldDescType := interfacefieldFields[4].Descriptor()
+	// interfacefield.DefaultType holds the default value on creation for the type field.
+	interfacefield.DefaultType = interfacefieldDescType.Default.(string)
+	// interfacefield.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	interfacefield.TypeValidator = interfacefieldDescType.Validators[0].(func(string) error)
+	// interfacefieldDescRequired is the schema descriptor for required field.
+	interfacefieldDescRequired := interfacefieldFields[5].Descriptor()
+	// interfacefield.DefaultRequired holds the default value on creation for the required field.
+	interfacefield.DefaultRequired = interfacefieldDescRequired.Default.(bool)
+	// interfacefieldDescDescription is the schema descriptor for description field.
+	interfacefieldDescDescription := interfacefieldFields[6].Descriptor()
+	// interfacefield.DefaultDescription holds the default value on creation for the description field.
+	interfacefield.DefaultDescription = interfacefieldDescDescription.Default.(string)
+	// interfacefield.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	interfacefield.DescriptionValidator = interfacefieldDescDescription.Validators[0].(func(string) error)
+	// interfacefieldDescMock is the schema descriptor for mock field.
+	interfacefieldDescMock := interfacefieldFields[7].Descriptor()
+	// interfacefield.DefaultMock holds the default value on creation for the mock field.
+	interfacefield.DefaultMock = interfacefieldDescMock.Default.(string)
+	// interfacefield.MockValidator is a validator for the "mock" field. It is called by the builders before save.
+	interfacefield.MockValidator = interfacefieldDescMock.Validators[0].(func(string) error)
+	// interfacefieldDescExample is the schema descriptor for example field.
+	interfacefieldDescExample := interfacefieldFields[8].Descriptor()
+	// interfacefield.DefaultExample holds the default value on creation for the example field.
+	interfacefield.DefaultExample = interfacefieldDescExample.Default.(string)
+	// interfacefield.ExampleValidator is a validator for the "example" field. It is called by the builders before save.
+	interfacefield.ExampleValidator = interfacefieldDescExample.Validators[0].(func(string) error)
+	// interfacefieldDescSortOrder is the schema descriptor for sort_order field.
+	interfacefieldDescSortOrder := interfacefieldFields[9].Descriptor()
+	// interfacefield.DefaultSortOrder holds the default value on creation for the sort_order field.
+	interfacefield.DefaultSortOrder = interfacefieldDescSortOrder.Default.(int)
+	// interfacefieldDescCreatedAt is the schema descriptor for created_at field.
+	interfacefieldDescCreatedAt := interfacefieldFields[10].Descriptor()
+	// interfacefield.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interfacefield.DefaultCreatedAt = interfacefieldDescCreatedAt.Default.(func() utils.DateTime)
+	// interfacefieldDescUpdatedAt is the schema descriptor for updated_at field.
+	interfacefieldDescUpdatedAt := interfacefieldFields[11].Descriptor()
+	// interfacefield.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interfacefield.DefaultUpdatedAt = interfacefieldDescUpdatedAt.Default.(func() utils.DateTime)
+	// interfacefield.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interfacefield.UpdateDefaultUpdatedAt = interfacefieldDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// interfacefieldDescID is the schema descriptor for id field.
+	interfacefieldDescID := interfacefieldFields[0].Descriptor()
+	// interfacefield.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	interfacefield.IDValidator = interfacefieldDescID.Validators[0].(func(int64) error)
+	interfaceheaderMixin := schema.InterfaceHeader{}.Mixin()
+	interfaceheaderMixinHooks0 := interfaceheaderMixin[0].Hooks()
+	interfaceheader.Hooks[0] = interfaceheaderMixinHooks0[0]
+	interfaceheaderMixinInters0 := interfaceheaderMixin[0].Interceptors()
+	interfaceheader.Interceptors[0] = interfaceheaderMixinInters0[0]
+	interfaceheaderFields := schema.InterfaceHeader{}.Fields()
+	_ = interfaceheaderFields
+	// interfaceheaderDescInterfaceID is the schema descriptor for interface_id field.
+	interfaceheaderDescInterfaceID := interfaceheaderFields[1].Descriptor()
+	// interfaceheader.DefaultInterfaceID holds the default value on creation for the interface_id field.
+	interfaceheader.DefaultInterfaceID = interfaceheaderDescInterfaceID.Default.(int64)
+	// interfaceheaderDescName is the schema descriptor for name field.
+	interfaceheaderDescName := interfaceheaderFields[2].Descriptor()
+	// interfaceheader.DefaultName holds the default value on creation for the name field.
+	interfaceheader.DefaultName = interfaceheaderDescName.Default.(string)
+	// interfaceheader.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	interfaceheader.NameValidator = interfaceheaderDescName.Validators[0].(func(string) error)
+	// interfaceheaderDescType is the schema descriptor for type field.
+	interfaceheaderDescType := interfaceheaderFields[3].Descriptor()
+	// interfaceheader.DefaultType holds the default value on creation for the type field.
+	interfaceheader.DefaultType = interfaceheaderDescType.Default.(string)
+	// interfaceheader.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	interfaceheader.TypeValidator = interfaceheaderDescType.Validators[0].(func(string) error)
+	// interfaceheaderDescRequired is the schema descriptor for required field.
+	interfaceheaderDescRequired := interfaceheaderFields[4].Descriptor()
+	// interfaceheader.DefaultRequired holds the default value on creation for the required field.
+	interfaceheader.DefaultRequired = interfaceheaderDescRequired.Default.(bool)
+	// interfaceheaderDescDescription is the schema descriptor for description field.
+	interfaceheaderDescDescription := interfaceheaderFields[5].Descriptor()
+	// interfaceheader.DefaultDescription holds the default value on creation for the description field.
+	interfaceheader.DefaultDescription = interfaceheaderDescDescription.Default.(string)
+	// interfaceheader.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	interfaceheader.DescriptionValidator = interfaceheaderDescDescription.Validators[0].(func(string) error)
+	// interfaceheaderDescExample is the schema descriptor for example field.
+	interfaceheaderDescExample := interfaceheaderFields[6].Descriptor()
+	// interfaceheader.DefaultExample holds the default value on creation for the example field.
+	interfaceheader.DefaultExample = interfaceheaderDescExample.Default.(string)
+	// interfaceheader.ExampleValidator is a validator for the "example" field. It is called by the builders before save.
+	interfaceheader.ExampleValidator = interfaceheaderDescExample.Validators[0].(func(string) error)
+	// interfaceheaderDescSortOrder is the schema descriptor for sort_order field.
+	interfaceheaderDescSortOrder := interfaceheaderFields[7].Descriptor()
+	// interfaceheader.DefaultSortOrder holds the default value on creation for the sort_order field.
+	interfaceheader.DefaultSortOrder = interfaceheaderDescSortOrder.Default.(int)
+	// interfaceheaderDescCreatedAt is the schema descriptor for created_at field.
+	interfaceheaderDescCreatedAt := interfaceheaderFields[8].Descriptor()
+	// interfaceheader.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interfaceheader.DefaultCreatedAt = interfaceheaderDescCreatedAt.Default.(func() utils.DateTime)
+	// interfaceheaderDescUpdatedAt is the schema descriptor for updated_at field.
+	interfaceheaderDescUpdatedAt := interfaceheaderFields[9].Descriptor()
+	// interfaceheader.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interfaceheader.DefaultUpdatedAt = interfaceheaderDescUpdatedAt.Default.(func() utils.DateTime)
+	// interfaceheader.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interfaceheader.UpdateDefaultUpdatedAt = interfaceheaderDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// interfaceheaderDescID is the schema descriptor for id field.
+	interfaceheaderDescID := interfaceheaderFields[0].Descriptor()
+	// interfaceheader.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	interfaceheader.IDValidator = interfaceheaderDescID.Validators[0].(func(int64) error)
+	interfacequeryparamMixin := schema.InterfaceQueryParam{}.Mixin()
+	interfacequeryparamMixinHooks0 := interfacequeryparamMixin[0].Hooks()
+	interfacequeryparam.Hooks[0] = interfacequeryparamMixinHooks0[0]
+	interfacequeryparamMixinInters0 := interfacequeryparamMixin[0].Interceptors()
+	interfacequeryparam.Interceptors[0] = interfacequeryparamMixinInters0[0]
+	interfacequeryparamFields := schema.InterfaceQueryParam{}.Fields()
+	_ = interfacequeryparamFields
+	// interfacequeryparamDescInterfaceID is the schema descriptor for interface_id field.
+	interfacequeryparamDescInterfaceID := interfacequeryparamFields[1].Descriptor()
+	// interfacequeryparam.DefaultInterfaceID holds the default value on creation for the interface_id field.
+	interfacequeryparam.DefaultInterfaceID = interfacequeryparamDescInterfaceID.Default.(int64)
+	// interfacequeryparamDescName is the schema descriptor for name field.
+	interfacequeryparamDescName := interfacequeryparamFields[2].Descriptor()
+	// interfacequeryparam.DefaultName holds the default value on creation for the name field.
+	interfacequeryparam.DefaultName = interfacequeryparamDescName.Default.(string)
+	// interfacequeryparam.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	interfacequeryparam.NameValidator = interfacequeryparamDescName.Validators[0].(func(string) error)
+	// interfacequeryparamDescType is the schema descriptor for type field.
+	interfacequeryparamDescType := interfacequeryparamFields[3].Descriptor()
+	// interfacequeryparam.DefaultType holds the default value on creation for the type field.
+	interfacequeryparam.DefaultType = interfacequeryparamDescType.Default.(string)
+	// interfacequeryparam.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	interfacequeryparam.TypeValidator = interfacequeryparamDescType.Validators[0].(func(string) error)
+	// interfacequeryparamDescRequired is the schema descriptor for required field.
+	interfacequeryparamDescRequired := interfacequeryparamFields[4].Descriptor()
+	// interfacequeryparam.DefaultRequired holds the default value on creation for the required field.
+	interfacequeryparam.DefaultRequired = interfacequeryparamDescRequired.Default.(bool)
+	// interfacequeryparamDescDescription is the schema descriptor for description field.
+	interfacequeryparamDescDescription := interfacequeryparamFields[5].Descriptor()
+	// interfacequeryparam.DefaultDescription holds the default value on creation for the description field.
+	interfacequeryparam.DefaultDescription = interfacequeryparamDescDescription.Default.(string)
+	// interfacequeryparam.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	interfacequeryparam.DescriptionValidator = interfacequeryparamDescDescription.Validators[0].(func(string) error)
+	// interfacequeryparamDescExample is the schema descriptor for example field.
+	interfacequeryparamDescExample := interfacequeryparamFields[6].Descriptor()
+	// interfacequeryparam.DefaultExample holds the default value on creation for the example field.
+	interfacequeryparam.DefaultExample = interfacequeryparamDescExample.Default.(string)
+	// interfacequeryparam.ExampleValidator is a validator for the "example" field. It is called by the builders before save.
+	interfacequeryparam.ExampleValidator = interfacequeryparamDescExample.Validators[0].(func(string) error)
+	// interfacequeryparamDescSortOrder is the schema descriptor for sort_order field.
+	interfacequeryparamDescSortOrder := interfacequeryparamFields[7].Descriptor()
+	// interfacequeryparam.DefaultSortOrder holds the default value on creation for the sort_order field.
+	interfacequeryparam.DefaultSortOrder = interfacequeryparamDescSortOrder.Default.(int)
+	// interfacequeryparamDescCreatedAt is the schema descriptor for created_at field.
+	interfacequeryparamDescCreatedAt := interfacequeryparamFields[8].Descriptor()
+	// interfacequeryparam.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interfacequeryparam.DefaultCreatedAt = interfacequeryparamDescCreatedAt.Default.(func() utils.DateTime)
+	// interfacequeryparamDescUpdatedAt is the schema descriptor for updated_at field.
+	interfacequeryparamDescUpdatedAt := interfacequeryparamFields[9].Descriptor()
+	// interfacequeryparam.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interfacequeryparam.DefaultUpdatedAt = interfacequeryparamDescUpdatedAt.Default.(func() utils.DateTime)
+	// interfacequeryparam.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interfacequeryparam.UpdateDefaultUpdatedAt = interfacequeryparamDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// interfacequeryparamDescID is the schema descriptor for id field.
+	interfacequeryparamDescID := interfacequeryparamFields[0].Descriptor()
+	// interfacequeryparam.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	interfacequeryparam.IDValidator = interfacequeryparamDescID.Validators[0].(func(int64) error)
+	interfacerequestheaderMixin := schema.InterfaceRequestHeader{}.Mixin()
+	interfacerequestheaderMixinHooks0 := interfacerequestheaderMixin[0].Hooks()
+	interfacerequestheader.Hooks[0] = interfacerequestheaderMixinHooks0[0]
+	interfacerequestheaderMixinInters0 := interfacerequestheaderMixin[0].Interceptors()
+	interfacerequestheader.Interceptors[0] = interfacerequestheaderMixinInters0[0]
+	interfacerequestheaderFields := schema.InterfaceRequestHeader{}.Fields()
+	_ = interfacerequestheaderFields
+	// interfacerequestheaderDescInterfaceID is the schema descriptor for interface_id field.
+	interfacerequestheaderDescInterfaceID := interfacerequestheaderFields[1].Descriptor()
+	// interfacerequestheader.DefaultInterfaceID holds the default value on creation for the interface_id field.
+	interfacerequestheader.DefaultInterfaceID = interfacerequestheaderDescInterfaceID.Default.(int64)
+	// interfacerequestheaderDescName is the schema descriptor for name field.
+	interfacerequestheaderDescName := interfacerequestheaderFields[2].Descriptor()
+	// interfacerequestheader.DefaultName holds the default value on creation for the name field.
+	interfacerequestheader.DefaultName = interfacerequestheaderDescName.Default.(string)
+	// interfacerequestheader.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	interfacerequestheader.NameValidator = interfacerequestheaderDescName.Validators[0].(func(string) error)
+	// interfacerequestheaderDescType is the schema descriptor for type field.
+	interfacerequestheaderDescType := interfacerequestheaderFields[3].Descriptor()
+	// interfacerequestheader.DefaultType holds the default value on creation for the type field.
+	interfacerequestheader.DefaultType = interfacerequestheaderDescType.Default.(string)
+	// interfacerequestheader.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	interfacerequestheader.TypeValidator = interfacerequestheaderDescType.Validators[0].(func(string) error)
+	// interfacerequestheaderDescRequired is the schema descriptor for required field.
+	interfacerequestheaderDescRequired := interfacerequestheaderFields[4].Descriptor()
+	// interfacerequestheader.DefaultRequired holds the default value on creation for the required field.
+	interfacerequestheader.DefaultRequired = interfacerequestheaderDescRequired.Default.(bool)
+	// interfacerequestheaderDescDescription is the schema descriptor for description field.
+	interfacerequestheaderDescDescription := interfacerequestheaderFields[5].Descriptor()
+	// interfacerequestheader.DefaultDescription holds the default value on creation for the description field.
+	interfacerequestheader.DefaultDescription = interfacerequestheaderDescDescription.Default.(string)
+	// interfacerequestheader.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	interfacerequestheader.DescriptionValidator = interfacerequestheaderDescDescription.Validators[0].(func(string) error)
+	// interfacerequestheaderDescExample is the schema descriptor for example field.
+	interfacerequestheaderDescExample := interfacerequestheaderFields[6].Descriptor()
+	// interfacerequestheader.DefaultExample holds the default value on creation for the example field.
+	interfacerequestheader.DefaultExample = interfacerequestheaderDescExample.Default.(string)
+	// interfacerequestheader.ExampleValidator is a validator for the "example" field. It is called by the builders before save.
+	interfacerequestheader.ExampleValidator = interfacerequestheaderDescExample.Validators[0].(func(string) error)
+	// interfacerequestheaderDescSortOrder is the schema descriptor for sort_order field.
+	interfacerequestheaderDescSortOrder := interfacerequestheaderFields[7].Descriptor()
+	// interfacerequestheader.DefaultSortOrder holds the default value on creation for the sort_order field.
+	interfacerequestheader.DefaultSortOrder = interfacerequestheaderDescSortOrder.Default.(int)
+	// interfacerequestheaderDescCreatedAt is the schema descriptor for created_at field.
+	interfacerequestheaderDescCreatedAt := interfacerequestheaderFields[8].Descriptor()
+	// interfacerequestheader.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interfacerequestheader.DefaultCreatedAt = interfacerequestheaderDescCreatedAt.Default.(func() utils.DateTime)
+	// interfacerequestheaderDescUpdatedAt is the schema descriptor for updated_at field.
+	interfacerequestheaderDescUpdatedAt := interfacerequestheaderFields[9].Descriptor()
+	// interfacerequestheader.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interfacerequestheader.DefaultUpdatedAt = interfacerequestheaderDescUpdatedAt.Default.(func() utils.DateTime)
+	// interfacerequestheader.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interfacerequestheader.UpdateDefaultUpdatedAt = interfacerequestheaderDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// interfacerequestheaderDescID is the schema descriptor for id field.
+	interfacerequestheaderDescID := interfacerequestheaderFields[0].Descriptor()
+	// interfacerequestheader.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	interfacerequestheader.IDValidator = interfacerequestheaderDescID.Validators[0].(func(int64) error)
+	interfaceresultMixin := schema.InterfaceResult{}.Mixin()
+	interfaceresultMixinHooks0 := interfaceresultMixin[0].Hooks()
+	interfaceresult.Hooks[0] = interfaceresultMixinHooks0[0]
+	interfaceresultMixinInters0 := interfaceresultMixin[0].Interceptors()
+	interfaceresult.Interceptors[0] = interfaceresultMixinInters0[0]
+	interfaceresultFields := schema.InterfaceResult{}.Fields()
+	_ = interfaceresultFields
+	// interfaceresultDescInterfaceID is the schema descriptor for interface_id field.
+	interfaceresultDescInterfaceID := interfaceresultFields[1].Descriptor()
+	// interfaceresult.DefaultInterfaceID holds the default value on creation for the interface_id field.
+	interfaceresult.DefaultInterfaceID = interfaceresultDescInterfaceID.Default.(int64)
+	// interfaceresultDescName is the schema descriptor for name field.
+	interfaceresultDescName := interfaceresultFields[2].Descriptor()
+	// interfaceresult.DefaultName holds the default value on creation for the name field.
+	interfaceresult.DefaultName = interfaceresultDescName.Default.(string)
+	// interfaceresult.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	interfaceresult.NameValidator = interfaceresultDescName.Validators[0].(func(string) error)
+	// interfaceresultDescStatusCode is the schema descriptor for status_code field.
+	interfaceresultDescStatusCode := interfaceresultFields[3].Descriptor()
+	// interfaceresult.DefaultStatusCode holds the default value on creation for the status_code field.
+	interfaceresult.DefaultStatusCode = interfaceresultDescStatusCode.Default.(int)
+	// interfaceresultDescFormat is the schema descriptor for format field.
+	interfaceresultDescFormat := interfaceresultFields[4].Descriptor()
+	// interfaceresult.DefaultFormat holds the default value on creation for the format field.
+	interfaceresult.DefaultFormat = interfaceresultDescFormat.Default.(string)
+	// interfaceresult.FormatValidator is a validator for the "format" field. It is called by the builders before save.
+	interfaceresult.FormatValidator = interfaceresultDescFormat.Validators[0].(func(string) error)
+	// interfaceresultDescDataType is the schema descriptor for data_type field.
+	interfaceresultDescDataType := interfaceresultFields[5].Descriptor()
+	// interfaceresult.DefaultDataType holds the default value on creation for the data_type field.
+	interfaceresult.DefaultDataType = interfaceresultDescDataType.Default.(string)
+	// interfaceresult.DataTypeValidator is a validator for the "data_type" field. It is called by the builders before save.
+	interfaceresult.DataTypeValidator = interfaceresultDescDataType.Validators[0].(func(string) error)
+	// interfaceresultDescSortOrder is the schema descriptor for sort_order field.
+	interfaceresultDescSortOrder := interfaceresultFields[6].Descriptor()
+	// interfaceresult.DefaultSortOrder holds the default value on creation for the sort_order field.
+	interfaceresult.DefaultSortOrder = interfaceresultDescSortOrder.Default.(int)
+	// interfaceresultDescCreatedAt is the schema descriptor for created_at field.
+	interfaceresultDescCreatedAt := interfaceresultFields[7].Descriptor()
+	// interfaceresult.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interfaceresult.DefaultCreatedAt = interfaceresultDescCreatedAt.Default.(func() utils.DateTime)
+	// interfaceresultDescUpdatedAt is the schema descriptor for updated_at field.
+	interfaceresultDescUpdatedAt := interfaceresultFields[8].Descriptor()
+	// interfaceresult.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interfaceresult.DefaultUpdatedAt = interfaceresultDescUpdatedAt.Default.(func() utils.DateTime)
+	// interfaceresult.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interfaceresult.UpdateDefaultUpdatedAt = interfaceresultDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// interfaceresultDescID is the schema descriptor for id field.
+	interfaceresultDescID := interfaceresultFields[0].Descriptor()
+	// interfaceresult.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	interfaceresult.IDValidator = interfaceresultDescID.Validators[0].(func(int64) error)
 	projectMixin := schema.Project{}.Mixin()
 	projectMixinHooks0 := projectMixin[0].Hooks()
 	project.Hooks[0] = projectMixinHooks0[0]

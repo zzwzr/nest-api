@@ -10,6 +10,13 @@ import (
 	"nest-api/internal/ent/environment"
 	"nest-api/internal/ent/environmentvariable"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfacefield"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
@@ -31,44 +38,71 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAPI                 = "API"
-	TypeEnvironment         = "Environment"
-	TypeEnvironmentVariable = "EnvironmentVariable"
-	TypeFolder              = "Folder"
-	TypeProject             = "Project"
-	TypeUser                = "User"
-	TypeWorkspace           = "Workspace"
-	TypeWorkspaceMember     = "WorkspaceMember"
+	TypeAPI                    = "API"
+	TypeEnvironment            = "Environment"
+	TypeEnvironmentVariable    = "EnvironmentVariable"
+	TypeFolder                 = "Folder"
+	TypeInterfaceBodyField     = "InterfaceBodyField"
+	TypeInterfaceExample       = "InterfaceExample"
+	TypeInterfaceField         = "InterfaceField"
+	TypeInterfaceHeader        = "InterfaceHeader"
+	TypeInterfaceQueryParam    = "InterfaceQueryParam"
+	TypeInterfaceRequestHeader = "InterfaceRequestHeader"
+	TypeInterfaceResult        = "InterfaceResult"
+	TypeProject                = "Project"
+	TypeUser                   = "User"
+	TypeWorkspace              = "Workspace"
+	TypeWorkspaceMember        = "WorkspaceMember"
 )
 
 // APIMutation represents an operation that mutates the API nodes in the graph.
 type APIMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int64
-	name           *string
-	method         *string
-	url            *string
-	status         *uint8
-	addstatus      *int8
-	sort_order     *int
-	addsort_order  *int
-	created_at     *utils.DateTime
-	updated_at     *utils.DateTime
-	deleted_at     *utils.DateTime
-	clearedFields  map[string]struct{}
-	project        *int64
-	clearedproject bool
-	folder         *int64
-	clearedfolder  bool
-	creator        *int64
-	clearedcreator bool
-	updater        *int64
-	clearedupdater bool
-	done           bool
-	oldValue       func(context.Context) (*API, error)
-	predicates     []predicate.API
+	op                       Op
+	typ                      string
+	id                       *int64
+	name                     *string
+	method                   *string
+	url                      *string
+	status                   *uint8
+	addstatus                *int8
+	request_body_format      *string
+	request_body_data_type   *string
+	sort_order               *int
+	addsort_order            *int
+	created_at               *utils.DateTime
+	updated_at               *utils.DateTime
+	deleted_at               *utils.DateTime
+	clearedFields            map[string]struct{}
+	project                  *int64
+	clearedproject           bool
+	folder                   *int64
+	clearedfolder            bool
+	creator                  *int64
+	clearedcreator           bool
+	updater                  *int64
+	clearedupdater           bool
+	response_headers         map[int64]struct{}
+	removedresponse_headers  map[int64]struct{}
+	clearedresponse_headers  bool
+	response_results         map[int64]struct{}
+	removedresponse_results  map[int64]struct{}
+	clearedresponse_results  bool
+	response_examples        map[int64]struct{}
+	removedresponse_examples map[int64]struct{}
+	clearedresponse_examples bool
+	request_headers          map[int64]struct{}
+	removedrequest_headers   map[int64]struct{}
+	clearedrequest_headers   bool
+	query_params             map[int64]struct{}
+	removedquery_params      map[int64]struct{}
+	clearedquery_params      bool
+	body_fields              map[int64]struct{}
+	removedbody_fields       map[int64]struct{}
+	clearedbody_fields       bool
+	done                     bool
+	oldValue                 func(context.Context) (*API, error)
+	predicates               []predicate.API
 }
 
 var _ ent.Mutation = (*APIMutation)(nil)
@@ -409,6 +443,78 @@ func (m *APIMutation) AddedStatus() (r int8, exists bool) {
 func (m *APIMutation) ResetStatus() {
 	m.status = nil
 	m.addstatus = nil
+}
+
+// SetRequestBodyFormat sets the "request_body_format" field.
+func (m *APIMutation) SetRequestBodyFormat(s string) {
+	m.request_body_format = &s
+}
+
+// RequestBodyFormat returns the value of the "request_body_format" field in the mutation.
+func (m *APIMutation) RequestBodyFormat() (r string, exists bool) {
+	v := m.request_body_format
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestBodyFormat returns the old "request_body_format" field's value of the API entity.
+// If the API object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIMutation) OldRequestBodyFormat(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestBodyFormat is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestBodyFormat requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestBodyFormat: %w", err)
+	}
+	return oldValue.RequestBodyFormat, nil
+}
+
+// ResetRequestBodyFormat resets all changes to the "request_body_format" field.
+func (m *APIMutation) ResetRequestBodyFormat() {
+	m.request_body_format = nil
+}
+
+// SetRequestBodyDataType sets the "request_body_data_type" field.
+func (m *APIMutation) SetRequestBodyDataType(s string) {
+	m.request_body_data_type = &s
+}
+
+// RequestBodyDataType returns the value of the "request_body_data_type" field in the mutation.
+func (m *APIMutation) RequestBodyDataType() (r string, exists bool) {
+	v := m.request_body_data_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestBodyDataType returns the old "request_body_data_type" field's value of the API entity.
+// If the API object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIMutation) OldRequestBodyDataType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestBodyDataType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestBodyDataType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestBodyDataType: %w", err)
+	}
+	return oldValue.RequestBodyDataType, nil
+}
+
+// ResetRequestBodyDataType resets all changes to the "request_body_data_type" field.
+func (m *APIMutation) ResetRequestBodyDataType() {
+	m.request_body_data_type = nil
 }
 
 // SetSortOrder sets the "sort_order" field.
@@ -794,6 +900,330 @@ func (m *APIMutation) ResetUpdater() {
 	m.clearedupdater = false
 }
 
+// AddResponseHeaderIDs adds the "response_headers" edge to the InterfaceHeader entity by ids.
+func (m *APIMutation) AddResponseHeaderIDs(ids ...int64) {
+	if m.response_headers == nil {
+		m.response_headers = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.response_headers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearResponseHeaders clears the "response_headers" edge to the InterfaceHeader entity.
+func (m *APIMutation) ClearResponseHeaders() {
+	m.clearedresponse_headers = true
+}
+
+// ResponseHeadersCleared reports if the "response_headers" edge to the InterfaceHeader entity was cleared.
+func (m *APIMutation) ResponseHeadersCleared() bool {
+	return m.clearedresponse_headers
+}
+
+// RemoveResponseHeaderIDs removes the "response_headers" edge to the InterfaceHeader entity by IDs.
+func (m *APIMutation) RemoveResponseHeaderIDs(ids ...int64) {
+	if m.removedresponse_headers == nil {
+		m.removedresponse_headers = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.response_headers, ids[i])
+		m.removedresponse_headers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedResponseHeaders returns the removed IDs of the "response_headers" edge to the InterfaceHeader entity.
+func (m *APIMutation) RemovedResponseHeadersIDs() (ids []int64) {
+	for id := range m.removedresponse_headers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResponseHeadersIDs returns the "response_headers" edge IDs in the mutation.
+func (m *APIMutation) ResponseHeadersIDs() (ids []int64) {
+	for id := range m.response_headers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetResponseHeaders resets all changes to the "response_headers" edge.
+func (m *APIMutation) ResetResponseHeaders() {
+	m.response_headers = nil
+	m.clearedresponse_headers = false
+	m.removedresponse_headers = nil
+}
+
+// AddResponseResultIDs adds the "response_results" edge to the InterfaceResult entity by ids.
+func (m *APIMutation) AddResponseResultIDs(ids ...int64) {
+	if m.response_results == nil {
+		m.response_results = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.response_results[ids[i]] = struct{}{}
+	}
+}
+
+// ClearResponseResults clears the "response_results" edge to the InterfaceResult entity.
+func (m *APIMutation) ClearResponseResults() {
+	m.clearedresponse_results = true
+}
+
+// ResponseResultsCleared reports if the "response_results" edge to the InterfaceResult entity was cleared.
+func (m *APIMutation) ResponseResultsCleared() bool {
+	return m.clearedresponse_results
+}
+
+// RemoveResponseResultIDs removes the "response_results" edge to the InterfaceResult entity by IDs.
+func (m *APIMutation) RemoveResponseResultIDs(ids ...int64) {
+	if m.removedresponse_results == nil {
+		m.removedresponse_results = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.response_results, ids[i])
+		m.removedresponse_results[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedResponseResults returns the removed IDs of the "response_results" edge to the InterfaceResult entity.
+func (m *APIMutation) RemovedResponseResultsIDs() (ids []int64) {
+	for id := range m.removedresponse_results {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResponseResultsIDs returns the "response_results" edge IDs in the mutation.
+func (m *APIMutation) ResponseResultsIDs() (ids []int64) {
+	for id := range m.response_results {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetResponseResults resets all changes to the "response_results" edge.
+func (m *APIMutation) ResetResponseResults() {
+	m.response_results = nil
+	m.clearedresponse_results = false
+	m.removedresponse_results = nil
+}
+
+// AddResponseExampleIDs adds the "response_examples" edge to the InterfaceExample entity by ids.
+func (m *APIMutation) AddResponseExampleIDs(ids ...int64) {
+	if m.response_examples == nil {
+		m.response_examples = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.response_examples[ids[i]] = struct{}{}
+	}
+}
+
+// ClearResponseExamples clears the "response_examples" edge to the InterfaceExample entity.
+func (m *APIMutation) ClearResponseExamples() {
+	m.clearedresponse_examples = true
+}
+
+// ResponseExamplesCleared reports if the "response_examples" edge to the InterfaceExample entity was cleared.
+func (m *APIMutation) ResponseExamplesCleared() bool {
+	return m.clearedresponse_examples
+}
+
+// RemoveResponseExampleIDs removes the "response_examples" edge to the InterfaceExample entity by IDs.
+func (m *APIMutation) RemoveResponseExampleIDs(ids ...int64) {
+	if m.removedresponse_examples == nil {
+		m.removedresponse_examples = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.response_examples, ids[i])
+		m.removedresponse_examples[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedResponseExamples returns the removed IDs of the "response_examples" edge to the InterfaceExample entity.
+func (m *APIMutation) RemovedResponseExamplesIDs() (ids []int64) {
+	for id := range m.removedresponse_examples {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResponseExamplesIDs returns the "response_examples" edge IDs in the mutation.
+func (m *APIMutation) ResponseExamplesIDs() (ids []int64) {
+	for id := range m.response_examples {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetResponseExamples resets all changes to the "response_examples" edge.
+func (m *APIMutation) ResetResponseExamples() {
+	m.response_examples = nil
+	m.clearedresponse_examples = false
+	m.removedresponse_examples = nil
+}
+
+// AddRequestHeaderIDs adds the "request_headers" edge to the InterfaceRequestHeader entity by ids.
+func (m *APIMutation) AddRequestHeaderIDs(ids ...int64) {
+	if m.request_headers == nil {
+		m.request_headers = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.request_headers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRequestHeaders clears the "request_headers" edge to the InterfaceRequestHeader entity.
+func (m *APIMutation) ClearRequestHeaders() {
+	m.clearedrequest_headers = true
+}
+
+// RequestHeadersCleared reports if the "request_headers" edge to the InterfaceRequestHeader entity was cleared.
+func (m *APIMutation) RequestHeadersCleared() bool {
+	return m.clearedrequest_headers
+}
+
+// RemoveRequestHeaderIDs removes the "request_headers" edge to the InterfaceRequestHeader entity by IDs.
+func (m *APIMutation) RemoveRequestHeaderIDs(ids ...int64) {
+	if m.removedrequest_headers == nil {
+		m.removedrequest_headers = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.request_headers, ids[i])
+		m.removedrequest_headers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRequestHeaders returns the removed IDs of the "request_headers" edge to the InterfaceRequestHeader entity.
+func (m *APIMutation) RemovedRequestHeadersIDs() (ids []int64) {
+	for id := range m.removedrequest_headers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RequestHeadersIDs returns the "request_headers" edge IDs in the mutation.
+func (m *APIMutation) RequestHeadersIDs() (ids []int64) {
+	for id := range m.request_headers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRequestHeaders resets all changes to the "request_headers" edge.
+func (m *APIMutation) ResetRequestHeaders() {
+	m.request_headers = nil
+	m.clearedrequest_headers = false
+	m.removedrequest_headers = nil
+}
+
+// AddQueryParamIDs adds the "query_params" edge to the InterfaceQueryParam entity by ids.
+func (m *APIMutation) AddQueryParamIDs(ids ...int64) {
+	if m.query_params == nil {
+		m.query_params = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.query_params[ids[i]] = struct{}{}
+	}
+}
+
+// ClearQueryParams clears the "query_params" edge to the InterfaceQueryParam entity.
+func (m *APIMutation) ClearQueryParams() {
+	m.clearedquery_params = true
+}
+
+// QueryParamsCleared reports if the "query_params" edge to the InterfaceQueryParam entity was cleared.
+func (m *APIMutation) QueryParamsCleared() bool {
+	return m.clearedquery_params
+}
+
+// RemoveQueryParamIDs removes the "query_params" edge to the InterfaceQueryParam entity by IDs.
+func (m *APIMutation) RemoveQueryParamIDs(ids ...int64) {
+	if m.removedquery_params == nil {
+		m.removedquery_params = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.query_params, ids[i])
+		m.removedquery_params[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedQueryParams returns the removed IDs of the "query_params" edge to the InterfaceQueryParam entity.
+func (m *APIMutation) RemovedQueryParamsIDs() (ids []int64) {
+	for id := range m.removedquery_params {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// QueryParamsIDs returns the "query_params" edge IDs in the mutation.
+func (m *APIMutation) QueryParamsIDs() (ids []int64) {
+	for id := range m.query_params {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetQueryParams resets all changes to the "query_params" edge.
+func (m *APIMutation) ResetQueryParams() {
+	m.query_params = nil
+	m.clearedquery_params = false
+	m.removedquery_params = nil
+}
+
+// AddBodyFieldIDs adds the "body_fields" edge to the InterfaceBodyField entity by ids.
+func (m *APIMutation) AddBodyFieldIDs(ids ...int64) {
+	if m.body_fields == nil {
+		m.body_fields = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.body_fields[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBodyFields clears the "body_fields" edge to the InterfaceBodyField entity.
+func (m *APIMutation) ClearBodyFields() {
+	m.clearedbody_fields = true
+}
+
+// BodyFieldsCleared reports if the "body_fields" edge to the InterfaceBodyField entity was cleared.
+func (m *APIMutation) BodyFieldsCleared() bool {
+	return m.clearedbody_fields
+}
+
+// RemoveBodyFieldIDs removes the "body_fields" edge to the InterfaceBodyField entity by IDs.
+func (m *APIMutation) RemoveBodyFieldIDs(ids ...int64) {
+	if m.removedbody_fields == nil {
+		m.removedbody_fields = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.body_fields, ids[i])
+		m.removedbody_fields[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBodyFields returns the removed IDs of the "body_fields" edge to the InterfaceBodyField entity.
+func (m *APIMutation) RemovedBodyFieldsIDs() (ids []int64) {
+	for id := range m.removedbody_fields {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BodyFieldsIDs returns the "body_fields" edge IDs in the mutation.
+func (m *APIMutation) BodyFieldsIDs() (ids []int64) {
+	for id := range m.body_fields {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBodyFields resets all changes to the "body_fields" edge.
+func (m *APIMutation) ResetBodyFields() {
+	m.body_fields = nil
+	m.clearedbody_fields = false
+	m.removedbody_fields = nil
+}
+
 // Where appends a list predicates to the APIMutation builder.
 func (m *APIMutation) Where(ps ...predicate.API) {
 	m.predicates = append(m.predicates, ps...)
@@ -828,7 +1258,7 @@ func (m *APIMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *APIMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 14)
 	if m.project != nil {
 		fields = append(fields, api.FieldProjectID)
 	}
@@ -846,6 +1276,12 @@ func (m *APIMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, api.FieldStatus)
+	}
+	if m.request_body_format != nil {
+		fields = append(fields, api.FieldRequestBodyFormat)
+	}
+	if m.request_body_data_type != nil {
+		fields = append(fields, api.FieldRequestBodyDataType)
 	}
 	if m.sort_order != nil {
 		fields = append(fields, api.FieldSortOrder)
@@ -885,6 +1321,10 @@ func (m *APIMutation) Field(name string) (ent.Value, bool) {
 		return m.URL()
 	case api.FieldStatus:
 		return m.Status()
+	case api.FieldRequestBodyFormat:
+		return m.RequestBodyFormat()
+	case api.FieldRequestBodyDataType:
+		return m.RequestBodyDataType()
 	case api.FieldSortOrder:
 		return m.SortOrder()
 	case api.FieldCreatedBy:
@@ -918,6 +1358,10 @@ func (m *APIMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldURL(ctx)
 	case api.FieldStatus:
 		return m.OldStatus(ctx)
+	case api.FieldRequestBodyFormat:
+		return m.OldRequestBodyFormat(ctx)
+	case api.FieldRequestBodyDataType:
+		return m.OldRequestBodyDataType(ctx)
 	case api.FieldSortOrder:
 		return m.OldSortOrder(ctx)
 	case api.FieldCreatedBy:
@@ -980,6 +1424,20 @@ func (m *APIMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case api.FieldRequestBodyFormat:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestBodyFormat(v)
+		return nil
+	case api.FieldRequestBodyDataType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestBodyDataType(v)
 		return nil
 	case api.FieldSortOrder:
 		v, ok := value.(int)
@@ -1126,6 +1584,12 @@ func (m *APIMutation) ResetField(name string) error {
 	case api.FieldStatus:
 		m.ResetStatus()
 		return nil
+	case api.FieldRequestBodyFormat:
+		m.ResetRequestBodyFormat()
+		return nil
+	case api.FieldRequestBodyDataType:
+		m.ResetRequestBodyDataType()
+		return nil
 	case api.FieldSortOrder:
 		m.ResetSortOrder()
 		return nil
@@ -1150,7 +1614,7 @@ func (m *APIMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *APIMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 10)
 	if m.project != nil {
 		edges = append(edges, api.EdgeProject)
 	}
@@ -1162,6 +1626,24 @@ func (m *APIMutation) AddedEdges() []string {
 	}
 	if m.updater != nil {
 		edges = append(edges, api.EdgeUpdater)
+	}
+	if m.response_headers != nil {
+		edges = append(edges, api.EdgeResponseHeaders)
+	}
+	if m.response_results != nil {
+		edges = append(edges, api.EdgeResponseResults)
+	}
+	if m.response_examples != nil {
+		edges = append(edges, api.EdgeResponseExamples)
+	}
+	if m.request_headers != nil {
+		edges = append(edges, api.EdgeRequestHeaders)
+	}
+	if m.query_params != nil {
+		edges = append(edges, api.EdgeQueryParams)
+	}
+	if m.body_fields != nil {
+		edges = append(edges, api.EdgeBodyFields)
 	}
 	return edges
 }
@@ -1186,25 +1668,117 @@ func (m *APIMutation) AddedIDs(name string) []ent.Value {
 		if id := m.updater; id != nil {
 			return []ent.Value{*id}
 		}
+	case api.EdgeResponseHeaders:
+		ids := make([]ent.Value, 0, len(m.response_headers))
+		for id := range m.response_headers {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeResponseResults:
+		ids := make([]ent.Value, 0, len(m.response_results))
+		for id := range m.response_results {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeResponseExamples:
+		ids := make([]ent.Value, 0, len(m.response_examples))
+		for id := range m.response_examples {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeRequestHeaders:
+		ids := make([]ent.Value, 0, len(m.request_headers))
+		for id := range m.request_headers {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeQueryParams:
+		ids := make([]ent.Value, 0, len(m.query_params))
+		for id := range m.query_params {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeBodyFields:
+		ids := make([]ent.Value, 0, len(m.body_fields))
+		for id := range m.body_fields {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *APIMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 10)
+	if m.removedresponse_headers != nil {
+		edges = append(edges, api.EdgeResponseHeaders)
+	}
+	if m.removedresponse_results != nil {
+		edges = append(edges, api.EdgeResponseResults)
+	}
+	if m.removedresponse_examples != nil {
+		edges = append(edges, api.EdgeResponseExamples)
+	}
+	if m.removedrequest_headers != nil {
+		edges = append(edges, api.EdgeRequestHeaders)
+	}
+	if m.removedquery_params != nil {
+		edges = append(edges, api.EdgeQueryParams)
+	}
+	if m.removedbody_fields != nil {
+		edges = append(edges, api.EdgeBodyFields)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *APIMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case api.EdgeResponseHeaders:
+		ids := make([]ent.Value, 0, len(m.removedresponse_headers))
+		for id := range m.removedresponse_headers {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeResponseResults:
+		ids := make([]ent.Value, 0, len(m.removedresponse_results))
+		for id := range m.removedresponse_results {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeResponseExamples:
+		ids := make([]ent.Value, 0, len(m.removedresponse_examples))
+		for id := range m.removedresponse_examples {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeRequestHeaders:
+		ids := make([]ent.Value, 0, len(m.removedrequest_headers))
+		for id := range m.removedrequest_headers {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeQueryParams:
+		ids := make([]ent.Value, 0, len(m.removedquery_params))
+		for id := range m.removedquery_params {
+			ids = append(ids, id)
+		}
+		return ids
+	case api.EdgeBodyFields:
+		ids := make([]ent.Value, 0, len(m.removedbody_fields))
+		for id := range m.removedbody_fields {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *APIMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 10)
 	if m.clearedproject {
 		edges = append(edges, api.EdgeProject)
 	}
@@ -1216,6 +1790,24 @@ func (m *APIMutation) ClearedEdges() []string {
 	}
 	if m.clearedupdater {
 		edges = append(edges, api.EdgeUpdater)
+	}
+	if m.clearedresponse_headers {
+		edges = append(edges, api.EdgeResponseHeaders)
+	}
+	if m.clearedresponse_results {
+		edges = append(edges, api.EdgeResponseResults)
+	}
+	if m.clearedresponse_examples {
+		edges = append(edges, api.EdgeResponseExamples)
+	}
+	if m.clearedrequest_headers {
+		edges = append(edges, api.EdgeRequestHeaders)
+	}
+	if m.clearedquery_params {
+		edges = append(edges, api.EdgeQueryParams)
+	}
+	if m.clearedbody_fields {
+		edges = append(edges, api.EdgeBodyFields)
 	}
 	return edges
 }
@@ -1232,6 +1824,18 @@ func (m *APIMutation) EdgeCleared(name string) bool {
 		return m.clearedcreator
 	case api.EdgeUpdater:
 		return m.clearedupdater
+	case api.EdgeResponseHeaders:
+		return m.clearedresponse_headers
+	case api.EdgeResponseResults:
+		return m.clearedresponse_results
+	case api.EdgeResponseExamples:
+		return m.clearedresponse_examples
+	case api.EdgeRequestHeaders:
+		return m.clearedrequest_headers
+	case api.EdgeQueryParams:
+		return m.clearedquery_params
+	case api.EdgeBodyFields:
+		return m.clearedbody_fields
 	}
 	return false
 }
@@ -1271,6 +1875,24 @@ func (m *APIMutation) ResetEdge(name string) error {
 		return nil
 	case api.EdgeUpdater:
 		m.ResetUpdater()
+		return nil
+	case api.EdgeResponseHeaders:
+		m.ResetResponseHeaders()
+		return nil
+	case api.EdgeResponseResults:
+		m.ResetResponseResults()
+		return nil
+	case api.EdgeResponseExamples:
+		m.ResetResponseExamples()
+		return nil
+	case api.EdgeRequestHeaders:
+		m.ResetRequestHeaders()
+		return nil
+	case api.EdgeQueryParams:
+		m.ResetQueryParams()
+		return nil
+	case api.EdgeBodyFields:
+		m.ResetBodyFields()
 		return nil
 	}
 	return fmt.Errorf("unknown API edge %s", name)
@@ -4054,6 +4676,6787 @@ func (m *FolderMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Folder edge %s", name)
+}
+
+// InterfaceBodyFieldMutation represents an operation that mutates the InterfaceBodyField nodes in the graph.
+type InterfaceBodyFieldMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int64
+	parent_id         *int64
+	addparent_id      *int64
+	name              *string
+	_type             *string
+	required          *bool
+	description       *string
+	example           *string
+	sort_order        *int
+	addsort_order     *int
+	created_at        *utils.DateTime
+	updated_at        *utils.DateTime
+	deleted_at        *utils.DateTime
+	clearedFields     map[string]struct{}
+	_interface        *int64
+	cleared_interface bool
+	done              bool
+	oldValue          func(context.Context) (*InterfaceBodyField, error)
+	predicates        []predicate.InterfaceBodyField
+}
+
+var _ ent.Mutation = (*InterfaceBodyFieldMutation)(nil)
+
+// interfacebodyfieldOption allows management of the mutation configuration using functional options.
+type interfacebodyfieldOption func(*InterfaceBodyFieldMutation)
+
+// newInterfaceBodyFieldMutation creates new mutation for the InterfaceBodyField entity.
+func newInterfaceBodyFieldMutation(c config, op Op, opts ...interfacebodyfieldOption) *InterfaceBodyFieldMutation {
+	m := &InterfaceBodyFieldMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInterfaceBodyField,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInterfaceBodyFieldID sets the ID field of the mutation.
+func withInterfaceBodyFieldID(id int64) interfacebodyfieldOption {
+	return func(m *InterfaceBodyFieldMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InterfaceBodyField
+		)
+		m.oldValue = func(ctx context.Context) (*InterfaceBodyField, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InterfaceBodyField.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInterfaceBodyField sets the old InterfaceBodyField of the mutation.
+func withInterfaceBodyField(node *InterfaceBodyField) interfacebodyfieldOption {
+	return func(m *InterfaceBodyFieldMutation) {
+		m.oldValue = func(context.Context) (*InterfaceBodyField, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InterfaceBodyFieldMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InterfaceBodyFieldMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InterfaceBodyField entities.
+func (m *InterfaceBodyFieldMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InterfaceBodyFieldMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InterfaceBodyFieldMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InterfaceBodyField.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetInterfaceID sets the "interface_id" field.
+func (m *InterfaceBodyFieldMutation) SetInterfaceID(i int64) {
+	m._interface = &i
+}
+
+// InterfaceID returns the value of the "interface_id" field in the mutation.
+func (m *InterfaceBodyFieldMutation) InterfaceID() (r int64, exists bool) {
+	v := m._interface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterfaceID returns the old "interface_id" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldInterfaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterfaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterfaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterfaceID: %w", err)
+	}
+	return oldValue.InterfaceID, nil
+}
+
+// ResetInterfaceID resets all changes to the "interface_id" field.
+func (m *InterfaceBodyFieldMutation) ResetInterfaceID() {
+	m._interface = nil
+}
+
+// SetParentID sets the "parent_id" field.
+func (m *InterfaceBodyFieldMutation) SetParentID(i int64) {
+	m.parent_id = &i
+	m.addparent_id = nil
+}
+
+// ParentID returns the value of the "parent_id" field in the mutation.
+func (m *InterfaceBodyFieldMutation) ParentID() (r int64, exists bool) {
+	v := m.parent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentID returns the old "parent_id" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldParentID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentID: %w", err)
+	}
+	return oldValue.ParentID, nil
+}
+
+// AddParentID adds i to the "parent_id" field.
+func (m *InterfaceBodyFieldMutation) AddParentID(i int64) {
+	if m.addparent_id != nil {
+		*m.addparent_id += i
+	} else {
+		m.addparent_id = &i
+	}
+}
+
+// AddedParentID returns the value that was added to the "parent_id" field in this mutation.
+func (m *InterfaceBodyFieldMutation) AddedParentID() (r int64, exists bool) {
+	v := m.addparent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetParentID resets all changes to the "parent_id" field.
+func (m *InterfaceBodyFieldMutation) ResetParentID() {
+	m.parent_id = nil
+	m.addparent_id = nil
+}
+
+// SetName sets the "name" field.
+func (m *InterfaceBodyFieldMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InterfaceBodyFieldMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InterfaceBodyFieldMutation) ResetName() {
+	m.name = nil
+}
+
+// SetType sets the "type" field.
+func (m *InterfaceBodyFieldMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *InterfaceBodyFieldMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *InterfaceBodyFieldMutation) ResetType() {
+	m._type = nil
+}
+
+// SetRequired sets the "required" field.
+func (m *InterfaceBodyFieldMutation) SetRequired(b bool) {
+	m.required = &b
+}
+
+// Required returns the value of the "required" field in the mutation.
+func (m *InterfaceBodyFieldMutation) Required() (r bool, exists bool) {
+	v := m.required
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequired returns the old "required" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldRequired(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequired is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequired requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequired: %w", err)
+	}
+	return oldValue.Required, nil
+}
+
+// ResetRequired resets all changes to the "required" field.
+func (m *InterfaceBodyFieldMutation) ResetRequired() {
+	m.required = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *InterfaceBodyFieldMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *InterfaceBodyFieldMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *InterfaceBodyFieldMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetExample sets the "example" field.
+func (m *InterfaceBodyFieldMutation) SetExample(s string) {
+	m.example = &s
+}
+
+// Example returns the value of the "example" field in the mutation.
+func (m *InterfaceBodyFieldMutation) Example() (r string, exists bool) {
+	v := m.example
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExample returns the old "example" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldExample(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExample is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExample requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExample: %w", err)
+	}
+	return oldValue.Example, nil
+}
+
+// ResetExample resets all changes to the "example" field.
+func (m *InterfaceBodyFieldMutation) ResetExample() {
+	m.example = nil
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *InterfaceBodyFieldMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *InterfaceBodyFieldMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *InterfaceBodyFieldMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *InterfaceBodyFieldMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *InterfaceBodyFieldMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InterfaceBodyFieldMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InterfaceBodyFieldMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InterfaceBodyFieldMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InterfaceBodyFieldMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InterfaceBodyFieldMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InterfaceBodyFieldMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InterfaceBodyFieldMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InterfaceBodyFieldMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InterfaceBodyField entity.
+// If the InterfaceBodyField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceBodyFieldMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InterfaceBodyFieldMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[interfacebodyfield.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InterfaceBodyFieldMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[interfacebodyfield.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InterfaceBodyFieldMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, interfacebodyfield.FieldDeletedAt)
+}
+
+// ClearInterface clears the "interface" edge to the API entity.
+func (m *InterfaceBodyFieldMutation) ClearInterface() {
+	m.cleared_interface = true
+	m.clearedFields[interfacebodyfield.FieldInterfaceID] = struct{}{}
+}
+
+// InterfaceCleared reports if the "interface" edge to the API entity was cleared.
+func (m *InterfaceBodyFieldMutation) InterfaceCleared() bool {
+	return m.cleared_interface
+}
+
+// InterfaceIDs returns the "interface" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InterfaceID instead. It exists only for internal usage by the builders.
+func (m *InterfaceBodyFieldMutation) InterfaceIDs() (ids []int64) {
+	if id := m._interface; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInterface resets all changes to the "interface" edge.
+func (m *InterfaceBodyFieldMutation) ResetInterface() {
+	m._interface = nil
+	m.cleared_interface = false
+}
+
+// Where appends a list predicates to the InterfaceBodyFieldMutation builder.
+func (m *InterfaceBodyFieldMutation) Where(ps ...predicate.InterfaceBodyField) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InterfaceBodyFieldMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InterfaceBodyFieldMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InterfaceBodyField, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InterfaceBodyFieldMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InterfaceBodyFieldMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InterfaceBodyField).
+func (m *InterfaceBodyFieldMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InterfaceBodyFieldMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m._interface != nil {
+		fields = append(fields, interfacebodyfield.FieldInterfaceID)
+	}
+	if m.parent_id != nil {
+		fields = append(fields, interfacebodyfield.FieldParentID)
+	}
+	if m.name != nil {
+		fields = append(fields, interfacebodyfield.FieldName)
+	}
+	if m._type != nil {
+		fields = append(fields, interfacebodyfield.FieldType)
+	}
+	if m.required != nil {
+		fields = append(fields, interfacebodyfield.FieldRequired)
+	}
+	if m.description != nil {
+		fields = append(fields, interfacebodyfield.FieldDescription)
+	}
+	if m.example != nil {
+		fields = append(fields, interfacebodyfield.FieldExample)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, interfacebodyfield.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, interfacebodyfield.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, interfacebodyfield.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, interfacebodyfield.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InterfaceBodyFieldMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case interfacebodyfield.FieldInterfaceID:
+		return m.InterfaceID()
+	case interfacebodyfield.FieldParentID:
+		return m.ParentID()
+	case interfacebodyfield.FieldName:
+		return m.Name()
+	case interfacebodyfield.FieldType:
+		return m.GetType()
+	case interfacebodyfield.FieldRequired:
+		return m.Required()
+	case interfacebodyfield.FieldDescription:
+		return m.Description()
+	case interfacebodyfield.FieldExample:
+		return m.Example()
+	case interfacebodyfield.FieldSortOrder:
+		return m.SortOrder()
+	case interfacebodyfield.FieldCreatedAt:
+		return m.CreatedAt()
+	case interfacebodyfield.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case interfacebodyfield.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InterfaceBodyFieldMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case interfacebodyfield.FieldInterfaceID:
+		return m.OldInterfaceID(ctx)
+	case interfacebodyfield.FieldParentID:
+		return m.OldParentID(ctx)
+	case interfacebodyfield.FieldName:
+		return m.OldName(ctx)
+	case interfacebodyfield.FieldType:
+		return m.OldType(ctx)
+	case interfacebodyfield.FieldRequired:
+		return m.OldRequired(ctx)
+	case interfacebodyfield.FieldDescription:
+		return m.OldDescription(ctx)
+	case interfacebodyfield.FieldExample:
+		return m.OldExample(ctx)
+	case interfacebodyfield.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case interfacebodyfield.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case interfacebodyfield.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case interfacebodyfield.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InterfaceBodyField field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceBodyFieldMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case interfacebodyfield.FieldInterfaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterfaceID(v)
+		return nil
+	case interfacebodyfield.FieldParentID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentID(v)
+		return nil
+	case interfacebodyfield.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case interfacebodyfield.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case interfacebodyfield.FieldRequired:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequired(v)
+		return nil
+	case interfacebodyfield.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case interfacebodyfield.FieldExample:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExample(v)
+		return nil
+	case interfacebodyfield.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case interfacebodyfield.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case interfacebodyfield.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case interfacebodyfield.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceBodyField field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InterfaceBodyFieldMutation) AddedFields() []string {
+	var fields []string
+	if m.addparent_id != nil {
+		fields = append(fields, interfacebodyfield.FieldParentID)
+	}
+	if m.addsort_order != nil {
+		fields = append(fields, interfacebodyfield.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InterfaceBodyFieldMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case interfacebodyfield.FieldParentID:
+		return m.AddedParentID()
+	case interfacebodyfield.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceBodyFieldMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case interfacebodyfield.FieldParentID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParentID(v)
+		return nil
+	case interfacebodyfield.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceBodyField numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InterfaceBodyFieldMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(interfacebodyfield.FieldDeletedAt) {
+		fields = append(fields, interfacebodyfield.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InterfaceBodyFieldMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InterfaceBodyFieldMutation) ClearField(name string) error {
+	switch name {
+	case interfacebodyfield.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceBodyField nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InterfaceBodyFieldMutation) ResetField(name string) error {
+	switch name {
+	case interfacebodyfield.FieldInterfaceID:
+		m.ResetInterfaceID()
+		return nil
+	case interfacebodyfield.FieldParentID:
+		m.ResetParentID()
+		return nil
+	case interfacebodyfield.FieldName:
+		m.ResetName()
+		return nil
+	case interfacebodyfield.FieldType:
+		m.ResetType()
+		return nil
+	case interfacebodyfield.FieldRequired:
+		m.ResetRequired()
+		return nil
+	case interfacebodyfield.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case interfacebodyfield.FieldExample:
+		m.ResetExample()
+		return nil
+	case interfacebodyfield.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case interfacebodyfield.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case interfacebodyfield.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case interfacebodyfield.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceBodyField field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InterfaceBodyFieldMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m._interface != nil {
+		edges = append(edges, interfacebodyfield.EdgeInterface)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InterfaceBodyFieldMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case interfacebodyfield.EdgeInterface:
+		if id := m._interface; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InterfaceBodyFieldMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InterfaceBodyFieldMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InterfaceBodyFieldMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleared_interface {
+		edges = append(edges, interfacebodyfield.EdgeInterface)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InterfaceBodyFieldMutation) EdgeCleared(name string) bool {
+	switch name {
+	case interfacebodyfield.EdgeInterface:
+		return m.cleared_interface
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InterfaceBodyFieldMutation) ClearEdge(name string) error {
+	switch name {
+	case interfacebodyfield.EdgeInterface:
+		m.ClearInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceBodyField unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InterfaceBodyFieldMutation) ResetEdge(name string) error {
+	switch name {
+	case interfacebodyfield.EdgeInterface:
+		m.ResetInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceBodyField edge %s", name)
+}
+
+// InterfaceExampleMutation represents an operation that mutates the InterfaceExample nodes in the graph.
+type InterfaceExampleMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int64
+	name              *string
+	status_code       *int
+	addstatus_code    *int
+	content_type      *string
+	raw               *string
+	sort_order        *int
+	addsort_order     *int
+	created_at        *utils.DateTime
+	updated_at        *utils.DateTime
+	deleted_at        *utils.DateTime
+	clearedFields     map[string]struct{}
+	_interface        *int64
+	cleared_interface bool
+	done              bool
+	oldValue          func(context.Context) (*InterfaceExample, error)
+	predicates        []predicate.InterfaceExample
+}
+
+var _ ent.Mutation = (*InterfaceExampleMutation)(nil)
+
+// interfaceexampleOption allows management of the mutation configuration using functional options.
+type interfaceexampleOption func(*InterfaceExampleMutation)
+
+// newInterfaceExampleMutation creates new mutation for the InterfaceExample entity.
+func newInterfaceExampleMutation(c config, op Op, opts ...interfaceexampleOption) *InterfaceExampleMutation {
+	m := &InterfaceExampleMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInterfaceExample,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInterfaceExampleID sets the ID field of the mutation.
+func withInterfaceExampleID(id int64) interfaceexampleOption {
+	return func(m *InterfaceExampleMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InterfaceExample
+		)
+		m.oldValue = func(ctx context.Context) (*InterfaceExample, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InterfaceExample.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInterfaceExample sets the old InterfaceExample of the mutation.
+func withInterfaceExample(node *InterfaceExample) interfaceexampleOption {
+	return func(m *InterfaceExampleMutation) {
+		m.oldValue = func(context.Context) (*InterfaceExample, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InterfaceExampleMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InterfaceExampleMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InterfaceExample entities.
+func (m *InterfaceExampleMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InterfaceExampleMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InterfaceExampleMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InterfaceExample.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetInterfaceID sets the "interface_id" field.
+func (m *InterfaceExampleMutation) SetInterfaceID(i int64) {
+	m._interface = &i
+}
+
+// InterfaceID returns the value of the "interface_id" field in the mutation.
+func (m *InterfaceExampleMutation) InterfaceID() (r int64, exists bool) {
+	v := m._interface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterfaceID returns the old "interface_id" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldInterfaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterfaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterfaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterfaceID: %w", err)
+	}
+	return oldValue.InterfaceID, nil
+}
+
+// ResetInterfaceID resets all changes to the "interface_id" field.
+func (m *InterfaceExampleMutation) ResetInterfaceID() {
+	m._interface = nil
+}
+
+// SetName sets the "name" field.
+func (m *InterfaceExampleMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InterfaceExampleMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InterfaceExampleMutation) ResetName() {
+	m.name = nil
+}
+
+// SetStatusCode sets the "status_code" field.
+func (m *InterfaceExampleMutation) SetStatusCode(i int) {
+	m.status_code = &i
+	m.addstatus_code = nil
+}
+
+// StatusCode returns the value of the "status_code" field in the mutation.
+func (m *InterfaceExampleMutation) StatusCode() (r int, exists bool) {
+	v := m.status_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusCode returns the old "status_code" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldStatusCode(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatusCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatusCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusCode: %w", err)
+	}
+	return oldValue.StatusCode, nil
+}
+
+// AddStatusCode adds i to the "status_code" field.
+func (m *InterfaceExampleMutation) AddStatusCode(i int) {
+	if m.addstatus_code != nil {
+		*m.addstatus_code += i
+	} else {
+		m.addstatus_code = &i
+	}
+}
+
+// AddedStatusCode returns the value that was added to the "status_code" field in this mutation.
+func (m *InterfaceExampleMutation) AddedStatusCode() (r int, exists bool) {
+	v := m.addstatus_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStatusCode resets all changes to the "status_code" field.
+func (m *InterfaceExampleMutation) ResetStatusCode() {
+	m.status_code = nil
+	m.addstatus_code = nil
+}
+
+// SetContentType sets the "content_type" field.
+func (m *InterfaceExampleMutation) SetContentType(s string) {
+	m.content_type = &s
+}
+
+// ContentType returns the value of the "content_type" field in the mutation.
+func (m *InterfaceExampleMutation) ContentType() (r string, exists bool) {
+	v := m.content_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentType returns the old "content_type" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldContentType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentType: %w", err)
+	}
+	return oldValue.ContentType, nil
+}
+
+// ResetContentType resets all changes to the "content_type" field.
+func (m *InterfaceExampleMutation) ResetContentType() {
+	m.content_type = nil
+}
+
+// SetRaw sets the "raw" field.
+func (m *InterfaceExampleMutation) SetRaw(s string) {
+	m.raw = &s
+}
+
+// Raw returns the value of the "raw" field in the mutation.
+func (m *InterfaceExampleMutation) Raw() (r string, exists bool) {
+	v := m.raw
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRaw returns the old "raw" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldRaw(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRaw is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRaw requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRaw: %w", err)
+	}
+	return oldValue.Raw, nil
+}
+
+// ResetRaw resets all changes to the "raw" field.
+func (m *InterfaceExampleMutation) ResetRaw() {
+	m.raw = nil
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *InterfaceExampleMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *InterfaceExampleMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *InterfaceExampleMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *InterfaceExampleMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *InterfaceExampleMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InterfaceExampleMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InterfaceExampleMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InterfaceExampleMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InterfaceExampleMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InterfaceExampleMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InterfaceExampleMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InterfaceExampleMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InterfaceExampleMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InterfaceExample entity.
+// If the InterfaceExample object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceExampleMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InterfaceExampleMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[interfaceexample.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InterfaceExampleMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[interfaceexample.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InterfaceExampleMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, interfaceexample.FieldDeletedAt)
+}
+
+// ClearInterface clears the "interface" edge to the API entity.
+func (m *InterfaceExampleMutation) ClearInterface() {
+	m.cleared_interface = true
+	m.clearedFields[interfaceexample.FieldInterfaceID] = struct{}{}
+}
+
+// InterfaceCleared reports if the "interface" edge to the API entity was cleared.
+func (m *InterfaceExampleMutation) InterfaceCleared() bool {
+	return m.cleared_interface
+}
+
+// InterfaceIDs returns the "interface" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InterfaceID instead. It exists only for internal usage by the builders.
+func (m *InterfaceExampleMutation) InterfaceIDs() (ids []int64) {
+	if id := m._interface; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInterface resets all changes to the "interface" edge.
+func (m *InterfaceExampleMutation) ResetInterface() {
+	m._interface = nil
+	m.cleared_interface = false
+}
+
+// Where appends a list predicates to the InterfaceExampleMutation builder.
+func (m *InterfaceExampleMutation) Where(ps ...predicate.InterfaceExample) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InterfaceExampleMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InterfaceExampleMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InterfaceExample, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InterfaceExampleMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InterfaceExampleMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InterfaceExample).
+func (m *InterfaceExampleMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InterfaceExampleMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m._interface != nil {
+		fields = append(fields, interfaceexample.FieldInterfaceID)
+	}
+	if m.name != nil {
+		fields = append(fields, interfaceexample.FieldName)
+	}
+	if m.status_code != nil {
+		fields = append(fields, interfaceexample.FieldStatusCode)
+	}
+	if m.content_type != nil {
+		fields = append(fields, interfaceexample.FieldContentType)
+	}
+	if m.raw != nil {
+		fields = append(fields, interfaceexample.FieldRaw)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, interfaceexample.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, interfaceexample.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, interfaceexample.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, interfaceexample.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InterfaceExampleMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case interfaceexample.FieldInterfaceID:
+		return m.InterfaceID()
+	case interfaceexample.FieldName:
+		return m.Name()
+	case interfaceexample.FieldStatusCode:
+		return m.StatusCode()
+	case interfaceexample.FieldContentType:
+		return m.ContentType()
+	case interfaceexample.FieldRaw:
+		return m.Raw()
+	case interfaceexample.FieldSortOrder:
+		return m.SortOrder()
+	case interfaceexample.FieldCreatedAt:
+		return m.CreatedAt()
+	case interfaceexample.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case interfaceexample.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InterfaceExampleMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case interfaceexample.FieldInterfaceID:
+		return m.OldInterfaceID(ctx)
+	case interfaceexample.FieldName:
+		return m.OldName(ctx)
+	case interfaceexample.FieldStatusCode:
+		return m.OldStatusCode(ctx)
+	case interfaceexample.FieldContentType:
+		return m.OldContentType(ctx)
+	case interfaceexample.FieldRaw:
+		return m.OldRaw(ctx)
+	case interfaceexample.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case interfaceexample.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case interfaceexample.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case interfaceexample.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InterfaceExample field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceExampleMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case interfaceexample.FieldInterfaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterfaceID(v)
+		return nil
+	case interfaceexample.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case interfaceexample.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusCode(v)
+		return nil
+	case interfaceexample.FieldContentType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentType(v)
+		return nil
+	case interfaceexample.FieldRaw:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRaw(v)
+		return nil
+	case interfaceexample.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case interfaceexample.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case interfaceexample.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case interfaceexample.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceExample field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InterfaceExampleMutation) AddedFields() []string {
+	var fields []string
+	if m.addstatus_code != nil {
+		fields = append(fields, interfaceexample.FieldStatusCode)
+	}
+	if m.addsort_order != nil {
+		fields = append(fields, interfaceexample.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InterfaceExampleMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case interfaceexample.FieldStatusCode:
+		return m.AddedStatusCode()
+	case interfaceexample.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceExampleMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case interfaceexample.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStatusCode(v)
+		return nil
+	case interfaceexample.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceExample numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InterfaceExampleMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(interfaceexample.FieldDeletedAt) {
+		fields = append(fields, interfaceexample.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InterfaceExampleMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InterfaceExampleMutation) ClearField(name string) error {
+	switch name {
+	case interfaceexample.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceExample nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InterfaceExampleMutation) ResetField(name string) error {
+	switch name {
+	case interfaceexample.FieldInterfaceID:
+		m.ResetInterfaceID()
+		return nil
+	case interfaceexample.FieldName:
+		m.ResetName()
+		return nil
+	case interfaceexample.FieldStatusCode:
+		m.ResetStatusCode()
+		return nil
+	case interfaceexample.FieldContentType:
+		m.ResetContentType()
+		return nil
+	case interfaceexample.FieldRaw:
+		m.ResetRaw()
+		return nil
+	case interfaceexample.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case interfaceexample.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case interfaceexample.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case interfaceexample.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceExample field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InterfaceExampleMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m._interface != nil {
+		edges = append(edges, interfaceexample.EdgeInterface)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InterfaceExampleMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case interfaceexample.EdgeInterface:
+		if id := m._interface; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InterfaceExampleMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InterfaceExampleMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InterfaceExampleMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleared_interface {
+		edges = append(edges, interfaceexample.EdgeInterface)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InterfaceExampleMutation) EdgeCleared(name string) bool {
+	switch name {
+	case interfaceexample.EdgeInterface:
+		return m.cleared_interface
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InterfaceExampleMutation) ClearEdge(name string) error {
+	switch name {
+	case interfaceexample.EdgeInterface:
+		m.ClearInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceExample unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InterfaceExampleMutation) ResetEdge(name string) error {
+	switch name {
+	case interfaceexample.EdgeInterface:
+		m.ResetInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceExample edge %s", name)
+}
+
+// InterfaceFieldMutation represents an operation that mutates the InterfaceField nodes in the graph.
+type InterfaceFieldMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int64
+	parent_id     *int64
+	addparent_id  *int64
+	name          *string
+	_type         *string
+	required      *bool
+	description   *string
+	mock          *string
+	example       *string
+	sort_order    *int
+	addsort_order *int
+	created_at    *utils.DateTime
+	updated_at    *utils.DateTime
+	deleted_at    *utils.DateTime
+	clearedFields map[string]struct{}
+	result        *int64
+	clearedresult bool
+	done          bool
+	oldValue      func(context.Context) (*InterfaceField, error)
+	predicates    []predicate.InterfaceField
+}
+
+var _ ent.Mutation = (*InterfaceFieldMutation)(nil)
+
+// interfacefieldOption allows management of the mutation configuration using functional options.
+type interfacefieldOption func(*InterfaceFieldMutation)
+
+// newInterfaceFieldMutation creates new mutation for the InterfaceField entity.
+func newInterfaceFieldMutation(c config, op Op, opts ...interfacefieldOption) *InterfaceFieldMutation {
+	m := &InterfaceFieldMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInterfaceField,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInterfaceFieldID sets the ID field of the mutation.
+func withInterfaceFieldID(id int64) interfacefieldOption {
+	return func(m *InterfaceFieldMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InterfaceField
+		)
+		m.oldValue = func(ctx context.Context) (*InterfaceField, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InterfaceField.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInterfaceField sets the old InterfaceField of the mutation.
+func withInterfaceField(node *InterfaceField) interfacefieldOption {
+	return func(m *InterfaceFieldMutation) {
+		m.oldValue = func(context.Context) (*InterfaceField, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InterfaceFieldMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InterfaceFieldMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InterfaceField entities.
+func (m *InterfaceFieldMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InterfaceFieldMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InterfaceFieldMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InterfaceField.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetResultID sets the "result_id" field.
+func (m *InterfaceFieldMutation) SetResultID(i int64) {
+	m.result = &i
+}
+
+// ResultID returns the value of the "result_id" field in the mutation.
+func (m *InterfaceFieldMutation) ResultID() (r int64, exists bool) {
+	v := m.result
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResultID returns the old "result_id" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldResultID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResultID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResultID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResultID: %w", err)
+	}
+	return oldValue.ResultID, nil
+}
+
+// ResetResultID resets all changes to the "result_id" field.
+func (m *InterfaceFieldMutation) ResetResultID() {
+	m.result = nil
+}
+
+// SetParentID sets the "parent_id" field.
+func (m *InterfaceFieldMutation) SetParentID(i int64) {
+	m.parent_id = &i
+	m.addparent_id = nil
+}
+
+// ParentID returns the value of the "parent_id" field in the mutation.
+func (m *InterfaceFieldMutation) ParentID() (r int64, exists bool) {
+	v := m.parent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentID returns the old "parent_id" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldParentID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentID: %w", err)
+	}
+	return oldValue.ParentID, nil
+}
+
+// AddParentID adds i to the "parent_id" field.
+func (m *InterfaceFieldMutation) AddParentID(i int64) {
+	if m.addparent_id != nil {
+		*m.addparent_id += i
+	} else {
+		m.addparent_id = &i
+	}
+}
+
+// AddedParentID returns the value that was added to the "parent_id" field in this mutation.
+func (m *InterfaceFieldMutation) AddedParentID() (r int64, exists bool) {
+	v := m.addparent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetParentID resets all changes to the "parent_id" field.
+func (m *InterfaceFieldMutation) ResetParentID() {
+	m.parent_id = nil
+	m.addparent_id = nil
+}
+
+// SetName sets the "name" field.
+func (m *InterfaceFieldMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InterfaceFieldMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InterfaceFieldMutation) ResetName() {
+	m.name = nil
+}
+
+// SetType sets the "type" field.
+func (m *InterfaceFieldMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *InterfaceFieldMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *InterfaceFieldMutation) ResetType() {
+	m._type = nil
+}
+
+// SetRequired sets the "required" field.
+func (m *InterfaceFieldMutation) SetRequired(b bool) {
+	m.required = &b
+}
+
+// Required returns the value of the "required" field in the mutation.
+func (m *InterfaceFieldMutation) Required() (r bool, exists bool) {
+	v := m.required
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequired returns the old "required" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldRequired(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequired is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequired requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequired: %w", err)
+	}
+	return oldValue.Required, nil
+}
+
+// ResetRequired resets all changes to the "required" field.
+func (m *InterfaceFieldMutation) ResetRequired() {
+	m.required = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *InterfaceFieldMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *InterfaceFieldMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *InterfaceFieldMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetMock sets the "mock" field.
+func (m *InterfaceFieldMutation) SetMock(s string) {
+	m.mock = &s
+}
+
+// Mock returns the value of the "mock" field in the mutation.
+func (m *InterfaceFieldMutation) Mock() (r string, exists bool) {
+	v := m.mock
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMock returns the old "mock" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldMock(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMock is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMock requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMock: %w", err)
+	}
+	return oldValue.Mock, nil
+}
+
+// ResetMock resets all changes to the "mock" field.
+func (m *InterfaceFieldMutation) ResetMock() {
+	m.mock = nil
+}
+
+// SetExample sets the "example" field.
+func (m *InterfaceFieldMutation) SetExample(s string) {
+	m.example = &s
+}
+
+// Example returns the value of the "example" field in the mutation.
+func (m *InterfaceFieldMutation) Example() (r string, exists bool) {
+	v := m.example
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExample returns the old "example" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldExample(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExample is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExample requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExample: %w", err)
+	}
+	return oldValue.Example, nil
+}
+
+// ResetExample resets all changes to the "example" field.
+func (m *InterfaceFieldMutation) ResetExample() {
+	m.example = nil
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *InterfaceFieldMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *InterfaceFieldMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *InterfaceFieldMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *InterfaceFieldMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *InterfaceFieldMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InterfaceFieldMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InterfaceFieldMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InterfaceFieldMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InterfaceFieldMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InterfaceFieldMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InterfaceFieldMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InterfaceFieldMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InterfaceFieldMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InterfaceField entity.
+// If the InterfaceField object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceFieldMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InterfaceFieldMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[interfacefield.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InterfaceFieldMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[interfacefield.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InterfaceFieldMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, interfacefield.FieldDeletedAt)
+}
+
+// ClearResult clears the "result" edge to the InterfaceResult entity.
+func (m *InterfaceFieldMutation) ClearResult() {
+	m.clearedresult = true
+	m.clearedFields[interfacefield.FieldResultID] = struct{}{}
+}
+
+// ResultCleared reports if the "result" edge to the InterfaceResult entity was cleared.
+func (m *InterfaceFieldMutation) ResultCleared() bool {
+	return m.clearedresult
+}
+
+// ResultIDs returns the "result" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ResultID instead. It exists only for internal usage by the builders.
+func (m *InterfaceFieldMutation) ResultIDs() (ids []int64) {
+	if id := m.result; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetResult resets all changes to the "result" edge.
+func (m *InterfaceFieldMutation) ResetResult() {
+	m.result = nil
+	m.clearedresult = false
+}
+
+// Where appends a list predicates to the InterfaceFieldMutation builder.
+func (m *InterfaceFieldMutation) Where(ps ...predicate.InterfaceField) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InterfaceFieldMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InterfaceFieldMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InterfaceField, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InterfaceFieldMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InterfaceFieldMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InterfaceField).
+func (m *InterfaceFieldMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InterfaceFieldMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.result != nil {
+		fields = append(fields, interfacefield.FieldResultID)
+	}
+	if m.parent_id != nil {
+		fields = append(fields, interfacefield.FieldParentID)
+	}
+	if m.name != nil {
+		fields = append(fields, interfacefield.FieldName)
+	}
+	if m._type != nil {
+		fields = append(fields, interfacefield.FieldType)
+	}
+	if m.required != nil {
+		fields = append(fields, interfacefield.FieldRequired)
+	}
+	if m.description != nil {
+		fields = append(fields, interfacefield.FieldDescription)
+	}
+	if m.mock != nil {
+		fields = append(fields, interfacefield.FieldMock)
+	}
+	if m.example != nil {
+		fields = append(fields, interfacefield.FieldExample)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, interfacefield.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, interfacefield.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, interfacefield.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, interfacefield.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InterfaceFieldMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case interfacefield.FieldResultID:
+		return m.ResultID()
+	case interfacefield.FieldParentID:
+		return m.ParentID()
+	case interfacefield.FieldName:
+		return m.Name()
+	case interfacefield.FieldType:
+		return m.GetType()
+	case interfacefield.FieldRequired:
+		return m.Required()
+	case interfacefield.FieldDescription:
+		return m.Description()
+	case interfacefield.FieldMock:
+		return m.Mock()
+	case interfacefield.FieldExample:
+		return m.Example()
+	case interfacefield.FieldSortOrder:
+		return m.SortOrder()
+	case interfacefield.FieldCreatedAt:
+		return m.CreatedAt()
+	case interfacefield.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case interfacefield.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InterfaceFieldMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case interfacefield.FieldResultID:
+		return m.OldResultID(ctx)
+	case interfacefield.FieldParentID:
+		return m.OldParentID(ctx)
+	case interfacefield.FieldName:
+		return m.OldName(ctx)
+	case interfacefield.FieldType:
+		return m.OldType(ctx)
+	case interfacefield.FieldRequired:
+		return m.OldRequired(ctx)
+	case interfacefield.FieldDescription:
+		return m.OldDescription(ctx)
+	case interfacefield.FieldMock:
+		return m.OldMock(ctx)
+	case interfacefield.FieldExample:
+		return m.OldExample(ctx)
+	case interfacefield.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case interfacefield.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case interfacefield.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case interfacefield.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InterfaceField field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceFieldMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case interfacefield.FieldResultID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResultID(v)
+		return nil
+	case interfacefield.FieldParentID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentID(v)
+		return nil
+	case interfacefield.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case interfacefield.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case interfacefield.FieldRequired:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequired(v)
+		return nil
+	case interfacefield.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case interfacefield.FieldMock:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMock(v)
+		return nil
+	case interfacefield.FieldExample:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExample(v)
+		return nil
+	case interfacefield.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case interfacefield.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case interfacefield.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case interfacefield.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceField field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InterfaceFieldMutation) AddedFields() []string {
+	var fields []string
+	if m.addparent_id != nil {
+		fields = append(fields, interfacefield.FieldParentID)
+	}
+	if m.addsort_order != nil {
+		fields = append(fields, interfacefield.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InterfaceFieldMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case interfacefield.FieldParentID:
+		return m.AddedParentID()
+	case interfacefield.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceFieldMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case interfacefield.FieldParentID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParentID(v)
+		return nil
+	case interfacefield.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceField numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InterfaceFieldMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(interfacefield.FieldDeletedAt) {
+		fields = append(fields, interfacefield.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InterfaceFieldMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InterfaceFieldMutation) ClearField(name string) error {
+	switch name {
+	case interfacefield.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceField nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InterfaceFieldMutation) ResetField(name string) error {
+	switch name {
+	case interfacefield.FieldResultID:
+		m.ResetResultID()
+		return nil
+	case interfacefield.FieldParentID:
+		m.ResetParentID()
+		return nil
+	case interfacefield.FieldName:
+		m.ResetName()
+		return nil
+	case interfacefield.FieldType:
+		m.ResetType()
+		return nil
+	case interfacefield.FieldRequired:
+		m.ResetRequired()
+		return nil
+	case interfacefield.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case interfacefield.FieldMock:
+		m.ResetMock()
+		return nil
+	case interfacefield.FieldExample:
+		m.ResetExample()
+		return nil
+	case interfacefield.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case interfacefield.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case interfacefield.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case interfacefield.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceField field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InterfaceFieldMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.result != nil {
+		edges = append(edges, interfacefield.EdgeResult)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InterfaceFieldMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case interfacefield.EdgeResult:
+		if id := m.result; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InterfaceFieldMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InterfaceFieldMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InterfaceFieldMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedresult {
+		edges = append(edges, interfacefield.EdgeResult)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InterfaceFieldMutation) EdgeCleared(name string) bool {
+	switch name {
+	case interfacefield.EdgeResult:
+		return m.clearedresult
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InterfaceFieldMutation) ClearEdge(name string) error {
+	switch name {
+	case interfacefield.EdgeResult:
+		m.ClearResult()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceField unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InterfaceFieldMutation) ResetEdge(name string) error {
+	switch name {
+	case interfacefield.EdgeResult:
+		m.ResetResult()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceField edge %s", name)
+}
+
+// InterfaceHeaderMutation represents an operation that mutates the InterfaceHeader nodes in the graph.
+type InterfaceHeaderMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int64
+	name              *string
+	_type             *string
+	required          *bool
+	description       *string
+	example           *string
+	sort_order        *int
+	addsort_order     *int
+	created_at        *utils.DateTime
+	updated_at        *utils.DateTime
+	deleted_at        *utils.DateTime
+	clearedFields     map[string]struct{}
+	_interface        *int64
+	cleared_interface bool
+	done              bool
+	oldValue          func(context.Context) (*InterfaceHeader, error)
+	predicates        []predicate.InterfaceHeader
+}
+
+var _ ent.Mutation = (*InterfaceHeaderMutation)(nil)
+
+// interfaceheaderOption allows management of the mutation configuration using functional options.
+type interfaceheaderOption func(*InterfaceHeaderMutation)
+
+// newInterfaceHeaderMutation creates new mutation for the InterfaceHeader entity.
+func newInterfaceHeaderMutation(c config, op Op, opts ...interfaceheaderOption) *InterfaceHeaderMutation {
+	m := &InterfaceHeaderMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInterfaceHeader,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInterfaceHeaderID sets the ID field of the mutation.
+func withInterfaceHeaderID(id int64) interfaceheaderOption {
+	return func(m *InterfaceHeaderMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InterfaceHeader
+		)
+		m.oldValue = func(ctx context.Context) (*InterfaceHeader, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InterfaceHeader.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInterfaceHeader sets the old InterfaceHeader of the mutation.
+func withInterfaceHeader(node *InterfaceHeader) interfaceheaderOption {
+	return func(m *InterfaceHeaderMutation) {
+		m.oldValue = func(context.Context) (*InterfaceHeader, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InterfaceHeaderMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InterfaceHeaderMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InterfaceHeader entities.
+func (m *InterfaceHeaderMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InterfaceHeaderMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InterfaceHeaderMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InterfaceHeader.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetInterfaceID sets the "interface_id" field.
+func (m *InterfaceHeaderMutation) SetInterfaceID(i int64) {
+	m._interface = &i
+}
+
+// InterfaceID returns the value of the "interface_id" field in the mutation.
+func (m *InterfaceHeaderMutation) InterfaceID() (r int64, exists bool) {
+	v := m._interface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterfaceID returns the old "interface_id" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldInterfaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterfaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterfaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterfaceID: %w", err)
+	}
+	return oldValue.InterfaceID, nil
+}
+
+// ResetInterfaceID resets all changes to the "interface_id" field.
+func (m *InterfaceHeaderMutation) ResetInterfaceID() {
+	m._interface = nil
+}
+
+// SetName sets the "name" field.
+func (m *InterfaceHeaderMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InterfaceHeaderMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InterfaceHeaderMutation) ResetName() {
+	m.name = nil
+}
+
+// SetType sets the "type" field.
+func (m *InterfaceHeaderMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *InterfaceHeaderMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *InterfaceHeaderMutation) ResetType() {
+	m._type = nil
+}
+
+// SetRequired sets the "required" field.
+func (m *InterfaceHeaderMutation) SetRequired(b bool) {
+	m.required = &b
+}
+
+// Required returns the value of the "required" field in the mutation.
+func (m *InterfaceHeaderMutation) Required() (r bool, exists bool) {
+	v := m.required
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequired returns the old "required" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldRequired(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequired is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequired requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequired: %w", err)
+	}
+	return oldValue.Required, nil
+}
+
+// ResetRequired resets all changes to the "required" field.
+func (m *InterfaceHeaderMutation) ResetRequired() {
+	m.required = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *InterfaceHeaderMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *InterfaceHeaderMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *InterfaceHeaderMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetExample sets the "example" field.
+func (m *InterfaceHeaderMutation) SetExample(s string) {
+	m.example = &s
+}
+
+// Example returns the value of the "example" field in the mutation.
+func (m *InterfaceHeaderMutation) Example() (r string, exists bool) {
+	v := m.example
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExample returns the old "example" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldExample(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExample is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExample requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExample: %w", err)
+	}
+	return oldValue.Example, nil
+}
+
+// ResetExample resets all changes to the "example" field.
+func (m *InterfaceHeaderMutation) ResetExample() {
+	m.example = nil
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *InterfaceHeaderMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *InterfaceHeaderMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *InterfaceHeaderMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *InterfaceHeaderMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *InterfaceHeaderMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InterfaceHeaderMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InterfaceHeaderMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InterfaceHeaderMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InterfaceHeaderMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InterfaceHeaderMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InterfaceHeaderMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InterfaceHeaderMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InterfaceHeaderMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InterfaceHeader entity.
+// If the InterfaceHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceHeaderMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InterfaceHeaderMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[interfaceheader.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InterfaceHeaderMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[interfaceheader.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InterfaceHeaderMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, interfaceheader.FieldDeletedAt)
+}
+
+// ClearInterface clears the "interface" edge to the API entity.
+func (m *InterfaceHeaderMutation) ClearInterface() {
+	m.cleared_interface = true
+	m.clearedFields[interfaceheader.FieldInterfaceID] = struct{}{}
+}
+
+// InterfaceCleared reports if the "interface" edge to the API entity was cleared.
+func (m *InterfaceHeaderMutation) InterfaceCleared() bool {
+	return m.cleared_interface
+}
+
+// InterfaceIDs returns the "interface" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InterfaceID instead. It exists only for internal usage by the builders.
+func (m *InterfaceHeaderMutation) InterfaceIDs() (ids []int64) {
+	if id := m._interface; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInterface resets all changes to the "interface" edge.
+func (m *InterfaceHeaderMutation) ResetInterface() {
+	m._interface = nil
+	m.cleared_interface = false
+}
+
+// Where appends a list predicates to the InterfaceHeaderMutation builder.
+func (m *InterfaceHeaderMutation) Where(ps ...predicate.InterfaceHeader) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InterfaceHeaderMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InterfaceHeaderMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InterfaceHeader, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InterfaceHeaderMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InterfaceHeaderMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InterfaceHeader).
+func (m *InterfaceHeaderMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InterfaceHeaderMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m._interface != nil {
+		fields = append(fields, interfaceheader.FieldInterfaceID)
+	}
+	if m.name != nil {
+		fields = append(fields, interfaceheader.FieldName)
+	}
+	if m._type != nil {
+		fields = append(fields, interfaceheader.FieldType)
+	}
+	if m.required != nil {
+		fields = append(fields, interfaceheader.FieldRequired)
+	}
+	if m.description != nil {
+		fields = append(fields, interfaceheader.FieldDescription)
+	}
+	if m.example != nil {
+		fields = append(fields, interfaceheader.FieldExample)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, interfaceheader.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, interfaceheader.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, interfaceheader.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, interfaceheader.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InterfaceHeaderMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case interfaceheader.FieldInterfaceID:
+		return m.InterfaceID()
+	case interfaceheader.FieldName:
+		return m.Name()
+	case interfaceheader.FieldType:
+		return m.GetType()
+	case interfaceheader.FieldRequired:
+		return m.Required()
+	case interfaceheader.FieldDescription:
+		return m.Description()
+	case interfaceheader.FieldExample:
+		return m.Example()
+	case interfaceheader.FieldSortOrder:
+		return m.SortOrder()
+	case interfaceheader.FieldCreatedAt:
+		return m.CreatedAt()
+	case interfaceheader.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case interfaceheader.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InterfaceHeaderMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case interfaceheader.FieldInterfaceID:
+		return m.OldInterfaceID(ctx)
+	case interfaceheader.FieldName:
+		return m.OldName(ctx)
+	case interfaceheader.FieldType:
+		return m.OldType(ctx)
+	case interfaceheader.FieldRequired:
+		return m.OldRequired(ctx)
+	case interfaceheader.FieldDescription:
+		return m.OldDescription(ctx)
+	case interfaceheader.FieldExample:
+		return m.OldExample(ctx)
+	case interfaceheader.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case interfaceheader.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case interfaceheader.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case interfaceheader.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InterfaceHeader field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceHeaderMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case interfaceheader.FieldInterfaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterfaceID(v)
+		return nil
+	case interfaceheader.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case interfaceheader.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case interfaceheader.FieldRequired:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequired(v)
+		return nil
+	case interfaceheader.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case interfaceheader.FieldExample:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExample(v)
+		return nil
+	case interfaceheader.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case interfaceheader.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case interfaceheader.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case interfaceheader.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceHeader field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InterfaceHeaderMutation) AddedFields() []string {
+	var fields []string
+	if m.addsort_order != nil {
+		fields = append(fields, interfaceheader.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InterfaceHeaderMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case interfaceheader.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceHeaderMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case interfaceheader.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceHeader numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InterfaceHeaderMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(interfaceheader.FieldDeletedAt) {
+		fields = append(fields, interfaceheader.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InterfaceHeaderMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InterfaceHeaderMutation) ClearField(name string) error {
+	switch name {
+	case interfaceheader.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceHeader nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InterfaceHeaderMutation) ResetField(name string) error {
+	switch name {
+	case interfaceheader.FieldInterfaceID:
+		m.ResetInterfaceID()
+		return nil
+	case interfaceheader.FieldName:
+		m.ResetName()
+		return nil
+	case interfaceheader.FieldType:
+		m.ResetType()
+		return nil
+	case interfaceheader.FieldRequired:
+		m.ResetRequired()
+		return nil
+	case interfaceheader.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case interfaceheader.FieldExample:
+		m.ResetExample()
+		return nil
+	case interfaceheader.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case interfaceheader.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case interfaceheader.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case interfaceheader.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceHeader field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InterfaceHeaderMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m._interface != nil {
+		edges = append(edges, interfaceheader.EdgeInterface)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InterfaceHeaderMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case interfaceheader.EdgeInterface:
+		if id := m._interface; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InterfaceHeaderMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InterfaceHeaderMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InterfaceHeaderMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleared_interface {
+		edges = append(edges, interfaceheader.EdgeInterface)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InterfaceHeaderMutation) EdgeCleared(name string) bool {
+	switch name {
+	case interfaceheader.EdgeInterface:
+		return m.cleared_interface
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InterfaceHeaderMutation) ClearEdge(name string) error {
+	switch name {
+	case interfaceheader.EdgeInterface:
+		m.ClearInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceHeader unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InterfaceHeaderMutation) ResetEdge(name string) error {
+	switch name {
+	case interfaceheader.EdgeInterface:
+		m.ResetInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceHeader edge %s", name)
+}
+
+// InterfaceQueryParamMutation represents an operation that mutates the InterfaceQueryParam nodes in the graph.
+type InterfaceQueryParamMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int64
+	name              *string
+	_type             *string
+	required          *bool
+	description       *string
+	example           *string
+	sort_order        *int
+	addsort_order     *int
+	created_at        *utils.DateTime
+	updated_at        *utils.DateTime
+	deleted_at        *utils.DateTime
+	clearedFields     map[string]struct{}
+	_interface        *int64
+	cleared_interface bool
+	done              bool
+	oldValue          func(context.Context) (*InterfaceQueryParam, error)
+	predicates        []predicate.InterfaceQueryParam
+}
+
+var _ ent.Mutation = (*InterfaceQueryParamMutation)(nil)
+
+// interfacequeryparamOption allows management of the mutation configuration using functional options.
+type interfacequeryparamOption func(*InterfaceQueryParamMutation)
+
+// newInterfaceQueryParamMutation creates new mutation for the InterfaceQueryParam entity.
+func newInterfaceQueryParamMutation(c config, op Op, opts ...interfacequeryparamOption) *InterfaceQueryParamMutation {
+	m := &InterfaceQueryParamMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInterfaceQueryParam,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInterfaceQueryParamID sets the ID field of the mutation.
+func withInterfaceQueryParamID(id int64) interfacequeryparamOption {
+	return func(m *InterfaceQueryParamMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InterfaceQueryParam
+		)
+		m.oldValue = func(ctx context.Context) (*InterfaceQueryParam, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InterfaceQueryParam.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInterfaceQueryParam sets the old InterfaceQueryParam of the mutation.
+func withInterfaceQueryParam(node *InterfaceQueryParam) interfacequeryparamOption {
+	return func(m *InterfaceQueryParamMutation) {
+		m.oldValue = func(context.Context) (*InterfaceQueryParam, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InterfaceQueryParamMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InterfaceQueryParamMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InterfaceQueryParam entities.
+func (m *InterfaceQueryParamMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InterfaceQueryParamMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InterfaceQueryParamMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InterfaceQueryParam.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetInterfaceID sets the "interface_id" field.
+func (m *InterfaceQueryParamMutation) SetInterfaceID(i int64) {
+	m._interface = &i
+}
+
+// InterfaceID returns the value of the "interface_id" field in the mutation.
+func (m *InterfaceQueryParamMutation) InterfaceID() (r int64, exists bool) {
+	v := m._interface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterfaceID returns the old "interface_id" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldInterfaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterfaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterfaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterfaceID: %w", err)
+	}
+	return oldValue.InterfaceID, nil
+}
+
+// ResetInterfaceID resets all changes to the "interface_id" field.
+func (m *InterfaceQueryParamMutation) ResetInterfaceID() {
+	m._interface = nil
+}
+
+// SetName sets the "name" field.
+func (m *InterfaceQueryParamMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InterfaceQueryParamMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InterfaceQueryParamMutation) ResetName() {
+	m.name = nil
+}
+
+// SetType sets the "type" field.
+func (m *InterfaceQueryParamMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *InterfaceQueryParamMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *InterfaceQueryParamMutation) ResetType() {
+	m._type = nil
+}
+
+// SetRequired sets the "required" field.
+func (m *InterfaceQueryParamMutation) SetRequired(b bool) {
+	m.required = &b
+}
+
+// Required returns the value of the "required" field in the mutation.
+func (m *InterfaceQueryParamMutation) Required() (r bool, exists bool) {
+	v := m.required
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequired returns the old "required" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldRequired(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequired is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequired requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequired: %w", err)
+	}
+	return oldValue.Required, nil
+}
+
+// ResetRequired resets all changes to the "required" field.
+func (m *InterfaceQueryParamMutation) ResetRequired() {
+	m.required = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *InterfaceQueryParamMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *InterfaceQueryParamMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *InterfaceQueryParamMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetExample sets the "example" field.
+func (m *InterfaceQueryParamMutation) SetExample(s string) {
+	m.example = &s
+}
+
+// Example returns the value of the "example" field in the mutation.
+func (m *InterfaceQueryParamMutation) Example() (r string, exists bool) {
+	v := m.example
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExample returns the old "example" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldExample(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExample is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExample requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExample: %w", err)
+	}
+	return oldValue.Example, nil
+}
+
+// ResetExample resets all changes to the "example" field.
+func (m *InterfaceQueryParamMutation) ResetExample() {
+	m.example = nil
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *InterfaceQueryParamMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *InterfaceQueryParamMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *InterfaceQueryParamMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *InterfaceQueryParamMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *InterfaceQueryParamMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InterfaceQueryParamMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InterfaceQueryParamMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InterfaceQueryParamMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InterfaceQueryParamMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InterfaceQueryParamMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InterfaceQueryParamMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InterfaceQueryParamMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InterfaceQueryParamMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InterfaceQueryParam entity.
+// If the InterfaceQueryParam object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceQueryParamMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InterfaceQueryParamMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[interfacequeryparam.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InterfaceQueryParamMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[interfacequeryparam.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InterfaceQueryParamMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, interfacequeryparam.FieldDeletedAt)
+}
+
+// ClearInterface clears the "interface" edge to the API entity.
+func (m *InterfaceQueryParamMutation) ClearInterface() {
+	m.cleared_interface = true
+	m.clearedFields[interfacequeryparam.FieldInterfaceID] = struct{}{}
+}
+
+// InterfaceCleared reports if the "interface" edge to the API entity was cleared.
+func (m *InterfaceQueryParamMutation) InterfaceCleared() bool {
+	return m.cleared_interface
+}
+
+// InterfaceIDs returns the "interface" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InterfaceID instead. It exists only for internal usage by the builders.
+func (m *InterfaceQueryParamMutation) InterfaceIDs() (ids []int64) {
+	if id := m._interface; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInterface resets all changes to the "interface" edge.
+func (m *InterfaceQueryParamMutation) ResetInterface() {
+	m._interface = nil
+	m.cleared_interface = false
+}
+
+// Where appends a list predicates to the InterfaceQueryParamMutation builder.
+func (m *InterfaceQueryParamMutation) Where(ps ...predicate.InterfaceQueryParam) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InterfaceQueryParamMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InterfaceQueryParamMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InterfaceQueryParam, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InterfaceQueryParamMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InterfaceQueryParamMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InterfaceQueryParam).
+func (m *InterfaceQueryParamMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InterfaceQueryParamMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m._interface != nil {
+		fields = append(fields, interfacequeryparam.FieldInterfaceID)
+	}
+	if m.name != nil {
+		fields = append(fields, interfacequeryparam.FieldName)
+	}
+	if m._type != nil {
+		fields = append(fields, interfacequeryparam.FieldType)
+	}
+	if m.required != nil {
+		fields = append(fields, interfacequeryparam.FieldRequired)
+	}
+	if m.description != nil {
+		fields = append(fields, interfacequeryparam.FieldDescription)
+	}
+	if m.example != nil {
+		fields = append(fields, interfacequeryparam.FieldExample)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, interfacequeryparam.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, interfacequeryparam.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, interfacequeryparam.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, interfacequeryparam.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InterfaceQueryParamMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case interfacequeryparam.FieldInterfaceID:
+		return m.InterfaceID()
+	case interfacequeryparam.FieldName:
+		return m.Name()
+	case interfacequeryparam.FieldType:
+		return m.GetType()
+	case interfacequeryparam.FieldRequired:
+		return m.Required()
+	case interfacequeryparam.FieldDescription:
+		return m.Description()
+	case interfacequeryparam.FieldExample:
+		return m.Example()
+	case interfacequeryparam.FieldSortOrder:
+		return m.SortOrder()
+	case interfacequeryparam.FieldCreatedAt:
+		return m.CreatedAt()
+	case interfacequeryparam.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case interfacequeryparam.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InterfaceQueryParamMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case interfacequeryparam.FieldInterfaceID:
+		return m.OldInterfaceID(ctx)
+	case interfacequeryparam.FieldName:
+		return m.OldName(ctx)
+	case interfacequeryparam.FieldType:
+		return m.OldType(ctx)
+	case interfacequeryparam.FieldRequired:
+		return m.OldRequired(ctx)
+	case interfacequeryparam.FieldDescription:
+		return m.OldDescription(ctx)
+	case interfacequeryparam.FieldExample:
+		return m.OldExample(ctx)
+	case interfacequeryparam.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case interfacequeryparam.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case interfacequeryparam.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case interfacequeryparam.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InterfaceQueryParam field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceQueryParamMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case interfacequeryparam.FieldInterfaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterfaceID(v)
+		return nil
+	case interfacequeryparam.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case interfacequeryparam.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case interfacequeryparam.FieldRequired:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequired(v)
+		return nil
+	case interfacequeryparam.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case interfacequeryparam.FieldExample:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExample(v)
+		return nil
+	case interfacequeryparam.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case interfacequeryparam.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case interfacequeryparam.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case interfacequeryparam.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceQueryParam field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InterfaceQueryParamMutation) AddedFields() []string {
+	var fields []string
+	if m.addsort_order != nil {
+		fields = append(fields, interfacequeryparam.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InterfaceQueryParamMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case interfacequeryparam.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceQueryParamMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case interfacequeryparam.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceQueryParam numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InterfaceQueryParamMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(interfacequeryparam.FieldDeletedAt) {
+		fields = append(fields, interfacequeryparam.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InterfaceQueryParamMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InterfaceQueryParamMutation) ClearField(name string) error {
+	switch name {
+	case interfacequeryparam.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceQueryParam nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InterfaceQueryParamMutation) ResetField(name string) error {
+	switch name {
+	case interfacequeryparam.FieldInterfaceID:
+		m.ResetInterfaceID()
+		return nil
+	case interfacequeryparam.FieldName:
+		m.ResetName()
+		return nil
+	case interfacequeryparam.FieldType:
+		m.ResetType()
+		return nil
+	case interfacequeryparam.FieldRequired:
+		m.ResetRequired()
+		return nil
+	case interfacequeryparam.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case interfacequeryparam.FieldExample:
+		m.ResetExample()
+		return nil
+	case interfacequeryparam.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case interfacequeryparam.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case interfacequeryparam.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case interfacequeryparam.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceQueryParam field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InterfaceQueryParamMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m._interface != nil {
+		edges = append(edges, interfacequeryparam.EdgeInterface)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InterfaceQueryParamMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case interfacequeryparam.EdgeInterface:
+		if id := m._interface; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InterfaceQueryParamMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InterfaceQueryParamMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InterfaceQueryParamMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleared_interface {
+		edges = append(edges, interfacequeryparam.EdgeInterface)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InterfaceQueryParamMutation) EdgeCleared(name string) bool {
+	switch name {
+	case interfacequeryparam.EdgeInterface:
+		return m.cleared_interface
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InterfaceQueryParamMutation) ClearEdge(name string) error {
+	switch name {
+	case interfacequeryparam.EdgeInterface:
+		m.ClearInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceQueryParam unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InterfaceQueryParamMutation) ResetEdge(name string) error {
+	switch name {
+	case interfacequeryparam.EdgeInterface:
+		m.ResetInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceQueryParam edge %s", name)
+}
+
+// InterfaceRequestHeaderMutation represents an operation that mutates the InterfaceRequestHeader nodes in the graph.
+type InterfaceRequestHeaderMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int64
+	name              *string
+	_type             *string
+	required          *bool
+	description       *string
+	example           *string
+	sort_order        *int
+	addsort_order     *int
+	created_at        *utils.DateTime
+	updated_at        *utils.DateTime
+	deleted_at        *utils.DateTime
+	clearedFields     map[string]struct{}
+	_interface        *int64
+	cleared_interface bool
+	done              bool
+	oldValue          func(context.Context) (*InterfaceRequestHeader, error)
+	predicates        []predicate.InterfaceRequestHeader
+}
+
+var _ ent.Mutation = (*InterfaceRequestHeaderMutation)(nil)
+
+// interfacerequestheaderOption allows management of the mutation configuration using functional options.
+type interfacerequestheaderOption func(*InterfaceRequestHeaderMutation)
+
+// newInterfaceRequestHeaderMutation creates new mutation for the InterfaceRequestHeader entity.
+func newInterfaceRequestHeaderMutation(c config, op Op, opts ...interfacerequestheaderOption) *InterfaceRequestHeaderMutation {
+	m := &InterfaceRequestHeaderMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInterfaceRequestHeader,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInterfaceRequestHeaderID sets the ID field of the mutation.
+func withInterfaceRequestHeaderID(id int64) interfacerequestheaderOption {
+	return func(m *InterfaceRequestHeaderMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InterfaceRequestHeader
+		)
+		m.oldValue = func(ctx context.Context) (*InterfaceRequestHeader, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InterfaceRequestHeader.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInterfaceRequestHeader sets the old InterfaceRequestHeader of the mutation.
+func withInterfaceRequestHeader(node *InterfaceRequestHeader) interfacerequestheaderOption {
+	return func(m *InterfaceRequestHeaderMutation) {
+		m.oldValue = func(context.Context) (*InterfaceRequestHeader, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InterfaceRequestHeaderMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InterfaceRequestHeaderMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InterfaceRequestHeader entities.
+func (m *InterfaceRequestHeaderMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InterfaceRequestHeaderMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InterfaceRequestHeaderMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InterfaceRequestHeader.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetInterfaceID sets the "interface_id" field.
+func (m *InterfaceRequestHeaderMutation) SetInterfaceID(i int64) {
+	m._interface = &i
+}
+
+// InterfaceID returns the value of the "interface_id" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) InterfaceID() (r int64, exists bool) {
+	v := m._interface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterfaceID returns the old "interface_id" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldInterfaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterfaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterfaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterfaceID: %w", err)
+	}
+	return oldValue.InterfaceID, nil
+}
+
+// ResetInterfaceID resets all changes to the "interface_id" field.
+func (m *InterfaceRequestHeaderMutation) ResetInterfaceID() {
+	m._interface = nil
+}
+
+// SetName sets the "name" field.
+func (m *InterfaceRequestHeaderMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InterfaceRequestHeaderMutation) ResetName() {
+	m.name = nil
+}
+
+// SetType sets the "type" field.
+func (m *InterfaceRequestHeaderMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *InterfaceRequestHeaderMutation) ResetType() {
+	m._type = nil
+}
+
+// SetRequired sets the "required" field.
+func (m *InterfaceRequestHeaderMutation) SetRequired(b bool) {
+	m.required = &b
+}
+
+// Required returns the value of the "required" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) Required() (r bool, exists bool) {
+	v := m.required
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequired returns the old "required" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldRequired(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequired is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequired requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequired: %w", err)
+	}
+	return oldValue.Required, nil
+}
+
+// ResetRequired resets all changes to the "required" field.
+func (m *InterfaceRequestHeaderMutation) ResetRequired() {
+	m.required = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *InterfaceRequestHeaderMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *InterfaceRequestHeaderMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetExample sets the "example" field.
+func (m *InterfaceRequestHeaderMutation) SetExample(s string) {
+	m.example = &s
+}
+
+// Example returns the value of the "example" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) Example() (r string, exists bool) {
+	v := m.example
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExample returns the old "example" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldExample(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExample is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExample requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExample: %w", err)
+	}
+	return oldValue.Example, nil
+}
+
+// ResetExample resets all changes to the "example" field.
+func (m *InterfaceRequestHeaderMutation) ResetExample() {
+	m.example = nil
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *InterfaceRequestHeaderMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *InterfaceRequestHeaderMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *InterfaceRequestHeaderMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *InterfaceRequestHeaderMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InterfaceRequestHeaderMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InterfaceRequestHeaderMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InterfaceRequestHeaderMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InterfaceRequestHeaderMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InterfaceRequestHeaderMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InterfaceRequestHeaderMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InterfaceRequestHeader entity.
+// If the InterfaceRequestHeader object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceRequestHeaderMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InterfaceRequestHeaderMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[interfacerequestheader.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InterfaceRequestHeaderMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[interfacerequestheader.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InterfaceRequestHeaderMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, interfacerequestheader.FieldDeletedAt)
+}
+
+// ClearInterface clears the "interface" edge to the API entity.
+func (m *InterfaceRequestHeaderMutation) ClearInterface() {
+	m.cleared_interface = true
+	m.clearedFields[interfacerequestheader.FieldInterfaceID] = struct{}{}
+}
+
+// InterfaceCleared reports if the "interface" edge to the API entity was cleared.
+func (m *InterfaceRequestHeaderMutation) InterfaceCleared() bool {
+	return m.cleared_interface
+}
+
+// InterfaceIDs returns the "interface" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InterfaceID instead. It exists only for internal usage by the builders.
+func (m *InterfaceRequestHeaderMutation) InterfaceIDs() (ids []int64) {
+	if id := m._interface; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInterface resets all changes to the "interface" edge.
+func (m *InterfaceRequestHeaderMutation) ResetInterface() {
+	m._interface = nil
+	m.cleared_interface = false
+}
+
+// Where appends a list predicates to the InterfaceRequestHeaderMutation builder.
+func (m *InterfaceRequestHeaderMutation) Where(ps ...predicate.InterfaceRequestHeader) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InterfaceRequestHeaderMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InterfaceRequestHeaderMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InterfaceRequestHeader, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InterfaceRequestHeaderMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InterfaceRequestHeaderMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InterfaceRequestHeader).
+func (m *InterfaceRequestHeaderMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InterfaceRequestHeaderMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m._interface != nil {
+		fields = append(fields, interfacerequestheader.FieldInterfaceID)
+	}
+	if m.name != nil {
+		fields = append(fields, interfacerequestheader.FieldName)
+	}
+	if m._type != nil {
+		fields = append(fields, interfacerequestheader.FieldType)
+	}
+	if m.required != nil {
+		fields = append(fields, interfacerequestheader.FieldRequired)
+	}
+	if m.description != nil {
+		fields = append(fields, interfacerequestheader.FieldDescription)
+	}
+	if m.example != nil {
+		fields = append(fields, interfacerequestheader.FieldExample)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, interfacerequestheader.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, interfacerequestheader.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, interfacerequestheader.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, interfacerequestheader.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InterfaceRequestHeaderMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case interfacerequestheader.FieldInterfaceID:
+		return m.InterfaceID()
+	case interfacerequestheader.FieldName:
+		return m.Name()
+	case interfacerequestheader.FieldType:
+		return m.GetType()
+	case interfacerequestheader.FieldRequired:
+		return m.Required()
+	case interfacerequestheader.FieldDescription:
+		return m.Description()
+	case interfacerequestheader.FieldExample:
+		return m.Example()
+	case interfacerequestheader.FieldSortOrder:
+		return m.SortOrder()
+	case interfacerequestheader.FieldCreatedAt:
+		return m.CreatedAt()
+	case interfacerequestheader.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case interfacerequestheader.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InterfaceRequestHeaderMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case interfacerequestheader.FieldInterfaceID:
+		return m.OldInterfaceID(ctx)
+	case interfacerequestheader.FieldName:
+		return m.OldName(ctx)
+	case interfacerequestheader.FieldType:
+		return m.OldType(ctx)
+	case interfacerequestheader.FieldRequired:
+		return m.OldRequired(ctx)
+	case interfacerequestheader.FieldDescription:
+		return m.OldDescription(ctx)
+	case interfacerequestheader.FieldExample:
+		return m.OldExample(ctx)
+	case interfacerequestheader.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case interfacerequestheader.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case interfacerequestheader.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case interfacerequestheader.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InterfaceRequestHeader field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceRequestHeaderMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case interfacerequestheader.FieldInterfaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterfaceID(v)
+		return nil
+	case interfacerequestheader.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case interfacerequestheader.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case interfacerequestheader.FieldRequired:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequired(v)
+		return nil
+	case interfacerequestheader.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case interfacerequestheader.FieldExample:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExample(v)
+		return nil
+	case interfacerequestheader.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case interfacerequestheader.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case interfacerequestheader.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case interfacerequestheader.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceRequestHeader field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InterfaceRequestHeaderMutation) AddedFields() []string {
+	var fields []string
+	if m.addsort_order != nil {
+		fields = append(fields, interfacerequestheader.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InterfaceRequestHeaderMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case interfacerequestheader.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceRequestHeaderMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case interfacerequestheader.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceRequestHeader numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InterfaceRequestHeaderMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(interfacerequestheader.FieldDeletedAt) {
+		fields = append(fields, interfacerequestheader.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InterfaceRequestHeaderMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InterfaceRequestHeaderMutation) ClearField(name string) error {
+	switch name {
+	case interfacerequestheader.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceRequestHeader nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InterfaceRequestHeaderMutation) ResetField(name string) error {
+	switch name {
+	case interfacerequestheader.FieldInterfaceID:
+		m.ResetInterfaceID()
+		return nil
+	case interfacerequestheader.FieldName:
+		m.ResetName()
+		return nil
+	case interfacerequestheader.FieldType:
+		m.ResetType()
+		return nil
+	case interfacerequestheader.FieldRequired:
+		m.ResetRequired()
+		return nil
+	case interfacerequestheader.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case interfacerequestheader.FieldExample:
+		m.ResetExample()
+		return nil
+	case interfacerequestheader.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case interfacerequestheader.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case interfacerequestheader.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case interfacerequestheader.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceRequestHeader field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InterfaceRequestHeaderMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m._interface != nil {
+		edges = append(edges, interfacerequestheader.EdgeInterface)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InterfaceRequestHeaderMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case interfacerequestheader.EdgeInterface:
+		if id := m._interface; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InterfaceRequestHeaderMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InterfaceRequestHeaderMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InterfaceRequestHeaderMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleared_interface {
+		edges = append(edges, interfacerequestheader.EdgeInterface)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InterfaceRequestHeaderMutation) EdgeCleared(name string) bool {
+	switch name {
+	case interfacerequestheader.EdgeInterface:
+		return m.cleared_interface
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InterfaceRequestHeaderMutation) ClearEdge(name string) error {
+	switch name {
+	case interfacerequestheader.EdgeInterface:
+		m.ClearInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceRequestHeader unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InterfaceRequestHeaderMutation) ResetEdge(name string) error {
+	switch name {
+	case interfacerequestheader.EdgeInterface:
+		m.ResetInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceRequestHeader edge %s", name)
+}
+
+// InterfaceResultMutation represents an operation that mutates the InterfaceResult nodes in the graph.
+type InterfaceResultMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int64
+	name              *string
+	status_code       *int
+	addstatus_code    *int
+	format            *string
+	data_type         *string
+	sort_order        *int
+	addsort_order     *int
+	created_at        *utils.DateTime
+	updated_at        *utils.DateTime
+	deleted_at        *utils.DateTime
+	clearedFields     map[string]struct{}
+	_interface        *int64
+	cleared_interface bool
+	fields            map[int64]struct{}
+	removedfields     map[int64]struct{}
+	clearedfields     bool
+	done              bool
+	oldValue          func(context.Context) (*InterfaceResult, error)
+	predicates        []predicate.InterfaceResult
+}
+
+var _ ent.Mutation = (*InterfaceResultMutation)(nil)
+
+// interfaceresultOption allows management of the mutation configuration using functional options.
+type interfaceresultOption func(*InterfaceResultMutation)
+
+// newInterfaceResultMutation creates new mutation for the InterfaceResult entity.
+func newInterfaceResultMutation(c config, op Op, opts ...interfaceresultOption) *InterfaceResultMutation {
+	m := &InterfaceResultMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInterfaceResult,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInterfaceResultID sets the ID field of the mutation.
+func withInterfaceResultID(id int64) interfaceresultOption {
+	return func(m *InterfaceResultMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InterfaceResult
+		)
+		m.oldValue = func(ctx context.Context) (*InterfaceResult, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InterfaceResult.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInterfaceResult sets the old InterfaceResult of the mutation.
+func withInterfaceResult(node *InterfaceResult) interfaceresultOption {
+	return func(m *InterfaceResultMutation) {
+		m.oldValue = func(context.Context) (*InterfaceResult, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InterfaceResultMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InterfaceResultMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InterfaceResult entities.
+func (m *InterfaceResultMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InterfaceResultMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InterfaceResultMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InterfaceResult.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetInterfaceID sets the "interface_id" field.
+func (m *InterfaceResultMutation) SetInterfaceID(i int64) {
+	m._interface = &i
+}
+
+// InterfaceID returns the value of the "interface_id" field in the mutation.
+func (m *InterfaceResultMutation) InterfaceID() (r int64, exists bool) {
+	v := m._interface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterfaceID returns the old "interface_id" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldInterfaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterfaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterfaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterfaceID: %w", err)
+	}
+	return oldValue.InterfaceID, nil
+}
+
+// ResetInterfaceID resets all changes to the "interface_id" field.
+func (m *InterfaceResultMutation) ResetInterfaceID() {
+	m._interface = nil
+}
+
+// SetName sets the "name" field.
+func (m *InterfaceResultMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InterfaceResultMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InterfaceResultMutation) ResetName() {
+	m.name = nil
+}
+
+// SetStatusCode sets the "status_code" field.
+func (m *InterfaceResultMutation) SetStatusCode(i int) {
+	m.status_code = &i
+	m.addstatus_code = nil
+}
+
+// StatusCode returns the value of the "status_code" field in the mutation.
+func (m *InterfaceResultMutation) StatusCode() (r int, exists bool) {
+	v := m.status_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusCode returns the old "status_code" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldStatusCode(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatusCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatusCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusCode: %w", err)
+	}
+	return oldValue.StatusCode, nil
+}
+
+// AddStatusCode adds i to the "status_code" field.
+func (m *InterfaceResultMutation) AddStatusCode(i int) {
+	if m.addstatus_code != nil {
+		*m.addstatus_code += i
+	} else {
+		m.addstatus_code = &i
+	}
+}
+
+// AddedStatusCode returns the value that was added to the "status_code" field in this mutation.
+func (m *InterfaceResultMutation) AddedStatusCode() (r int, exists bool) {
+	v := m.addstatus_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStatusCode resets all changes to the "status_code" field.
+func (m *InterfaceResultMutation) ResetStatusCode() {
+	m.status_code = nil
+	m.addstatus_code = nil
+}
+
+// SetFormat sets the "format" field.
+func (m *InterfaceResultMutation) SetFormat(s string) {
+	m.format = &s
+}
+
+// Format returns the value of the "format" field in the mutation.
+func (m *InterfaceResultMutation) Format() (r string, exists bool) {
+	v := m.format
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFormat returns the old "format" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldFormat(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFormat is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFormat requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFormat: %w", err)
+	}
+	return oldValue.Format, nil
+}
+
+// ResetFormat resets all changes to the "format" field.
+func (m *InterfaceResultMutation) ResetFormat() {
+	m.format = nil
+}
+
+// SetDataType sets the "data_type" field.
+func (m *InterfaceResultMutation) SetDataType(s string) {
+	m.data_type = &s
+}
+
+// DataType returns the value of the "data_type" field in the mutation.
+func (m *InterfaceResultMutation) DataType() (r string, exists bool) {
+	v := m.data_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDataType returns the old "data_type" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldDataType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDataType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDataType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDataType: %w", err)
+	}
+	return oldValue.DataType, nil
+}
+
+// ResetDataType resets all changes to the "data_type" field.
+func (m *InterfaceResultMutation) ResetDataType() {
+	m.data_type = nil
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *InterfaceResultMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *InterfaceResultMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *InterfaceResultMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *InterfaceResultMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *InterfaceResultMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InterfaceResultMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InterfaceResultMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InterfaceResultMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InterfaceResultMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InterfaceResultMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InterfaceResultMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InterfaceResultMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InterfaceResultMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InterfaceResult entity.
+// If the InterfaceResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InterfaceResultMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InterfaceResultMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[interfaceresult.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InterfaceResultMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[interfaceresult.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InterfaceResultMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, interfaceresult.FieldDeletedAt)
+}
+
+// ClearInterface clears the "interface" edge to the API entity.
+func (m *InterfaceResultMutation) ClearInterface() {
+	m.cleared_interface = true
+	m.clearedFields[interfaceresult.FieldInterfaceID] = struct{}{}
+}
+
+// InterfaceCleared reports if the "interface" edge to the API entity was cleared.
+func (m *InterfaceResultMutation) InterfaceCleared() bool {
+	return m.cleared_interface
+}
+
+// InterfaceIDs returns the "interface" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InterfaceID instead. It exists only for internal usage by the builders.
+func (m *InterfaceResultMutation) InterfaceIDs() (ids []int64) {
+	if id := m._interface; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInterface resets all changes to the "interface" edge.
+func (m *InterfaceResultMutation) ResetInterface() {
+	m._interface = nil
+	m.cleared_interface = false
+}
+
+// AddFieldIDs adds the "fields" edge to the InterfaceField entity by ids.
+func (m *InterfaceResultMutation) AddFieldIDs(ids ...int64) {
+	if m.fields == nil {
+		m.fields = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.fields[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFields clears the "fields" edge to the InterfaceField entity.
+func (m *InterfaceResultMutation) ClearFields() {
+	m.clearedfields = true
+}
+
+// FieldsCleared reports if the "fields" edge to the InterfaceField entity was cleared.
+func (m *InterfaceResultMutation) FieldsCleared() bool {
+	return m.clearedfields
+}
+
+// RemoveFieldIDs removes the "fields" edge to the InterfaceField entity by IDs.
+func (m *InterfaceResultMutation) RemoveFieldIDs(ids ...int64) {
+	if m.removedfields == nil {
+		m.removedfields = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.fields, ids[i])
+		m.removedfields[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFields returns the removed IDs of the "fields" edge to the InterfaceField entity.
+func (m *InterfaceResultMutation) RemovedFieldsIDs() (ids []int64) {
+	for id := range m.removedfields {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FieldsIDs returns the "fields" edge IDs in the mutation.
+func (m *InterfaceResultMutation) FieldsIDs() (ids []int64) {
+	for id := range m.fields {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFields resets all changes to the "fields" edge.
+func (m *InterfaceResultMutation) ResetFields() {
+	m.fields = nil
+	m.clearedfields = false
+	m.removedfields = nil
+}
+
+// Where appends a list predicates to the InterfaceResultMutation builder.
+func (m *InterfaceResultMutation) Where(ps ...predicate.InterfaceResult) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InterfaceResultMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InterfaceResultMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InterfaceResult, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InterfaceResultMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InterfaceResultMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InterfaceResult).
+func (m *InterfaceResultMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InterfaceResultMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m._interface != nil {
+		fields = append(fields, interfaceresult.FieldInterfaceID)
+	}
+	if m.name != nil {
+		fields = append(fields, interfaceresult.FieldName)
+	}
+	if m.status_code != nil {
+		fields = append(fields, interfaceresult.FieldStatusCode)
+	}
+	if m.format != nil {
+		fields = append(fields, interfaceresult.FieldFormat)
+	}
+	if m.data_type != nil {
+		fields = append(fields, interfaceresult.FieldDataType)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, interfaceresult.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, interfaceresult.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, interfaceresult.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, interfaceresult.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InterfaceResultMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case interfaceresult.FieldInterfaceID:
+		return m.InterfaceID()
+	case interfaceresult.FieldName:
+		return m.Name()
+	case interfaceresult.FieldStatusCode:
+		return m.StatusCode()
+	case interfaceresult.FieldFormat:
+		return m.Format()
+	case interfaceresult.FieldDataType:
+		return m.DataType()
+	case interfaceresult.FieldSortOrder:
+		return m.SortOrder()
+	case interfaceresult.FieldCreatedAt:
+		return m.CreatedAt()
+	case interfaceresult.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case interfaceresult.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InterfaceResultMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case interfaceresult.FieldInterfaceID:
+		return m.OldInterfaceID(ctx)
+	case interfaceresult.FieldName:
+		return m.OldName(ctx)
+	case interfaceresult.FieldStatusCode:
+		return m.OldStatusCode(ctx)
+	case interfaceresult.FieldFormat:
+		return m.OldFormat(ctx)
+	case interfaceresult.FieldDataType:
+		return m.OldDataType(ctx)
+	case interfaceresult.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case interfaceresult.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case interfaceresult.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case interfaceresult.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InterfaceResult field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceResultMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case interfaceresult.FieldInterfaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterfaceID(v)
+		return nil
+	case interfaceresult.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case interfaceresult.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusCode(v)
+		return nil
+	case interfaceresult.FieldFormat:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFormat(v)
+		return nil
+	case interfaceresult.FieldDataType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDataType(v)
+		return nil
+	case interfaceresult.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case interfaceresult.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case interfaceresult.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case interfaceresult.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceResult field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InterfaceResultMutation) AddedFields() []string {
+	var fields []string
+	if m.addstatus_code != nil {
+		fields = append(fields, interfaceresult.FieldStatusCode)
+	}
+	if m.addsort_order != nil {
+		fields = append(fields, interfaceresult.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InterfaceResultMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case interfaceresult.FieldStatusCode:
+		return m.AddedStatusCode()
+	case interfaceresult.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InterfaceResultMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case interfaceresult.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStatusCode(v)
+		return nil
+	case interfaceresult.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceResult numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InterfaceResultMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(interfaceresult.FieldDeletedAt) {
+		fields = append(fields, interfaceresult.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InterfaceResultMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InterfaceResultMutation) ClearField(name string) error {
+	switch name {
+	case interfaceresult.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceResult nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InterfaceResultMutation) ResetField(name string) error {
+	switch name {
+	case interfaceresult.FieldInterfaceID:
+		m.ResetInterfaceID()
+		return nil
+	case interfaceresult.FieldName:
+		m.ResetName()
+		return nil
+	case interfaceresult.FieldStatusCode:
+		m.ResetStatusCode()
+		return nil
+	case interfaceresult.FieldFormat:
+		m.ResetFormat()
+		return nil
+	case interfaceresult.FieldDataType:
+		m.ResetDataType()
+		return nil
+	case interfaceresult.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case interfaceresult.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case interfaceresult.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case interfaceresult.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceResult field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InterfaceResultMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m._interface != nil {
+		edges = append(edges, interfaceresult.EdgeInterface)
+	}
+	if m.fields != nil {
+		edges = append(edges, interfaceresult.EdgeFields)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InterfaceResultMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case interfaceresult.EdgeInterface:
+		if id := m._interface; id != nil {
+			return []ent.Value{*id}
+		}
+	case interfaceresult.EdgeFields:
+		ids := make([]ent.Value, 0, len(m.fields))
+		for id := range m.fields {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InterfaceResultMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedfields != nil {
+		edges = append(edges, interfaceresult.EdgeFields)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InterfaceResultMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case interfaceresult.EdgeFields:
+		ids := make([]ent.Value, 0, len(m.removedfields))
+		for id := range m.removedfields {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InterfaceResultMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleared_interface {
+		edges = append(edges, interfaceresult.EdgeInterface)
+	}
+	if m.clearedfields {
+		edges = append(edges, interfaceresult.EdgeFields)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InterfaceResultMutation) EdgeCleared(name string) bool {
+	switch name {
+	case interfaceresult.EdgeInterface:
+		return m.cleared_interface
+	case interfaceresult.EdgeFields:
+		return m.clearedfields
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InterfaceResultMutation) ClearEdge(name string) error {
+	switch name {
+	case interfaceresult.EdgeInterface:
+		m.ClearInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceResult unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InterfaceResultMutation) ResetEdge(name string) error {
+	switch name {
+	case interfaceresult.EdgeInterface:
+		m.ResetInterface()
+		return nil
+	case interfaceresult.EdgeFields:
+		m.ResetFields()
+		return nil
+	}
+	return fmt.Errorf("unknown InterfaceResult edge %s", name)
 }
 
 // ProjectMutation represents an operation that mutates the Project nodes in the graph.

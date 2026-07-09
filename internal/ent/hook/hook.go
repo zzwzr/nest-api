@@ -56,6 +56,90 @@ func (f FolderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FolderMutation", m)
 }
 
+// The InterfaceBodyFieldFunc type is an adapter to allow the use of ordinary
+// function as InterfaceBodyField mutator.
+type InterfaceBodyFieldFunc func(context.Context, *ent.InterfaceBodyFieldMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterfaceBodyFieldFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterfaceBodyFieldMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterfaceBodyFieldMutation", m)
+}
+
+// The InterfaceExampleFunc type is an adapter to allow the use of ordinary
+// function as InterfaceExample mutator.
+type InterfaceExampleFunc func(context.Context, *ent.InterfaceExampleMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterfaceExampleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterfaceExampleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterfaceExampleMutation", m)
+}
+
+// The InterfaceFieldFunc type is an adapter to allow the use of ordinary
+// function as InterfaceField mutator.
+type InterfaceFieldFunc func(context.Context, *ent.InterfaceFieldMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterfaceFieldFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterfaceFieldMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterfaceFieldMutation", m)
+}
+
+// The InterfaceHeaderFunc type is an adapter to allow the use of ordinary
+// function as InterfaceHeader mutator.
+type InterfaceHeaderFunc func(context.Context, *ent.InterfaceHeaderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterfaceHeaderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterfaceHeaderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterfaceHeaderMutation", m)
+}
+
+// The InterfaceQueryParamFunc type is an adapter to allow the use of ordinary
+// function as InterfaceQueryParam mutator.
+type InterfaceQueryParamFunc func(context.Context, *ent.InterfaceQueryParamMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterfaceQueryParamFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterfaceQueryParamMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterfaceQueryParamMutation", m)
+}
+
+// The InterfaceRequestHeaderFunc type is an adapter to allow the use of ordinary
+// function as InterfaceRequestHeader mutator.
+type InterfaceRequestHeaderFunc func(context.Context, *ent.InterfaceRequestHeaderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterfaceRequestHeaderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterfaceRequestHeaderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterfaceRequestHeaderMutation", m)
+}
+
+// The InterfaceResultFunc type is an adapter to allow the use of ordinary
+// function as InterfaceResult mutator.
+type InterfaceResultFunc func(context.Context, *ent.InterfaceResultMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterfaceResultFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterfaceResultMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterfaceResultMutation", m)
+}
+
 // The ProjectFunc type is an adapter to allow the use of ordinary
 // function as Project mutator.
 type ProjectFunc func(context.Context, *ent.ProjectMutation) (ent.Value, error)

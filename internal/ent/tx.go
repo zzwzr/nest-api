@@ -20,6 +20,20 @@ type Tx struct {
 	EnvironmentVariable *EnvironmentVariableClient
 	// Folder is the client for interacting with the Folder builders.
 	Folder *FolderClient
+	// InterfaceBodyField is the client for interacting with the InterfaceBodyField builders.
+	InterfaceBodyField *InterfaceBodyFieldClient
+	// InterfaceExample is the client for interacting with the InterfaceExample builders.
+	InterfaceExample *InterfaceExampleClient
+	// InterfaceField is the client for interacting with the InterfaceField builders.
+	InterfaceField *InterfaceFieldClient
+	// InterfaceHeader is the client for interacting with the InterfaceHeader builders.
+	InterfaceHeader *InterfaceHeaderClient
+	// InterfaceQueryParam is the client for interacting with the InterfaceQueryParam builders.
+	InterfaceQueryParam *InterfaceQueryParamClient
+	// InterfaceRequestHeader is the client for interacting with the InterfaceRequestHeader builders.
+	InterfaceRequestHeader *InterfaceRequestHeaderClient
+	// InterfaceResult is the client for interacting with the InterfaceResult builders.
+	InterfaceResult *InterfaceResultClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -163,6 +177,13 @@ func (tx *Tx) init() {
 	tx.Environment = NewEnvironmentClient(tx.config)
 	tx.EnvironmentVariable = NewEnvironmentVariableClient(tx.config)
 	tx.Folder = NewFolderClient(tx.config)
+	tx.InterfaceBodyField = NewInterfaceBodyFieldClient(tx.config)
+	tx.InterfaceExample = NewInterfaceExampleClient(tx.config)
+	tx.InterfaceField = NewInterfaceFieldClient(tx.config)
+	tx.InterfaceHeader = NewInterfaceHeaderClient(tx.config)
+	tx.InterfaceQueryParam = NewInterfaceQueryParamClient(tx.config)
+	tx.InterfaceRequestHeader = NewInterfaceRequestHeaderClient(tx.config)
+	tx.InterfaceResult = NewInterfaceResultClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.Workspace = NewWorkspaceClient(tx.config)

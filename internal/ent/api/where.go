@@ -85,6 +85,16 @@ func Status(v uint8) predicate.API {
 	return predicate.API(sql.FieldEQ(FieldStatus, v))
 }
 
+// RequestBodyFormat applies equality check predicate on the "request_body_format" field. It's identical to RequestBodyFormatEQ.
+func RequestBodyFormat(v string) predicate.API {
+	return predicate.API(sql.FieldEQ(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyDataType applies equality check predicate on the "request_body_data_type" field. It's identical to RequestBodyDataTypeEQ.
+func RequestBodyDataType(v string) predicate.API {
+	return predicate.API(sql.FieldEQ(FieldRequestBodyDataType, v))
+}
+
 // SortOrder applies equality check predicate on the "sort_order" field. It's identical to SortOrderEQ.
 func SortOrder(v int) predicate.API {
 	return predicate.API(sql.FieldEQ(FieldSortOrder, v))
@@ -390,6 +400,136 @@ func StatusLTE(v uint8) predicate.API {
 	return predicate.API(sql.FieldLTE(FieldStatus, v))
 }
 
+// RequestBodyFormatEQ applies the EQ predicate on the "request_body_format" field.
+func RequestBodyFormatEQ(v string) predicate.API {
+	return predicate.API(sql.FieldEQ(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatNEQ applies the NEQ predicate on the "request_body_format" field.
+func RequestBodyFormatNEQ(v string) predicate.API {
+	return predicate.API(sql.FieldNEQ(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatIn applies the In predicate on the "request_body_format" field.
+func RequestBodyFormatIn(vs ...string) predicate.API {
+	return predicate.API(sql.FieldIn(FieldRequestBodyFormat, vs...))
+}
+
+// RequestBodyFormatNotIn applies the NotIn predicate on the "request_body_format" field.
+func RequestBodyFormatNotIn(vs ...string) predicate.API {
+	return predicate.API(sql.FieldNotIn(FieldRequestBodyFormat, vs...))
+}
+
+// RequestBodyFormatGT applies the GT predicate on the "request_body_format" field.
+func RequestBodyFormatGT(v string) predicate.API {
+	return predicate.API(sql.FieldGT(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatGTE applies the GTE predicate on the "request_body_format" field.
+func RequestBodyFormatGTE(v string) predicate.API {
+	return predicate.API(sql.FieldGTE(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatLT applies the LT predicate on the "request_body_format" field.
+func RequestBodyFormatLT(v string) predicate.API {
+	return predicate.API(sql.FieldLT(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatLTE applies the LTE predicate on the "request_body_format" field.
+func RequestBodyFormatLTE(v string) predicate.API {
+	return predicate.API(sql.FieldLTE(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatContains applies the Contains predicate on the "request_body_format" field.
+func RequestBodyFormatContains(v string) predicate.API {
+	return predicate.API(sql.FieldContains(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatHasPrefix applies the HasPrefix predicate on the "request_body_format" field.
+func RequestBodyFormatHasPrefix(v string) predicate.API {
+	return predicate.API(sql.FieldHasPrefix(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatHasSuffix applies the HasSuffix predicate on the "request_body_format" field.
+func RequestBodyFormatHasSuffix(v string) predicate.API {
+	return predicate.API(sql.FieldHasSuffix(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatEqualFold applies the EqualFold predicate on the "request_body_format" field.
+func RequestBodyFormatEqualFold(v string) predicate.API {
+	return predicate.API(sql.FieldEqualFold(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyFormatContainsFold applies the ContainsFold predicate on the "request_body_format" field.
+func RequestBodyFormatContainsFold(v string) predicate.API {
+	return predicate.API(sql.FieldContainsFold(FieldRequestBodyFormat, v))
+}
+
+// RequestBodyDataTypeEQ applies the EQ predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeEQ(v string) predicate.API {
+	return predicate.API(sql.FieldEQ(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeNEQ applies the NEQ predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeNEQ(v string) predicate.API {
+	return predicate.API(sql.FieldNEQ(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeIn applies the In predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeIn(vs ...string) predicate.API {
+	return predicate.API(sql.FieldIn(FieldRequestBodyDataType, vs...))
+}
+
+// RequestBodyDataTypeNotIn applies the NotIn predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeNotIn(vs ...string) predicate.API {
+	return predicate.API(sql.FieldNotIn(FieldRequestBodyDataType, vs...))
+}
+
+// RequestBodyDataTypeGT applies the GT predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeGT(v string) predicate.API {
+	return predicate.API(sql.FieldGT(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeGTE applies the GTE predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeGTE(v string) predicate.API {
+	return predicate.API(sql.FieldGTE(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeLT applies the LT predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeLT(v string) predicate.API {
+	return predicate.API(sql.FieldLT(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeLTE applies the LTE predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeLTE(v string) predicate.API {
+	return predicate.API(sql.FieldLTE(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeContains applies the Contains predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeContains(v string) predicate.API {
+	return predicate.API(sql.FieldContains(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeHasPrefix applies the HasPrefix predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeHasPrefix(v string) predicate.API {
+	return predicate.API(sql.FieldHasPrefix(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeHasSuffix applies the HasSuffix predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeHasSuffix(v string) predicate.API {
+	return predicate.API(sql.FieldHasSuffix(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeEqualFold applies the EqualFold predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeEqualFold(v string) predicate.API {
+	return predicate.API(sql.FieldEqualFold(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyDataTypeContainsFold applies the ContainsFold predicate on the "request_body_data_type" field.
+func RequestBodyDataTypeContainsFold(v string) predicate.API {
+	return predicate.API(sql.FieldContainsFold(FieldRequestBodyDataType, v))
+}
+
 // SortOrderEQ applies the EQ predicate on the "sort_order" field.
 func SortOrderEQ(v int) predicate.API {
 	return predicate.API(sql.FieldEQ(FieldSortOrder, v))
@@ -684,6 +824,144 @@ func HasUpdater() predicate.API {
 func HasUpdaterWith(preds ...predicate.User) predicate.API {
 	return predicate.API(func(s *sql.Selector) {
 		step := newUpdaterStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasResponseHeaders applies the HasEdge predicate on the "response_headers" edge.
+func HasResponseHeaders() predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ResponseHeadersTable, ResponseHeadersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasResponseHeadersWith applies the HasEdge predicate on the "response_headers" edge with a given conditions (other predicates).
+func HasResponseHeadersWith(preds ...predicate.InterfaceHeader) predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := newResponseHeadersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasResponseResults applies the HasEdge predicate on the "response_results" edge.
+func HasResponseResults() predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ResponseResultsTable, ResponseResultsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasResponseResultsWith applies the HasEdge predicate on the "response_results" edge with a given conditions (other predicates).
+func HasResponseResultsWith(preds ...predicate.InterfaceResult) predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := newResponseResultsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasResponseExamples applies the HasEdge predicate on the "response_examples" edge.
+func HasResponseExamples() predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ResponseExamplesTable, ResponseExamplesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasResponseExamplesWith applies the HasEdge predicate on the "response_examples" edge with a given conditions (other predicates).
+func HasResponseExamplesWith(preds ...predicate.InterfaceExample) predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := newResponseExamplesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRequestHeaders applies the HasEdge predicate on the "request_headers" edge.
+func HasRequestHeaders() predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RequestHeadersTable, RequestHeadersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRequestHeadersWith applies the HasEdge predicate on the "request_headers" edge with a given conditions (other predicates).
+func HasRequestHeadersWith(preds ...predicate.InterfaceRequestHeader) predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := newRequestHeadersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasQueryParams applies the HasEdge predicate on the "query_params" edge.
+func HasQueryParams() predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, QueryParamsTable, QueryParamsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasQueryParamsWith applies the HasEdge predicate on the "query_params" edge with a given conditions (other predicates).
+func HasQueryParamsWith(preds ...predicate.InterfaceQueryParam) predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := newQueryParamsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBodyFields applies the HasEdge predicate on the "body_fields" edge.
+func HasBodyFields() predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, BodyFieldsTable, BodyFieldsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBodyFieldsWith applies the HasEdge predicate on the "body_fields" edge with a given conditions (other predicates).
+func HasBodyFieldsWith(preds ...predicate.InterfaceBodyField) predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := newBodyFieldsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

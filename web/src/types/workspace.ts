@@ -1,5 +1,7 @@
 export type AppModule = 'api' | 'quick-test' | 'environment' | 'project'
 
+export type HttpProtocol = 'HTTP' | 'HTTPS'
+
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
 
 export type WorkspaceRole = 1 | 2 | 3 | 4
@@ -41,6 +43,61 @@ export interface ApiTreeNode {
   children?: ApiTreeNode[]
 }
 
+export type InterfaceStatus = 1 | 2 | 3 | 4 | 5 | 6
+
+export interface InterfaceParamItem {
+  id?: number
+  name: string
+  type: string
+  required: boolean
+  description: string
+  example: string
+}
+
+export interface InterfaceRequestBody {
+  format: string
+  data_type: string
+  fields: InterfaceParamItem[]
+}
+
+export interface InterfaceResponseHeader {
+  id?: number
+  name: string
+  type: string
+  required: boolean
+  description: string
+  example: string
+}
+
+export interface InterfaceResponseField {
+  id?: number
+  parent_id: number
+  name: string
+  type: string
+  required: boolean
+  description: string
+  mock: string
+  example: string
+  children?: InterfaceResponseField[]
+}
+
+export interface InterfaceResponseResult {
+  id?: number
+  name: string
+  status_code: number
+  format: string
+  data_type: string
+  fields: InterfaceResponseField[]
+}
+
+export interface InterfaceResponseExample {
+  id?: number
+  name: string
+  status_code: number
+  content_type: string
+  raw: string
+}
+
 export interface InterfaceItem {
   id: number
   project_id: number
@@ -48,12 +105,21 @@ export interface InterfaceItem {
   name: string
   method: HttpMethod
   url: string
-  status: 1 | 2
+  status: InterfaceStatus
   folder_name?: string
   updated_by?: number
   updated_by_name?: string
   created_at: string
   updated_at?: string
+}
+
+export interface InterfaceDetail extends InterfaceItem {
+  request_headers: InterfaceParamItem[]
+  request_body: InterfaceRequestBody
+  query_params: InterfaceParamItem[]
+  response_headers: InterfaceResponseHeader[]
+  response_results: InterfaceResponseResult[]
+  response_examples: InterfaceResponseExample[]
 }
 
 export type WorkspaceTabKind =

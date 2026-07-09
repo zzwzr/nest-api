@@ -16,6 +16,8 @@ var (
 		{Name: "method", Type: field.TypeString, Size: 10, Default: ""},
 		{Name: "url", Type: field.TypeString, Size: 500, Default: ""},
 		{Name: "status", Type: field.TypeUint8, Default: 2},
+		{Name: "request_body_format", Type: field.TypeString, Size: 20, Default: "json"},
+		{Name: "request_body_data_type", Type: field.TypeString, Size: 20, Default: "Object"},
 		{Name: "sort_order", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
@@ -33,25 +35,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "interfaces_folders_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[9]},
+				Columns:    []*schema.Column{InterfacesColumns[11]},
 				RefColumns: []*schema.Column{FoldersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "interfaces_projects_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[10]},
+				Columns:    []*schema.Column{InterfacesColumns[12]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "interfaces_users_created_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[11]},
+				Columns:    []*schema.Column{InterfacesColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "interfaces_users_updated_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[12]},
+				Columns:    []*schema.Column{InterfacesColumns[14]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -149,6 +151,203 @@ var (
 				Symbol:     "folders_users_created_folders",
 				Columns:    []*schema.Column{FoldersColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InterfaceBodyFieldsColumns holds the columns for the "interface_body_fields" table.
+	InterfaceBodyFieldsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "parent_id", Type: field.TypeInt64, Default: 0},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "type", Type: field.TypeString, Size: 50, Default: "string"},
+		{Name: "required", Type: field.TypeBool, Default: false},
+		{Name: "description", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "example", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "interface_id", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfaceBodyFieldsTable holds the schema information for the "interface_body_fields" table.
+	InterfaceBodyFieldsTable = &schema.Table{
+		Name:       "interface_body_fields",
+		Columns:    InterfaceBodyFieldsColumns,
+		PrimaryKey: []*schema.Column{InterfaceBodyFieldsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interface_body_fields_interfaces_body_fields",
+				Columns:    []*schema.Column{InterfaceBodyFieldsColumns[11]},
+				RefColumns: []*schema.Column{InterfacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InterfaceExamplesColumns holds the columns for the "interface_examples" table.
+	InterfaceExamplesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "status_code", Type: field.TypeInt, Default: 200},
+		{Name: "content_type", Type: field.TypeString, Size: 100, Default: "application/json"},
+		{Name: "raw", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "interface_id", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfaceExamplesTable holds the schema information for the "interface_examples" table.
+	InterfaceExamplesTable = &schema.Table{
+		Name:       "interface_examples",
+		Columns:    InterfaceExamplesColumns,
+		PrimaryKey: []*schema.Column{InterfaceExamplesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interface_examples_interfaces_response_examples",
+				Columns:    []*schema.Column{InterfaceExamplesColumns[9]},
+				RefColumns: []*schema.Column{InterfacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InterfaceFieldsColumns holds the columns for the "interface_fields" table.
+	InterfaceFieldsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "parent_id", Type: field.TypeInt64, Default: 0},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "type", Type: field.TypeString, Size: 50, Default: "string"},
+		{Name: "required", Type: field.TypeBool, Default: false},
+		{Name: "description", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "mock", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "example", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "result_id", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfaceFieldsTable holds the schema information for the "interface_fields" table.
+	InterfaceFieldsTable = &schema.Table{
+		Name:       "interface_fields",
+		Columns:    InterfaceFieldsColumns,
+		PrimaryKey: []*schema.Column{InterfaceFieldsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interface_fields_interface_results_fields",
+				Columns:    []*schema.Column{InterfaceFieldsColumns[12]},
+				RefColumns: []*schema.Column{InterfaceResultsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InterfaceHeadersColumns holds the columns for the "interface_headers" table.
+	InterfaceHeadersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "type", Type: field.TypeString, Size: 50, Default: "string"},
+		{Name: "required", Type: field.TypeBool, Default: false},
+		{Name: "description", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "example", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "interface_id", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfaceHeadersTable holds the schema information for the "interface_headers" table.
+	InterfaceHeadersTable = &schema.Table{
+		Name:       "interface_headers",
+		Columns:    InterfaceHeadersColumns,
+		PrimaryKey: []*schema.Column{InterfaceHeadersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interface_headers_interfaces_response_headers",
+				Columns:    []*schema.Column{InterfaceHeadersColumns[10]},
+				RefColumns: []*schema.Column{InterfacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InterfaceQueryParamsColumns holds the columns for the "interface_query_params" table.
+	InterfaceQueryParamsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "type", Type: field.TypeString, Size: 50, Default: "string"},
+		{Name: "required", Type: field.TypeBool, Default: false},
+		{Name: "description", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "example", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "interface_id", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfaceQueryParamsTable holds the schema information for the "interface_query_params" table.
+	InterfaceQueryParamsTable = &schema.Table{
+		Name:       "interface_query_params",
+		Columns:    InterfaceQueryParamsColumns,
+		PrimaryKey: []*schema.Column{InterfaceQueryParamsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interface_query_params_interfaces_query_params",
+				Columns:    []*schema.Column{InterfaceQueryParamsColumns[10]},
+				RefColumns: []*schema.Column{InterfacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InterfaceRequestHeadersColumns holds the columns for the "interface_request_headers" table.
+	InterfaceRequestHeadersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "type", Type: field.TypeString, Size: 50, Default: "string"},
+		{Name: "required", Type: field.TypeBool, Default: false},
+		{Name: "description", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "example", Type: field.TypeString, Size: 500, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "interface_id", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfaceRequestHeadersTable holds the schema information for the "interface_request_headers" table.
+	InterfaceRequestHeadersTable = &schema.Table{
+		Name:       "interface_request_headers",
+		Columns:    InterfaceRequestHeadersColumns,
+		PrimaryKey: []*schema.Column{InterfaceRequestHeadersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interface_request_headers_interfaces_request_headers",
+				Columns:    []*schema.Column{InterfaceRequestHeadersColumns[10]},
+				RefColumns: []*schema.Column{InterfacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// InterfaceResultsColumns holds the columns for the "interface_results" table.
+	InterfaceResultsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "status_code", Type: field.TypeInt, Default: 200},
+		{Name: "format", Type: field.TypeString, Size: 20, Default: "JSON"},
+		{Name: "data_type", Type: field.TypeString, Size: 20, Default: "Object"},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "interface_id", Type: field.TypeInt64, Default: 0},
+	}
+	// InterfaceResultsTable holds the schema information for the "interface_results" table.
+	InterfaceResultsTable = &schema.Table{
+		Name:       "interface_results",
+		Columns:    InterfaceResultsColumns,
+		PrimaryKey: []*schema.Column{InterfaceResultsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "interface_results_interfaces_response_results",
+				Columns:    []*schema.Column{InterfaceResultsColumns[9]},
+				RefColumns: []*schema.Column{InterfacesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -263,6 +462,13 @@ var (
 		EnvironmentsTable,
 		EnvironmentVariablesTable,
 		FoldersTable,
+		InterfaceBodyFieldsTable,
+		InterfaceExamplesTable,
+		InterfaceFieldsTable,
+		InterfaceHeadersTable,
+		InterfaceQueryParamsTable,
+		InterfaceRequestHeadersTable,
+		InterfaceResultsTable,
 		ProjectsTable,
 		UsersTable,
 		WorkspacesTable,
@@ -292,6 +498,34 @@ func init() {
 	FoldersTable.ForeignKeys[1].RefTable = UsersTable
 	FoldersTable.Annotation = &entsql.Annotation{
 		Table: "folders",
+	}
+	InterfaceBodyFieldsTable.ForeignKeys[0].RefTable = InterfacesTable
+	InterfaceBodyFieldsTable.Annotation = &entsql.Annotation{
+		Table: "interface_body_fields",
+	}
+	InterfaceExamplesTable.ForeignKeys[0].RefTable = InterfacesTable
+	InterfaceExamplesTable.Annotation = &entsql.Annotation{
+		Table: "interface_examples",
+	}
+	InterfaceFieldsTable.ForeignKeys[0].RefTable = InterfaceResultsTable
+	InterfaceFieldsTable.Annotation = &entsql.Annotation{
+		Table: "interface_fields",
+	}
+	InterfaceHeadersTable.ForeignKeys[0].RefTable = InterfacesTable
+	InterfaceHeadersTable.Annotation = &entsql.Annotation{
+		Table: "interface_headers",
+	}
+	InterfaceQueryParamsTable.ForeignKeys[0].RefTable = InterfacesTable
+	InterfaceQueryParamsTable.Annotation = &entsql.Annotation{
+		Table: "interface_query_params",
+	}
+	InterfaceRequestHeadersTable.ForeignKeys[0].RefTable = InterfacesTable
+	InterfaceRequestHeadersTable.Annotation = &entsql.Annotation{
+		Table: "interface_request_headers",
+	}
+	InterfaceResultsTable.ForeignKeys[0].RefTable = InterfacesTable
+	InterfaceResultsTable.Annotation = &entsql.Annotation{
+		Table: "interface_results",
 	}
 	ProjectsTable.ForeignKeys[0].RefTable = UsersTable
 	ProjectsTable.ForeignKeys[1].RefTable = WorkspacesTable

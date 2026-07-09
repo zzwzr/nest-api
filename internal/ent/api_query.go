@@ -4,10 +4,17 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 	"nest-api/internal/ent/api"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
@@ -21,14 +28,20 @@ import (
 // APIQuery is the builder for querying API entities.
 type APIQuery struct {
 	config
-	ctx         *QueryContext
-	order       []api.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.API
-	withProject *ProjectQuery
-	withFolder  *FolderQuery
-	withCreator *UserQuery
-	withUpdater *UserQuery
+	ctx                  *QueryContext
+	order                []api.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.API
+	withProject          *ProjectQuery
+	withFolder           *FolderQuery
+	withCreator          *UserQuery
+	withUpdater          *UserQuery
+	withResponseHeaders  *InterfaceHeaderQuery
+	withResponseResults  *InterfaceResultQuery
+	withResponseExamples *InterfaceExampleQuery
+	withRequestHeaders   *InterfaceRequestHeaderQuery
+	withQueryParams      *InterfaceQueryParamQuery
+	withBodyFields       *InterfaceBodyFieldQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -146,6 +159,138 @@ func (_q *APIQuery) QueryUpdater() *UserQuery {
 			sqlgraph.From(api.Table, api.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, api.UpdaterTable, api.UpdaterColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryResponseHeaders chains the current query on the "response_headers" edge.
+func (_q *APIQuery) QueryResponseHeaders() *InterfaceHeaderQuery {
+	query := (&InterfaceHeaderClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, selector),
+			sqlgraph.To(interfaceheader.Table, interfaceheader.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ResponseHeadersTable, api.ResponseHeadersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryResponseResults chains the current query on the "response_results" edge.
+func (_q *APIQuery) QueryResponseResults() *InterfaceResultQuery {
+	query := (&InterfaceResultClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, selector),
+			sqlgraph.To(interfaceresult.Table, interfaceresult.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ResponseResultsTable, api.ResponseResultsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryResponseExamples chains the current query on the "response_examples" edge.
+func (_q *APIQuery) QueryResponseExamples() *InterfaceExampleQuery {
+	query := (&InterfaceExampleClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, selector),
+			sqlgraph.To(interfaceexample.Table, interfaceexample.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ResponseExamplesTable, api.ResponseExamplesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRequestHeaders chains the current query on the "request_headers" edge.
+func (_q *APIQuery) QueryRequestHeaders() *InterfaceRequestHeaderQuery {
+	query := (&InterfaceRequestHeaderClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, selector),
+			sqlgraph.To(interfacerequestheader.Table, interfacerequestheader.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.RequestHeadersTable, api.RequestHeadersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryQueryParams chains the current query on the "query_params" edge.
+func (_q *APIQuery) QueryQueryParams() *InterfaceQueryParamQuery {
+	query := (&InterfaceQueryParamClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, selector),
+			sqlgraph.To(interfacequeryparam.Table, interfacequeryparam.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.QueryParamsTable, api.QueryParamsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBodyFields chains the current query on the "body_fields" edge.
+func (_q *APIQuery) QueryBodyFields() *InterfaceBodyFieldQuery {
+	query := (&InterfaceBodyFieldClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, selector),
+			sqlgraph.To(interfacebodyfield.Table, interfacebodyfield.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.BodyFieldsTable, api.BodyFieldsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -340,15 +485,21 @@ func (_q *APIQuery) Clone() *APIQuery {
 		return nil
 	}
 	return &APIQuery{
-		config:      _q.config,
-		ctx:         _q.ctx.Clone(),
-		order:       append([]api.OrderOption{}, _q.order...),
-		inters:      append([]Interceptor{}, _q.inters...),
-		predicates:  append([]predicate.API{}, _q.predicates...),
-		withProject: _q.withProject.Clone(),
-		withFolder:  _q.withFolder.Clone(),
-		withCreator: _q.withCreator.Clone(),
-		withUpdater: _q.withUpdater.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]api.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.API{}, _q.predicates...),
+		withProject:          _q.withProject.Clone(),
+		withFolder:           _q.withFolder.Clone(),
+		withCreator:          _q.withCreator.Clone(),
+		withUpdater:          _q.withUpdater.Clone(),
+		withResponseHeaders:  _q.withResponseHeaders.Clone(),
+		withResponseResults:  _q.withResponseResults.Clone(),
+		withResponseExamples: _q.withResponseExamples.Clone(),
+		withRequestHeaders:   _q.withRequestHeaders.Clone(),
+		withQueryParams:      _q.withQueryParams.Clone(),
+		withBodyFields:       _q.withBodyFields.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -396,6 +547,72 @@ func (_q *APIQuery) WithUpdater(opts ...func(*UserQuery)) *APIQuery {
 		opt(query)
 	}
 	_q.withUpdater = query
+	return _q
+}
+
+// WithResponseHeaders tells the query-builder to eager-load the nodes that are connected to
+// the "response_headers" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIQuery) WithResponseHeaders(opts ...func(*InterfaceHeaderQuery)) *APIQuery {
+	query := (&InterfaceHeaderClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withResponseHeaders = query
+	return _q
+}
+
+// WithResponseResults tells the query-builder to eager-load the nodes that are connected to
+// the "response_results" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIQuery) WithResponseResults(opts ...func(*InterfaceResultQuery)) *APIQuery {
+	query := (&InterfaceResultClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withResponseResults = query
+	return _q
+}
+
+// WithResponseExamples tells the query-builder to eager-load the nodes that are connected to
+// the "response_examples" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIQuery) WithResponseExamples(opts ...func(*InterfaceExampleQuery)) *APIQuery {
+	query := (&InterfaceExampleClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withResponseExamples = query
+	return _q
+}
+
+// WithRequestHeaders tells the query-builder to eager-load the nodes that are connected to
+// the "request_headers" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIQuery) WithRequestHeaders(opts ...func(*InterfaceRequestHeaderQuery)) *APIQuery {
+	query := (&InterfaceRequestHeaderClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRequestHeaders = query
+	return _q
+}
+
+// WithQueryParams tells the query-builder to eager-load the nodes that are connected to
+// the "query_params" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIQuery) WithQueryParams(opts ...func(*InterfaceQueryParamQuery)) *APIQuery {
+	query := (&InterfaceQueryParamClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withQueryParams = query
+	return _q
+}
+
+// WithBodyFields tells the query-builder to eager-load the nodes that are connected to
+// the "body_fields" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIQuery) WithBodyFields(opts ...func(*InterfaceBodyFieldQuery)) *APIQuery {
+	query := (&InterfaceBodyFieldClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withBodyFields = query
 	return _q
 }
 
@@ -477,11 +694,17 @@ func (_q *APIQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*API, err
 	var (
 		nodes       = []*API{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [10]bool{
 			_q.withProject != nil,
 			_q.withFolder != nil,
 			_q.withCreator != nil,
 			_q.withUpdater != nil,
+			_q.withResponseHeaders != nil,
+			_q.withResponseResults != nil,
+			_q.withResponseExamples != nil,
+			_q.withRequestHeaders != nil,
+			_q.withQueryParams != nil,
+			_q.withBodyFields != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -523,6 +746,48 @@ func (_q *APIQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*API, err
 	if query := _q.withUpdater; query != nil {
 		if err := _q.loadUpdater(ctx, query, nodes, nil,
 			func(n *API, e *User) { n.Edges.Updater = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withResponseHeaders; query != nil {
+		if err := _q.loadResponseHeaders(ctx, query, nodes,
+			func(n *API) { n.Edges.ResponseHeaders = []*InterfaceHeader{} },
+			func(n *API, e *InterfaceHeader) { n.Edges.ResponseHeaders = append(n.Edges.ResponseHeaders, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withResponseResults; query != nil {
+		if err := _q.loadResponseResults(ctx, query, nodes,
+			func(n *API) { n.Edges.ResponseResults = []*InterfaceResult{} },
+			func(n *API, e *InterfaceResult) { n.Edges.ResponseResults = append(n.Edges.ResponseResults, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withResponseExamples; query != nil {
+		if err := _q.loadResponseExamples(ctx, query, nodes,
+			func(n *API) { n.Edges.ResponseExamples = []*InterfaceExample{} },
+			func(n *API, e *InterfaceExample) { n.Edges.ResponseExamples = append(n.Edges.ResponseExamples, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRequestHeaders; query != nil {
+		if err := _q.loadRequestHeaders(ctx, query, nodes,
+			func(n *API) { n.Edges.RequestHeaders = []*InterfaceRequestHeader{} },
+			func(n *API, e *InterfaceRequestHeader) { n.Edges.RequestHeaders = append(n.Edges.RequestHeaders, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withQueryParams; query != nil {
+		if err := _q.loadQueryParams(ctx, query, nodes,
+			func(n *API) { n.Edges.QueryParams = []*InterfaceQueryParam{} },
+			func(n *API, e *InterfaceQueryParam) { n.Edges.QueryParams = append(n.Edges.QueryParams, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withBodyFields; query != nil {
+		if err := _q.loadBodyFields(ctx, query, nodes,
+			func(n *API) { n.Edges.BodyFields = []*InterfaceBodyField{} },
+			func(n *API, e *InterfaceBodyField) { n.Edges.BodyFields = append(n.Edges.BodyFields, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -642,6 +907,186 @@ func (_q *APIQuery) loadUpdater(ctx context.Context, query *UserQuery, nodes []*
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *APIQuery) loadResponseHeaders(ctx context.Context, query *InterfaceHeaderQuery, nodes []*API, init func(*API), assign func(*API, *InterfaceHeader)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*API)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(interfaceheader.FieldInterfaceID)
+	}
+	query.Where(predicate.InterfaceHeader(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(api.ResponseHeadersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InterfaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "interface_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *APIQuery) loadResponseResults(ctx context.Context, query *InterfaceResultQuery, nodes []*API, init func(*API), assign func(*API, *InterfaceResult)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*API)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(interfaceresult.FieldInterfaceID)
+	}
+	query.Where(predicate.InterfaceResult(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(api.ResponseResultsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InterfaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "interface_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *APIQuery) loadResponseExamples(ctx context.Context, query *InterfaceExampleQuery, nodes []*API, init func(*API), assign func(*API, *InterfaceExample)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*API)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(interfaceexample.FieldInterfaceID)
+	}
+	query.Where(predicate.InterfaceExample(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(api.ResponseExamplesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InterfaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "interface_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *APIQuery) loadRequestHeaders(ctx context.Context, query *InterfaceRequestHeaderQuery, nodes []*API, init func(*API), assign func(*API, *InterfaceRequestHeader)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*API)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(interfacerequestheader.FieldInterfaceID)
+	}
+	query.Where(predicate.InterfaceRequestHeader(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(api.RequestHeadersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InterfaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "interface_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *APIQuery) loadQueryParams(ctx context.Context, query *InterfaceQueryParamQuery, nodes []*API, init func(*API), assign func(*API, *InterfaceQueryParam)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*API)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(interfacequeryparam.FieldInterfaceID)
+	}
+	query.Where(predicate.InterfaceQueryParam(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(api.QueryParamsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InterfaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "interface_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *APIQuery) loadBodyFields(ctx context.Context, query *InterfaceBodyFieldQuery, nodes []*API, init func(*API), assign func(*API, *InterfaceBodyField)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*API)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(interfacebodyfield.FieldInterfaceID)
+	}
+	query.Where(predicate.InterfaceBodyField(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(api.BodyFieldsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InterfaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "interface_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

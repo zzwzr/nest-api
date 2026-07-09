@@ -13,6 +13,7 @@ func Interface(rg *gin.RouterGroup) {
 	r.Use(middleware.JWTAuthMiddleware())
 	{
 		r.GET("/interfaces", h.List)
+		r.GET("/interfaces/detail", h.Detail)
 		r.POST("/interfaces", h.Create)
 		r.PUT("/interfaces", h.Update)
 		r.PUT("/interfaces/reorder", h.Reorder)

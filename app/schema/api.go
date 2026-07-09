@@ -60,7 +60,17 @@ func (API) Fields() []ent.Field {
 
 		field.Uint8("status").
 			Default(2).
-			Comment("状态：1=已发布，2=测试中"),
+			Comment("状态：1: 已发布, 2: 测试中, 3: 开发中, 4: 异常, 5: 维护, 6: 废弃"),
+
+		field.String("request_body_format").
+			MaxLen(20).
+			Default("json").
+			Comment("请求体格式：form-data, json, xml, raw, binary"),
+
+		field.String("request_body_data_type").
+			MaxLen(20).
+			Default("Object").
+			Comment("请求体数据类型"),
 
 		field.Int("sort_order").
 			Default(0).
@@ -124,5 +134,11 @@ func (API) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("updated_by"),
+		edge.To("response_headers", InterfaceHeader.Type),
+		edge.To("response_results", InterfaceResult.Type),
+		edge.To("response_examples", InterfaceExample.Type),
+		edge.To("request_headers", InterfaceRequestHeader.Type),
+		edge.To("query_params", InterfaceQueryParam.Type),
+		edge.To("body_fields", InterfaceBodyField.Type),
 	}
 }

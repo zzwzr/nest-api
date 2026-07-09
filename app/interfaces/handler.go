@@ -27,6 +27,22 @@ func (*Handler) List(c *gin.Context) {
 	response.Success(c, list)
 }
 
+func (*Handler) Detail(c *gin.Context) {
+	var params DetailRequest
+	if err := validator.Bind(c, &params); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	data, err := (Service{}).Detail(c.Request.Context(), utils.GetUserID(c), params)
+	if err != nil {
+		logger.Error("interface detail failed", err)
+		response.Fail(c, err)
+		return
+	}
+	response.Success(c, data)
+}
+
 func (*Handler) Create(c *gin.Context) {
 	var params CreateRequest
 	if err := validator.Bind(c, &params); err != nil {

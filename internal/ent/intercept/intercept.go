@@ -11,6 +11,13 @@ import (
 	"nest-api/internal/ent/environment"
 	"nest-api/internal/ent/environmentvariable"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfacefield"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
@@ -184,6 +191,195 @@ func (f TraverseFolder) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.FolderQuery", q)
 }
 
+// The InterfaceBodyFieldFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InterfaceBodyFieldFunc func(context.Context, *ent.InterfaceBodyFieldQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InterfaceBodyFieldFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InterfaceBodyFieldQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InterfaceBodyFieldQuery", q)
+}
+
+// The TraverseInterfaceBodyField type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInterfaceBodyField func(context.Context, *ent.InterfaceBodyFieldQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInterfaceBodyField) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInterfaceBodyField) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InterfaceBodyFieldQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InterfaceBodyFieldQuery", q)
+}
+
+// The InterfaceExampleFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InterfaceExampleFunc func(context.Context, *ent.InterfaceExampleQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InterfaceExampleFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InterfaceExampleQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InterfaceExampleQuery", q)
+}
+
+// The TraverseInterfaceExample type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInterfaceExample func(context.Context, *ent.InterfaceExampleQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInterfaceExample) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInterfaceExample) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InterfaceExampleQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InterfaceExampleQuery", q)
+}
+
+// The InterfaceFieldFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InterfaceFieldFunc func(context.Context, *ent.InterfaceFieldQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InterfaceFieldFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InterfaceFieldQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InterfaceFieldQuery", q)
+}
+
+// The TraverseInterfaceField type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInterfaceField func(context.Context, *ent.InterfaceFieldQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInterfaceField) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInterfaceField) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InterfaceFieldQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InterfaceFieldQuery", q)
+}
+
+// The InterfaceHeaderFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InterfaceHeaderFunc func(context.Context, *ent.InterfaceHeaderQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InterfaceHeaderFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InterfaceHeaderQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InterfaceHeaderQuery", q)
+}
+
+// The TraverseInterfaceHeader type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInterfaceHeader func(context.Context, *ent.InterfaceHeaderQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInterfaceHeader) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInterfaceHeader) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InterfaceHeaderQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InterfaceHeaderQuery", q)
+}
+
+// The InterfaceQueryParamFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InterfaceQueryParamFunc func(context.Context, *ent.InterfaceQueryParamQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InterfaceQueryParamFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InterfaceQueryParamQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InterfaceQueryParamQuery", q)
+}
+
+// The TraverseInterfaceQueryParam type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInterfaceQueryParam func(context.Context, *ent.InterfaceQueryParamQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInterfaceQueryParam) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInterfaceQueryParam) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InterfaceQueryParamQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InterfaceQueryParamQuery", q)
+}
+
+// The InterfaceRequestHeaderFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InterfaceRequestHeaderFunc func(context.Context, *ent.InterfaceRequestHeaderQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InterfaceRequestHeaderFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InterfaceRequestHeaderQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InterfaceRequestHeaderQuery", q)
+}
+
+// The TraverseInterfaceRequestHeader type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInterfaceRequestHeader func(context.Context, *ent.InterfaceRequestHeaderQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInterfaceRequestHeader) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInterfaceRequestHeader) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InterfaceRequestHeaderQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InterfaceRequestHeaderQuery", q)
+}
+
+// The InterfaceResultFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InterfaceResultFunc func(context.Context, *ent.InterfaceResultQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InterfaceResultFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InterfaceResultQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InterfaceResultQuery", q)
+}
+
+// The TraverseInterfaceResult type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInterfaceResult func(context.Context, *ent.InterfaceResultQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInterfaceResult) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInterfaceResult) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InterfaceResultQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InterfaceResultQuery", q)
+}
+
 // The ProjectFunc type is an adapter to allow the use of ordinary function as a Querier.
 type ProjectFunc func(context.Context, *ent.ProjectQuery) (ent.Value, error)
 
@@ -303,6 +499,20 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.EnvironmentVariableQuery, predicate.EnvironmentVariable, environmentvariable.OrderOption]{typ: ent.TypeEnvironmentVariable, tq: q}, nil
 	case *ent.FolderQuery:
 		return &query[*ent.FolderQuery, predicate.Folder, folder.OrderOption]{typ: ent.TypeFolder, tq: q}, nil
+	case *ent.InterfaceBodyFieldQuery:
+		return &query[*ent.InterfaceBodyFieldQuery, predicate.InterfaceBodyField, interfacebodyfield.OrderOption]{typ: ent.TypeInterfaceBodyField, tq: q}, nil
+	case *ent.InterfaceExampleQuery:
+		return &query[*ent.InterfaceExampleQuery, predicate.InterfaceExample, interfaceexample.OrderOption]{typ: ent.TypeInterfaceExample, tq: q}, nil
+	case *ent.InterfaceFieldQuery:
+		return &query[*ent.InterfaceFieldQuery, predicate.InterfaceField, interfacefield.OrderOption]{typ: ent.TypeInterfaceField, tq: q}, nil
+	case *ent.InterfaceHeaderQuery:
+		return &query[*ent.InterfaceHeaderQuery, predicate.InterfaceHeader, interfaceheader.OrderOption]{typ: ent.TypeInterfaceHeader, tq: q}, nil
+	case *ent.InterfaceQueryParamQuery:
+		return &query[*ent.InterfaceQueryParamQuery, predicate.InterfaceQueryParam, interfacequeryparam.OrderOption]{typ: ent.TypeInterfaceQueryParam, tq: q}, nil
+	case *ent.InterfaceRequestHeaderQuery:
+		return &query[*ent.InterfaceRequestHeaderQuery, predicate.InterfaceRequestHeader, interfacerequestheader.OrderOption]{typ: ent.TypeInterfaceRequestHeader, tq: q}, nil
+	case *ent.InterfaceResultQuery:
+		return &query[*ent.InterfaceResultQuery, predicate.InterfaceResult, interfaceresult.OrderOption]{typ: ent.TypeInterfaceResult, tq: q}, nil
 	case *ent.ProjectQuery:
 		return &query[*ent.ProjectQuery, predicate.Project, project.OrderOption]{typ: ent.TypeProject, tq: q}, nil
 	case *ent.UserQuery:

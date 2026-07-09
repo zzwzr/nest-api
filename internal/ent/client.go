@@ -15,6 +15,13 @@ import (
 	"nest-api/internal/ent/environment"
 	"nest-api/internal/ent/environmentvariable"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfacefield"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -39,6 +46,20 @@ type Client struct {
 	EnvironmentVariable *EnvironmentVariableClient
 	// Folder is the client for interacting with the Folder builders.
 	Folder *FolderClient
+	// InterfaceBodyField is the client for interacting with the InterfaceBodyField builders.
+	InterfaceBodyField *InterfaceBodyFieldClient
+	// InterfaceExample is the client for interacting with the InterfaceExample builders.
+	InterfaceExample *InterfaceExampleClient
+	// InterfaceField is the client for interacting with the InterfaceField builders.
+	InterfaceField *InterfaceFieldClient
+	// InterfaceHeader is the client for interacting with the InterfaceHeader builders.
+	InterfaceHeader *InterfaceHeaderClient
+	// InterfaceQueryParam is the client for interacting with the InterfaceQueryParam builders.
+	InterfaceQueryParam *InterfaceQueryParamClient
+	// InterfaceRequestHeader is the client for interacting with the InterfaceRequestHeader builders.
+	InterfaceRequestHeader *InterfaceRequestHeaderClient
+	// InterfaceResult is the client for interacting with the InterfaceResult builders.
+	InterfaceResult *InterfaceResultClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -62,6 +83,13 @@ func (c *Client) init() {
 	c.Environment = NewEnvironmentClient(c.config)
 	c.EnvironmentVariable = NewEnvironmentVariableClient(c.config)
 	c.Folder = NewFolderClient(c.config)
+	c.InterfaceBodyField = NewInterfaceBodyFieldClient(c.config)
+	c.InterfaceExample = NewInterfaceExampleClient(c.config)
+	c.InterfaceField = NewInterfaceFieldClient(c.config)
+	c.InterfaceHeader = NewInterfaceHeaderClient(c.config)
+	c.InterfaceQueryParam = NewInterfaceQueryParamClient(c.config)
+	c.InterfaceRequestHeader = NewInterfaceRequestHeaderClient(c.config)
+	c.InterfaceResult = NewInterfaceResultClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
@@ -156,16 +184,23 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                 ctx,
-		config:              cfg,
-		API:                 NewAPIClient(cfg),
-		Environment:         NewEnvironmentClient(cfg),
-		EnvironmentVariable: NewEnvironmentVariableClient(cfg),
-		Folder:              NewFolderClient(cfg),
-		Project:             NewProjectClient(cfg),
-		User:                NewUserClient(cfg),
-		Workspace:           NewWorkspaceClient(cfg),
-		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
+		ctx:                    ctx,
+		config:                 cfg,
+		API:                    NewAPIClient(cfg),
+		Environment:            NewEnvironmentClient(cfg),
+		EnvironmentVariable:    NewEnvironmentVariableClient(cfg),
+		Folder:                 NewFolderClient(cfg),
+		InterfaceBodyField:     NewInterfaceBodyFieldClient(cfg),
+		InterfaceExample:       NewInterfaceExampleClient(cfg),
+		InterfaceField:         NewInterfaceFieldClient(cfg),
+		InterfaceHeader:        NewInterfaceHeaderClient(cfg),
+		InterfaceQueryParam:    NewInterfaceQueryParamClient(cfg),
+		InterfaceRequestHeader: NewInterfaceRequestHeaderClient(cfg),
+		InterfaceResult:        NewInterfaceResultClient(cfg),
+		Project:                NewProjectClient(cfg),
+		User:                   NewUserClient(cfg),
+		Workspace:              NewWorkspaceClient(cfg),
+		WorkspaceMember:        NewWorkspaceMemberClient(cfg),
 	}, nil
 }
 
@@ -183,16 +218,23 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                 ctx,
-		config:              cfg,
-		API:                 NewAPIClient(cfg),
-		Environment:         NewEnvironmentClient(cfg),
-		EnvironmentVariable: NewEnvironmentVariableClient(cfg),
-		Folder:              NewFolderClient(cfg),
-		Project:             NewProjectClient(cfg),
-		User:                NewUserClient(cfg),
-		Workspace:           NewWorkspaceClient(cfg),
-		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
+		ctx:                    ctx,
+		config:                 cfg,
+		API:                    NewAPIClient(cfg),
+		Environment:            NewEnvironmentClient(cfg),
+		EnvironmentVariable:    NewEnvironmentVariableClient(cfg),
+		Folder:                 NewFolderClient(cfg),
+		InterfaceBodyField:     NewInterfaceBodyFieldClient(cfg),
+		InterfaceExample:       NewInterfaceExampleClient(cfg),
+		InterfaceField:         NewInterfaceFieldClient(cfg),
+		InterfaceHeader:        NewInterfaceHeaderClient(cfg),
+		InterfaceQueryParam:    NewInterfaceQueryParamClient(cfg),
+		InterfaceRequestHeader: NewInterfaceRequestHeaderClient(cfg),
+		InterfaceResult:        NewInterfaceResultClient(cfg),
+		Project:                NewProjectClient(cfg),
+		User:                   NewUserClient(cfg),
+		Workspace:              NewWorkspaceClient(cfg),
+		WorkspaceMember:        NewWorkspaceMemberClient(cfg),
 	}, nil
 }
 
@@ -222,8 +264,10 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.Project, c.User,
-		c.Workspace, c.WorkspaceMember,
+		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.InterfaceBodyField,
+		c.InterfaceExample, c.InterfaceField, c.InterfaceHeader, c.InterfaceQueryParam,
+		c.InterfaceRequestHeader, c.InterfaceResult, c.Project, c.User, c.Workspace,
+		c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -233,8 +277,10 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.Project, c.User,
-		c.Workspace, c.WorkspaceMember,
+		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.InterfaceBodyField,
+		c.InterfaceExample, c.InterfaceField, c.InterfaceHeader, c.InterfaceQueryParam,
+		c.InterfaceRequestHeader, c.InterfaceResult, c.Project, c.User, c.Workspace,
+		c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -251,6 +297,20 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.EnvironmentVariable.mutate(ctx, m)
 	case *FolderMutation:
 		return c.Folder.mutate(ctx, m)
+	case *InterfaceBodyFieldMutation:
+		return c.InterfaceBodyField.mutate(ctx, m)
+	case *InterfaceExampleMutation:
+		return c.InterfaceExample.mutate(ctx, m)
+	case *InterfaceFieldMutation:
+		return c.InterfaceField.mutate(ctx, m)
+	case *InterfaceHeaderMutation:
+		return c.InterfaceHeader.mutate(ctx, m)
+	case *InterfaceQueryParamMutation:
+		return c.InterfaceQueryParam.mutate(ctx, m)
+	case *InterfaceRequestHeaderMutation:
+		return c.InterfaceRequestHeader.mutate(ctx, m)
+	case *InterfaceResultMutation:
+		return c.InterfaceResult.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
 	case *UserMutation:
@@ -429,6 +489,102 @@ func (c *APIClient) QueryUpdater(_m *API) *UserQuery {
 			sqlgraph.From(api.Table, api.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, api.UpdaterTable, api.UpdaterColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryResponseHeaders queries the response_headers edge of a API.
+func (c *APIClient) QueryResponseHeaders(_m *API) *InterfaceHeaderQuery {
+	query := (&InterfaceHeaderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(interfaceheader.Table, interfaceheader.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ResponseHeadersTable, api.ResponseHeadersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryResponseResults queries the response_results edge of a API.
+func (c *APIClient) QueryResponseResults(_m *API) *InterfaceResultQuery {
+	query := (&InterfaceResultClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(interfaceresult.Table, interfaceresult.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ResponseResultsTable, api.ResponseResultsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryResponseExamples queries the response_examples edge of a API.
+func (c *APIClient) QueryResponseExamples(_m *API) *InterfaceExampleQuery {
+	query := (&InterfaceExampleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(interfaceexample.Table, interfaceexample.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ResponseExamplesTable, api.ResponseExamplesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRequestHeaders queries the request_headers edge of a API.
+func (c *APIClient) QueryRequestHeaders(_m *API) *InterfaceRequestHeaderQuery {
+	query := (&InterfaceRequestHeaderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(interfacerequestheader.Table, interfacerequestheader.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.RequestHeadersTable, api.RequestHeadersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryQueryParams queries the query_params edge of a API.
+func (c *APIClient) QueryQueryParams(_m *API) *InterfaceQueryParamQuery {
+	query := (&InterfaceQueryParamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(interfacequeryparam.Table, interfacequeryparam.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.QueryParamsTable, api.QueryParamsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBodyFields queries the body_fields edge of a API.
+func (c *APIClient) QueryBodyFields(_m *API) *InterfaceBodyFieldQuery {
+	query := (&InterfaceBodyFieldClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(interfacebodyfield.Table, interfacebodyfield.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.BodyFieldsTable, api.BodyFieldsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -993,6 +1149,1079 @@ func (c *FolderClient) mutate(ctx context.Context, m *FolderMutation) (Value, er
 		return (&FolderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Folder mutation op: %q", m.Op())
+	}
+}
+
+// InterfaceBodyFieldClient is a client for the InterfaceBodyField schema.
+type InterfaceBodyFieldClient struct {
+	config
+}
+
+// NewInterfaceBodyFieldClient returns a client for the InterfaceBodyField from the given config.
+func NewInterfaceBodyFieldClient(c config) *InterfaceBodyFieldClient {
+	return &InterfaceBodyFieldClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interfacebodyfield.Hooks(f(g(h())))`.
+func (c *InterfaceBodyFieldClient) Use(hooks ...Hook) {
+	c.hooks.InterfaceBodyField = append(c.hooks.InterfaceBodyField, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interfacebodyfield.Intercept(f(g(h())))`.
+func (c *InterfaceBodyFieldClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterfaceBodyField = append(c.inters.InterfaceBodyField, interceptors...)
+}
+
+// Create returns a builder for creating a InterfaceBodyField entity.
+func (c *InterfaceBodyFieldClient) Create() *InterfaceBodyFieldCreate {
+	mutation := newInterfaceBodyFieldMutation(c.config, OpCreate)
+	return &InterfaceBodyFieldCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterfaceBodyField entities.
+func (c *InterfaceBodyFieldClient) CreateBulk(builders ...*InterfaceBodyFieldCreate) *InterfaceBodyFieldCreateBulk {
+	return &InterfaceBodyFieldCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterfaceBodyFieldClient) MapCreateBulk(slice any, setFunc func(*InterfaceBodyFieldCreate, int)) *InterfaceBodyFieldCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterfaceBodyFieldCreateBulk{err: fmt.Errorf("calling to InterfaceBodyFieldClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterfaceBodyFieldCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterfaceBodyFieldCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterfaceBodyField.
+func (c *InterfaceBodyFieldClient) Update() *InterfaceBodyFieldUpdate {
+	mutation := newInterfaceBodyFieldMutation(c.config, OpUpdate)
+	return &InterfaceBodyFieldUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterfaceBodyFieldClient) UpdateOne(_m *InterfaceBodyField) *InterfaceBodyFieldUpdateOne {
+	mutation := newInterfaceBodyFieldMutation(c.config, OpUpdateOne, withInterfaceBodyField(_m))
+	return &InterfaceBodyFieldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterfaceBodyFieldClient) UpdateOneID(id int64) *InterfaceBodyFieldUpdateOne {
+	mutation := newInterfaceBodyFieldMutation(c.config, OpUpdateOne, withInterfaceBodyFieldID(id))
+	return &InterfaceBodyFieldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterfaceBodyField.
+func (c *InterfaceBodyFieldClient) Delete() *InterfaceBodyFieldDelete {
+	mutation := newInterfaceBodyFieldMutation(c.config, OpDelete)
+	return &InterfaceBodyFieldDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterfaceBodyFieldClient) DeleteOne(_m *InterfaceBodyField) *InterfaceBodyFieldDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterfaceBodyFieldClient) DeleteOneID(id int64) *InterfaceBodyFieldDeleteOne {
+	builder := c.Delete().Where(interfacebodyfield.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterfaceBodyFieldDeleteOne{builder}
+}
+
+// Query returns a query builder for InterfaceBodyField.
+func (c *InterfaceBodyFieldClient) Query() *InterfaceBodyFieldQuery {
+	return &InterfaceBodyFieldQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterfaceBodyField},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterfaceBodyField entity by its id.
+func (c *InterfaceBodyFieldClient) Get(ctx context.Context, id int64) (*InterfaceBodyField, error) {
+	return c.Query().Where(interfacebodyfield.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterfaceBodyFieldClient) GetX(ctx context.Context, id int64) *InterfaceBodyField {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryInterface queries the interface edge of a InterfaceBodyField.
+func (c *InterfaceBodyFieldClient) QueryInterface(_m *InterfaceBodyField) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfacebodyfield.Table, interfacebodyfield.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, interfacebodyfield.InterfaceTable, interfacebodyfield.InterfaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InterfaceBodyFieldClient) Hooks() []Hook {
+	hooks := c.hooks.InterfaceBodyField
+	return append(hooks[:len(hooks):len(hooks)], interfacebodyfield.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterfaceBodyFieldClient) Interceptors() []Interceptor {
+	inters := c.inters.InterfaceBodyField
+	return append(inters[:len(inters):len(inters)], interfacebodyfield.Interceptors[:]...)
+}
+
+func (c *InterfaceBodyFieldClient) mutate(ctx context.Context, m *InterfaceBodyFieldMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterfaceBodyFieldCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterfaceBodyFieldUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterfaceBodyFieldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterfaceBodyFieldDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterfaceBodyField mutation op: %q", m.Op())
+	}
+}
+
+// InterfaceExampleClient is a client for the InterfaceExample schema.
+type InterfaceExampleClient struct {
+	config
+}
+
+// NewInterfaceExampleClient returns a client for the InterfaceExample from the given config.
+func NewInterfaceExampleClient(c config) *InterfaceExampleClient {
+	return &InterfaceExampleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interfaceexample.Hooks(f(g(h())))`.
+func (c *InterfaceExampleClient) Use(hooks ...Hook) {
+	c.hooks.InterfaceExample = append(c.hooks.InterfaceExample, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interfaceexample.Intercept(f(g(h())))`.
+func (c *InterfaceExampleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterfaceExample = append(c.inters.InterfaceExample, interceptors...)
+}
+
+// Create returns a builder for creating a InterfaceExample entity.
+func (c *InterfaceExampleClient) Create() *InterfaceExampleCreate {
+	mutation := newInterfaceExampleMutation(c.config, OpCreate)
+	return &InterfaceExampleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterfaceExample entities.
+func (c *InterfaceExampleClient) CreateBulk(builders ...*InterfaceExampleCreate) *InterfaceExampleCreateBulk {
+	return &InterfaceExampleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterfaceExampleClient) MapCreateBulk(slice any, setFunc func(*InterfaceExampleCreate, int)) *InterfaceExampleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterfaceExampleCreateBulk{err: fmt.Errorf("calling to InterfaceExampleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterfaceExampleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterfaceExampleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterfaceExample.
+func (c *InterfaceExampleClient) Update() *InterfaceExampleUpdate {
+	mutation := newInterfaceExampleMutation(c.config, OpUpdate)
+	return &InterfaceExampleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterfaceExampleClient) UpdateOne(_m *InterfaceExample) *InterfaceExampleUpdateOne {
+	mutation := newInterfaceExampleMutation(c.config, OpUpdateOne, withInterfaceExample(_m))
+	return &InterfaceExampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterfaceExampleClient) UpdateOneID(id int64) *InterfaceExampleUpdateOne {
+	mutation := newInterfaceExampleMutation(c.config, OpUpdateOne, withInterfaceExampleID(id))
+	return &InterfaceExampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterfaceExample.
+func (c *InterfaceExampleClient) Delete() *InterfaceExampleDelete {
+	mutation := newInterfaceExampleMutation(c.config, OpDelete)
+	return &InterfaceExampleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterfaceExampleClient) DeleteOne(_m *InterfaceExample) *InterfaceExampleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterfaceExampleClient) DeleteOneID(id int64) *InterfaceExampleDeleteOne {
+	builder := c.Delete().Where(interfaceexample.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterfaceExampleDeleteOne{builder}
+}
+
+// Query returns a query builder for InterfaceExample.
+func (c *InterfaceExampleClient) Query() *InterfaceExampleQuery {
+	return &InterfaceExampleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterfaceExample},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterfaceExample entity by its id.
+func (c *InterfaceExampleClient) Get(ctx context.Context, id int64) (*InterfaceExample, error) {
+	return c.Query().Where(interfaceexample.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterfaceExampleClient) GetX(ctx context.Context, id int64) *InterfaceExample {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryInterface queries the interface edge of a InterfaceExample.
+func (c *InterfaceExampleClient) QueryInterface(_m *InterfaceExample) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfaceexample.Table, interfaceexample.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, interfaceexample.InterfaceTable, interfaceexample.InterfaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InterfaceExampleClient) Hooks() []Hook {
+	hooks := c.hooks.InterfaceExample
+	return append(hooks[:len(hooks):len(hooks)], interfaceexample.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterfaceExampleClient) Interceptors() []Interceptor {
+	inters := c.inters.InterfaceExample
+	return append(inters[:len(inters):len(inters)], interfaceexample.Interceptors[:]...)
+}
+
+func (c *InterfaceExampleClient) mutate(ctx context.Context, m *InterfaceExampleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterfaceExampleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterfaceExampleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterfaceExampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterfaceExampleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterfaceExample mutation op: %q", m.Op())
+	}
+}
+
+// InterfaceFieldClient is a client for the InterfaceField schema.
+type InterfaceFieldClient struct {
+	config
+}
+
+// NewInterfaceFieldClient returns a client for the InterfaceField from the given config.
+func NewInterfaceFieldClient(c config) *InterfaceFieldClient {
+	return &InterfaceFieldClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interfacefield.Hooks(f(g(h())))`.
+func (c *InterfaceFieldClient) Use(hooks ...Hook) {
+	c.hooks.InterfaceField = append(c.hooks.InterfaceField, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interfacefield.Intercept(f(g(h())))`.
+func (c *InterfaceFieldClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterfaceField = append(c.inters.InterfaceField, interceptors...)
+}
+
+// Create returns a builder for creating a InterfaceField entity.
+func (c *InterfaceFieldClient) Create() *InterfaceFieldCreate {
+	mutation := newInterfaceFieldMutation(c.config, OpCreate)
+	return &InterfaceFieldCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterfaceField entities.
+func (c *InterfaceFieldClient) CreateBulk(builders ...*InterfaceFieldCreate) *InterfaceFieldCreateBulk {
+	return &InterfaceFieldCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterfaceFieldClient) MapCreateBulk(slice any, setFunc func(*InterfaceFieldCreate, int)) *InterfaceFieldCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterfaceFieldCreateBulk{err: fmt.Errorf("calling to InterfaceFieldClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterfaceFieldCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterfaceFieldCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterfaceField.
+func (c *InterfaceFieldClient) Update() *InterfaceFieldUpdate {
+	mutation := newInterfaceFieldMutation(c.config, OpUpdate)
+	return &InterfaceFieldUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterfaceFieldClient) UpdateOne(_m *InterfaceField) *InterfaceFieldUpdateOne {
+	mutation := newInterfaceFieldMutation(c.config, OpUpdateOne, withInterfaceField(_m))
+	return &InterfaceFieldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterfaceFieldClient) UpdateOneID(id int64) *InterfaceFieldUpdateOne {
+	mutation := newInterfaceFieldMutation(c.config, OpUpdateOne, withInterfaceFieldID(id))
+	return &InterfaceFieldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterfaceField.
+func (c *InterfaceFieldClient) Delete() *InterfaceFieldDelete {
+	mutation := newInterfaceFieldMutation(c.config, OpDelete)
+	return &InterfaceFieldDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterfaceFieldClient) DeleteOne(_m *InterfaceField) *InterfaceFieldDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterfaceFieldClient) DeleteOneID(id int64) *InterfaceFieldDeleteOne {
+	builder := c.Delete().Where(interfacefield.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterfaceFieldDeleteOne{builder}
+}
+
+// Query returns a query builder for InterfaceField.
+func (c *InterfaceFieldClient) Query() *InterfaceFieldQuery {
+	return &InterfaceFieldQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterfaceField},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterfaceField entity by its id.
+func (c *InterfaceFieldClient) Get(ctx context.Context, id int64) (*InterfaceField, error) {
+	return c.Query().Where(interfacefield.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterfaceFieldClient) GetX(ctx context.Context, id int64) *InterfaceField {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryResult queries the result edge of a InterfaceField.
+func (c *InterfaceFieldClient) QueryResult(_m *InterfaceField) *InterfaceResultQuery {
+	query := (&InterfaceResultClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfacefield.Table, interfacefield.FieldID, id),
+			sqlgraph.To(interfaceresult.Table, interfaceresult.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, interfacefield.ResultTable, interfacefield.ResultColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InterfaceFieldClient) Hooks() []Hook {
+	hooks := c.hooks.InterfaceField
+	return append(hooks[:len(hooks):len(hooks)], interfacefield.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterfaceFieldClient) Interceptors() []Interceptor {
+	inters := c.inters.InterfaceField
+	return append(inters[:len(inters):len(inters)], interfacefield.Interceptors[:]...)
+}
+
+func (c *InterfaceFieldClient) mutate(ctx context.Context, m *InterfaceFieldMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterfaceFieldCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterfaceFieldUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterfaceFieldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterfaceFieldDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterfaceField mutation op: %q", m.Op())
+	}
+}
+
+// InterfaceHeaderClient is a client for the InterfaceHeader schema.
+type InterfaceHeaderClient struct {
+	config
+}
+
+// NewInterfaceHeaderClient returns a client for the InterfaceHeader from the given config.
+func NewInterfaceHeaderClient(c config) *InterfaceHeaderClient {
+	return &InterfaceHeaderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interfaceheader.Hooks(f(g(h())))`.
+func (c *InterfaceHeaderClient) Use(hooks ...Hook) {
+	c.hooks.InterfaceHeader = append(c.hooks.InterfaceHeader, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interfaceheader.Intercept(f(g(h())))`.
+func (c *InterfaceHeaderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterfaceHeader = append(c.inters.InterfaceHeader, interceptors...)
+}
+
+// Create returns a builder for creating a InterfaceHeader entity.
+func (c *InterfaceHeaderClient) Create() *InterfaceHeaderCreate {
+	mutation := newInterfaceHeaderMutation(c.config, OpCreate)
+	return &InterfaceHeaderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterfaceHeader entities.
+func (c *InterfaceHeaderClient) CreateBulk(builders ...*InterfaceHeaderCreate) *InterfaceHeaderCreateBulk {
+	return &InterfaceHeaderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterfaceHeaderClient) MapCreateBulk(slice any, setFunc func(*InterfaceHeaderCreate, int)) *InterfaceHeaderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterfaceHeaderCreateBulk{err: fmt.Errorf("calling to InterfaceHeaderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterfaceHeaderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterfaceHeaderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterfaceHeader.
+func (c *InterfaceHeaderClient) Update() *InterfaceHeaderUpdate {
+	mutation := newInterfaceHeaderMutation(c.config, OpUpdate)
+	return &InterfaceHeaderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterfaceHeaderClient) UpdateOne(_m *InterfaceHeader) *InterfaceHeaderUpdateOne {
+	mutation := newInterfaceHeaderMutation(c.config, OpUpdateOne, withInterfaceHeader(_m))
+	return &InterfaceHeaderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterfaceHeaderClient) UpdateOneID(id int64) *InterfaceHeaderUpdateOne {
+	mutation := newInterfaceHeaderMutation(c.config, OpUpdateOne, withInterfaceHeaderID(id))
+	return &InterfaceHeaderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterfaceHeader.
+func (c *InterfaceHeaderClient) Delete() *InterfaceHeaderDelete {
+	mutation := newInterfaceHeaderMutation(c.config, OpDelete)
+	return &InterfaceHeaderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterfaceHeaderClient) DeleteOne(_m *InterfaceHeader) *InterfaceHeaderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterfaceHeaderClient) DeleteOneID(id int64) *InterfaceHeaderDeleteOne {
+	builder := c.Delete().Where(interfaceheader.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterfaceHeaderDeleteOne{builder}
+}
+
+// Query returns a query builder for InterfaceHeader.
+func (c *InterfaceHeaderClient) Query() *InterfaceHeaderQuery {
+	return &InterfaceHeaderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterfaceHeader},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterfaceHeader entity by its id.
+func (c *InterfaceHeaderClient) Get(ctx context.Context, id int64) (*InterfaceHeader, error) {
+	return c.Query().Where(interfaceheader.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterfaceHeaderClient) GetX(ctx context.Context, id int64) *InterfaceHeader {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryInterface queries the interface edge of a InterfaceHeader.
+func (c *InterfaceHeaderClient) QueryInterface(_m *InterfaceHeader) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfaceheader.Table, interfaceheader.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, interfaceheader.InterfaceTable, interfaceheader.InterfaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InterfaceHeaderClient) Hooks() []Hook {
+	hooks := c.hooks.InterfaceHeader
+	return append(hooks[:len(hooks):len(hooks)], interfaceheader.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterfaceHeaderClient) Interceptors() []Interceptor {
+	inters := c.inters.InterfaceHeader
+	return append(inters[:len(inters):len(inters)], interfaceheader.Interceptors[:]...)
+}
+
+func (c *InterfaceHeaderClient) mutate(ctx context.Context, m *InterfaceHeaderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterfaceHeaderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterfaceHeaderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterfaceHeaderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterfaceHeaderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterfaceHeader mutation op: %q", m.Op())
+	}
+}
+
+// InterfaceQueryParamClient is a client for the InterfaceQueryParam schema.
+type InterfaceQueryParamClient struct {
+	config
+}
+
+// NewInterfaceQueryParamClient returns a client for the InterfaceQueryParam from the given config.
+func NewInterfaceQueryParamClient(c config) *InterfaceQueryParamClient {
+	return &InterfaceQueryParamClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interfacequeryparam.Hooks(f(g(h())))`.
+func (c *InterfaceQueryParamClient) Use(hooks ...Hook) {
+	c.hooks.InterfaceQueryParam = append(c.hooks.InterfaceQueryParam, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interfacequeryparam.Intercept(f(g(h())))`.
+func (c *InterfaceQueryParamClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterfaceQueryParam = append(c.inters.InterfaceQueryParam, interceptors...)
+}
+
+// Create returns a builder for creating a InterfaceQueryParam entity.
+func (c *InterfaceQueryParamClient) Create() *InterfaceQueryParamCreate {
+	mutation := newInterfaceQueryParamMutation(c.config, OpCreate)
+	return &InterfaceQueryParamCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterfaceQueryParam entities.
+func (c *InterfaceQueryParamClient) CreateBulk(builders ...*InterfaceQueryParamCreate) *InterfaceQueryParamCreateBulk {
+	return &InterfaceQueryParamCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterfaceQueryParamClient) MapCreateBulk(slice any, setFunc func(*InterfaceQueryParamCreate, int)) *InterfaceQueryParamCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterfaceQueryParamCreateBulk{err: fmt.Errorf("calling to InterfaceQueryParamClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterfaceQueryParamCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterfaceQueryParamCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterfaceQueryParam.
+func (c *InterfaceQueryParamClient) Update() *InterfaceQueryParamUpdate {
+	mutation := newInterfaceQueryParamMutation(c.config, OpUpdate)
+	return &InterfaceQueryParamUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterfaceQueryParamClient) UpdateOne(_m *InterfaceQueryParam) *InterfaceQueryParamUpdateOne {
+	mutation := newInterfaceQueryParamMutation(c.config, OpUpdateOne, withInterfaceQueryParam(_m))
+	return &InterfaceQueryParamUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterfaceQueryParamClient) UpdateOneID(id int64) *InterfaceQueryParamUpdateOne {
+	mutation := newInterfaceQueryParamMutation(c.config, OpUpdateOne, withInterfaceQueryParamID(id))
+	return &InterfaceQueryParamUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterfaceQueryParam.
+func (c *InterfaceQueryParamClient) Delete() *InterfaceQueryParamDelete {
+	mutation := newInterfaceQueryParamMutation(c.config, OpDelete)
+	return &InterfaceQueryParamDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterfaceQueryParamClient) DeleteOne(_m *InterfaceQueryParam) *InterfaceQueryParamDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterfaceQueryParamClient) DeleteOneID(id int64) *InterfaceQueryParamDeleteOne {
+	builder := c.Delete().Where(interfacequeryparam.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterfaceQueryParamDeleteOne{builder}
+}
+
+// Query returns a query builder for InterfaceQueryParam.
+func (c *InterfaceQueryParamClient) Query() *InterfaceQueryParamQuery {
+	return &InterfaceQueryParamQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterfaceQueryParam},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterfaceQueryParam entity by its id.
+func (c *InterfaceQueryParamClient) Get(ctx context.Context, id int64) (*InterfaceQueryParam, error) {
+	return c.Query().Where(interfacequeryparam.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterfaceQueryParamClient) GetX(ctx context.Context, id int64) *InterfaceQueryParam {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryInterface queries the interface edge of a InterfaceQueryParam.
+func (c *InterfaceQueryParamClient) QueryInterface(_m *InterfaceQueryParam) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfacequeryparam.Table, interfacequeryparam.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, interfacequeryparam.InterfaceTable, interfacequeryparam.InterfaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InterfaceQueryParamClient) Hooks() []Hook {
+	hooks := c.hooks.InterfaceQueryParam
+	return append(hooks[:len(hooks):len(hooks)], interfacequeryparam.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterfaceQueryParamClient) Interceptors() []Interceptor {
+	inters := c.inters.InterfaceQueryParam
+	return append(inters[:len(inters):len(inters)], interfacequeryparam.Interceptors[:]...)
+}
+
+func (c *InterfaceQueryParamClient) mutate(ctx context.Context, m *InterfaceQueryParamMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterfaceQueryParamCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterfaceQueryParamUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterfaceQueryParamUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterfaceQueryParamDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterfaceQueryParam mutation op: %q", m.Op())
+	}
+}
+
+// InterfaceRequestHeaderClient is a client for the InterfaceRequestHeader schema.
+type InterfaceRequestHeaderClient struct {
+	config
+}
+
+// NewInterfaceRequestHeaderClient returns a client for the InterfaceRequestHeader from the given config.
+func NewInterfaceRequestHeaderClient(c config) *InterfaceRequestHeaderClient {
+	return &InterfaceRequestHeaderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interfacerequestheader.Hooks(f(g(h())))`.
+func (c *InterfaceRequestHeaderClient) Use(hooks ...Hook) {
+	c.hooks.InterfaceRequestHeader = append(c.hooks.InterfaceRequestHeader, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interfacerequestheader.Intercept(f(g(h())))`.
+func (c *InterfaceRequestHeaderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterfaceRequestHeader = append(c.inters.InterfaceRequestHeader, interceptors...)
+}
+
+// Create returns a builder for creating a InterfaceRequestHeader entity.
+func (c *InterfaceRequestHeaderClient) Create() *InterfaceRequestHeaderCreate {
+	mutation := newInterfaceRequestHeaderMutation(c.config, OpCreate)
+	return &InterfaceRequestHeaderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterfaceRequestHeader entities.
+func (c *InterfaceRequestHeaderClient) CreateBulk(builders ...*InterfaceRequestHeaderCreate) *InterfaceRequestHeaderCreateBulk {
+	return &InterfaceRequestHeaderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterfaceRequestHeaderClient) MapCreateBulk(slice any, setFunc func(*InterfaceRequestHeaderCreate, int)) *InterfaceRequestHeaderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterfaceRequestHeaderCreateBulk{err: fmt.Errorf("calling to InterfaceRequestHeaderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterfaceRequestHeaderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterfaceRequestHeaderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterfaceRequestHeader.
+func (c *InterfaceRequestHeaderClient) Update() *InterfaceRequestHeaderUpdate {
+	mutation := newInterfaceRequestHeaderMutation(c.config, OpUpdate)
+	return &InterfaceRequestHeaderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterfaceRequestHeaderClient) UpdateOne(_m *InterfaceRequestHeader) *InterfaceRequestHeaderUpdateOne {
+	mutation := newInterfaceRequestHeaderMutation(c.config, OpUpdateOne, withInterfaceRequestHeader(_m))
+	return &InterfaceRequestHeaderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterfaceRequestHeaderClient) UpdateOneID(id int64) *InterfaceRequestHeaderUpdateOne {
+	mutation := newInterfaceRequestHeaderMutation(c.config, OpUpdateOne, withInterfaceRequestHeaderID(id))
+	return &InterfaceRequestHeaderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterfaceRequestHeader.
+func (c *InterfaceRequestHeaderClient) Delete() *InterfaceRequestHeaderDelete {
+	mutation := newInterfaceRequestHeaderMutation(c.config, OpDelete)
+	return &InterfaceRequestHeaderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterfaceRequestHeaderClient) DeleteOne(_m *InterfaceRequestHeader) *InterfaceRequestHeaderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterfaceRequestHeaderClient) DeleteOneID(id int64) *InterfaceRequestHeaderDeleteOne {
+	builder := c.Delete().Where(interfacerequestheader.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterfaceRequestHeaderDeleteOne{builder}
+}
+
+// Query returns a query builder for InterfaceRequestHeader.
+func (c *InterfaceRequestHeaderClient) Query() *InterfaceRequestHeaderQuery {
+	return &InterfaceRequestHeaderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterfaceRequestHeader},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterfaceRequestHeader entity by its id.
+func (c *InterfaceRequestHeaderClient) Get(ctx context.Context, id int64) (*InterfaceRequestHeader, error) {
+	return c.Query().Where(interfacerequestheader.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterfaceRequestHeaderClient) GetX(ctx context.Context, id int64) *InterfaceRequestHeader {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryInterface queries the interface edge of a InterfaceRequestHeader.
+func (c *InterfaceRequestHeaderClient) QueryInterface(_m *InterfaceRequestHeader) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfacerequestheader.Table, interfacerequestheader.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, interfacerequestheader.InterfaceTable, interfacerequestheader.InterfaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InterfaceRequestHeaderClient) Hooks() []Hook {
+	hooks := c.hooks.InterfaceRequestHeader
+	return append(hooks[:len(hooks):len(hooks)], interfacerequestheader.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterfaceRequestHeaderClient) Interceptors() []Interceptor {
+	inters := c.inters.InterfaceRequestHeader
+	return append(inters[:len(inters):len(inters)], interfacerequestheader.Interceptors[:]...)
+}
+
+func (c *InterfaceRequestHeaderClient) mutate(ctx context.Context, m *InterfaceRequestHeaderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterfaceRequestHeaderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterfaceRequestHeaderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterfaceRequestHeaderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterfaceRequestHeaderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterfaceRequestHeader mutation op: %q", m.Op())
+	}
+}
+
+// InterfaceResultClient is a client for the InterfaceResult schema.
+type InterfaceResultClient struct {
+	config
+}
+
+// NewInterfaceResultClient returns a client for the InterfaceResult from the given config.
+func NewInterfaceResultClient(c config) *InterfaceResultClient {
+	return &InterfaceResultClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interfaceresult.Hooks(f(g(h())))`.
+func (c *InterfaceResultClient) Use(hooks ...Hook) {
+	c.hooks.InterfaceResult = append(c.hooks.InterfaceResult, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interfaceresult.Intercept(f(g(h())))`.
+func (c *InterfaceResultClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterfaceResult = append(c.inters.InterfaceResult, interceptors...)
+}
+
+// Create returns a builder for creating a InterfaceResult entity.
+func (c *InterfaceResultClient) Create() *InterfaceResultCreate {
+	mutation := newInterfaceResultMutation(c.config, OpCreate)
+	return &InterfaceResultCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterfaceResult entities.
+func (c *InterfaceResultClient) CreateBulk(builders ...*InterfaceResultCreate) *InterfaceResultCreateBulk {
+	return &InterfaceResultCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterfaceResultClient) MapCreateBulk(slice any, setFunc func(*InterfaceResultCreate, int)) *InterfaceResultCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterfaceResultCreateBulk{err: fmt.Errorf("calling to InterfaceResultClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterfaceResultCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterfaceResultCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterfaceResult.
+func (c *InterfaceResultClient) Update() *InterfaceResultUpdate {
+	mutation := newInterfaceResultMutation(c.config, OpUpdate)
+	return &InterfaceResultUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterfaceResultClient) UpdateOne(_m *InterfaceResult) *InterfaceResultUpdateOne {
+	mutation := newInterfaceResultMutation(c.config, OpUpdateOne, withInterfaceResult(_m))
+	return &InterfaceResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterfaceResultClient) UpdateOneID(id int64) *InterfaceResultUpdateOne {
+	mutation := newInterfaceResultMutation(c.config, OpUpdateOne, withInterfaceResultID(id))
+	return &InterfaceResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterfaceResult.
+func (c *InterfaceResultClient) Delete() *InterfaceResultDelete {
+	mutation := newInterfaceResultMutation(c.config, OpDelete)
+	return &InterfaceResultDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterfaceResultClient) DeleteOne(_m *InterfaceResult) *InterfaceResultDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterfaceResultClient) DeleteOneID(id int64) *InterfaceResultDeleteOne {
+	builder := c.Delete().Where(interfaceresult.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterfaceResultDeleteOne{builder}
+}
+
+// Query returns a query builder for InterfaceResult.
+func (c *InterfaceResultClient) Query() *InterfaceResultQuery {
+	return &InterfaceResultQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterfaceResult},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterfaceResult entity by its id.
+func (c *InterfaceResultClient) Get(ctx context.Context, id int64) (*InterfaceResult, error) {
+	return c.Query().Where(interfaceresult.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterfaceResultClient) GetX(ctx context.Context, id int64) *InterfaceResult {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryInterface queries the interface edge of a InterfaceResult.
+func (c *InterfaceResultClient) QueryInterface(_m *InterfaceResult) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfaceresult.Table, interfaceresult.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, interfaceresult.InterfaceTable, interfaceresult.InterfaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFields queries the fields edge of a InterfaceResult.
+func (c *InterfaceResultClient) QueryFields(_m *InterfaceResult) *InterfaceFieldQuery {
+	query := (&InterfaceFieldClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(interfaceresult.Table, interfaceresult.FieldID, id),
+			sqlgraph.To(interfacefield.Table, interfacefield.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, interfaceresult.FieldsTable, interfaceresult.FieldsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InterfaceResultClient) Hooks() []Hook {
+	hooks := c.hooks.InterfaceResult
+	return append(hooks[:len(hooks):len(hooks)], interfaceresult.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterfaceResultClient) Interceptors() []Interceptor {
+	inters := c.inters.InterfaceResult
+	return append(inters[:len(inters):len(inters)], interfaceresult.Interceptors[:]...)
+}
+
+func (c *InterfaceResultClient) mutate(ctx context.Context, m *InterfaceResultMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterfaceResultCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterfaceResultUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterfaceResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterfaceResultDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterfaceResult mutation op: %q", m.Op())
 	}
 }
 
@@ -1827,11 +3056,15 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		API, Environment, EnvironmentVariable, Folder, Project, User, Workspace,
+		API, Environment, EnvironmentVariable, Folder, InterfaceBodyField,
+		InterfaceExample, InterfaceField, InterfaceHeader, InterfaceQueryParam,
+		InterfaceRequestHeader, InterfaceResult, Project, User, Workspace,
 		WorkspaceMember []ent.Hook
 	}
 	inters struct {
-		API, Environment, EnvironmentVariable, Folder, Project, User, Workspace,
+		API, Environment, EnvironmentVariable, Folder, InterfaceBodyField,
+		InterfaceExample, InterfaceField, InterfaceHeader, InterfaceQueryParam,
+		InterfaceRequestHeader, InterfaceResult, Project, User, Workspace,
 		WorkspaceMember []ent.Interceptor
 	}
 )

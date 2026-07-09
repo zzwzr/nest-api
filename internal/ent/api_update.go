@@ -8,6 +8,12 @@ import (
 	"fmt"
 	"nest-api/internal/ent/api"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
@@ -119,6 +125,34 @@ func (_u *APIUpdate) SetNillableStatus(v *uint8) *APIUpdate {
 // AddStatus adds value to the "status" field.
 func (_u *APIUpdate) AddStatus(v int8) *APIUpdate {
 	_u.mutation.AddStatus(v)
+	return _u
+}
+
+// SetRequestBodyFormat sets the "request_body_format" field.
+func (_u *APIUpdate) SetRequestBodyFormat(v string) *APIUpdate {
+	_u.mutation.SetRequestBodyFormat(v)
+	return _u
+}
+
+// SetNillableRequestBodyFormat sets the "request_body_format" field if the given value is not nil.
+func (_u *APIUpdate) SetNillableRequestBodyFormat(v *string) *APIUpdate {
+	if v != nil {
+		_u.SetRequestBodyFormat(*v)
+	}
+	return _u
+}
+
+// SetRequestBodyDataType sets the "request_body_data_type" field.
+func (_u *APIUpdate) SetRequestBodyDataType(v string) *APIUpdate {
+	_u.mutation.SetRequestBodyDataType(v)
+	return _u
+}
+
+// SetNillableRequestBodyDataType sets the "request_body_data_type" field if the given value is not nil.
+func (_u *APIUpdate) SetNillableRequestBodyDataType(v *string) *APIUpdate {
+	if v != nil {
+		_u.SetRequestBodyDataType(*v)
+	}
 	return _u
 }
 
@@ -243,6 +277,96 @@ func (_u *APIUpdate) SetUpdater(v *User) *APIUpdate {
 	return _u.SetUpdaterID(v.ID)
 }
 
+// AddResponseHeaderIDs adds the "response_headers" edge to the InterfaceHeader entity by IDs.
+func (_u *APIUpdate) AddResponseHeaderIDs(ids ...int64) *APIUpdate {
+	_u.mutation.AddResponseHeaderIDs(ids...)
+	return _u
+}
+
+// AddResponseHeaders adds the "response_headers" edges to the InterfaceHeader entity.
+func (_u *APIUpdate) AddResponseHeaders(v ...*InterfaceHeader) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddResponseHeaderIDs(ids...)
+}
+
+// AddResponseResultIDs adds the "response_results" edge to the InterfaceResult entity by IDs.
+func (_u *APIUpdate) AddResponseResultIDs(ids ...int64) *APIUpdate {
+	_u.mutation.AddResponseResultIDs(ids...)
+	return _u
+}
+
+// AddResponseResults adds the "response_results" edges to the InterfaceResult entity.
+func (_u *APIUpdate) AddResponseResults(v ...*InterfaceResult) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddResponseResultIDs(ids...)
+}
+
+// AddResponseExampleIDs adds the "response_examples" edge to the InterfaceExample entity by IDs.
+func (_u *APIUpdate) AddResponseExampleIDs(ids ...int64) *APIUpdate {
+	_u.mutation.AddResponseExampleIDs(ids...)
+	return _u
+}
+
+// AddResponseExamples adds the "response_examples" edges to the InterfaceExample entity.
+func (_u *APIUpdate) AddResponseExamples(v ...*InterfaceExample) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddResponseExampleIDs(ids...)
+}
+
+// AddRequestHeaderIDs adds the "request_headers" edge to the InterfaceRequestHeader entity by IDs.
+func (_u *APIUpdate) AddRequestHeaderIDs(ids ...int64) *APIUpdate {
+	_u.mutation.AddRequestHeaderIDs(ids...)
+	return _u
+}
+
+// AddRequestHeaders adds the "request_headers" edges to the InterfaceRequestHeader entity.
+func (_u *APIUpdate) AddRequestHeaders(v ...*InterfaceRequestHeader) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRequestHeaderIDs(ids...)
+}
+
+// AddQueryParamIDs adds the "query_params" edge to the InterfaceQueryParam entity by IDs.
+func (_u *APIUpdate) AddQueryParamIDs(ids ...int64) *APIUpdate {
+	_u.mutation.AddQueryParamIDs(ids...)
+	return _u
+}
+
+// AddQueryParams adds the "query_params" edges to the InterfaceQueryParam entity.
+func (_u *APIUpdate) AddQueryParams(v ...*InterfaceQueryParam) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddQueryParamIDs(ids...)
+}
+
+// AddBodyFieldIDs adds the "body_fields" edge to the InterfaceBodyField entity by IDs.
+func (_u *APIUpdate) AddBodyFieldIDs(ids ...int64) *APIUpdate {
+	_u.mutation.AddBodyFieldIDs(ids...)
+	return _u
+}
+
+// AddBodyFields adds the "body_fields" edges to the InterfaceBodyField entity.
+func (_u *APIUpdate) AddBodyFields(v ...*InterfaceBodyField) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBodyFieldIDs(ids...)
+}
+
 // Mutation returns the APIMutation object of the builder.
 func (_u *APIUpdate) Mutation() *APIMutation {
 	return _u.mutation
@@ -270,6 +394,132 @@ func (_u *APIUpdate) ClearCreator() *APIUpdate {
 func (_u *APIUpdate) ClearUpdater() *APIUpdate {
 	_u.mutation.ClearUpdater()
 	return _u
+}
+
+// ClearResponseHeaders clears all "response_headers" edges to the InterfaceHeader entity.
+func (_u *APIUpdate) ClearResponseHeaders() *APIUpdate {
+	_u.mutation.ClearResponseHeaders()
+	return _u
+}
+
+// RemoveResponseHeaderIDs removes the "response_headers" edge to InterfaceHeader entities by IDs.
+func (_u *APIUpdate) RemoveResponseHeaderIDs(ids ...int64) *APIUpdate {
+	_u.mutation.RemoveResponseHeaderIDs(ids...)
+	return _u
+}
+
+// RemoveResponseHeaders removes "response_headers" edges to InterfaceHeader entities.
+func (_u *APIUpdate) RemoveResponseHeaders(v ...*InterfaceHeader) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveResponseHeaderIDs(ids...)
+}
+
+// ClearResponseResults clears all "response_results" edges to the InterfaceResult entity.
+func (_u *APIUpdate) ClearResponseResults() *APIUpdate {
+	_u.mutation.ClearResponseResults()
+	return _u
+}
+
+// RemoveResponseResultIDs removes the "response_results" edge to InterfaceResult entities by IDs.
+func (_u *APIUpdate) RemoveResponseResultIDs(ids ...int64) *APIUpdate {
+	_u.mutation.RemoveResponseResultIDs(ids...)
+	return _u
+}
+
+// RemoveResponseResults removes "response_results" edges to InterfaceResult entities.
+func (_u *APIUpdate) RemoveResponseResults(v ...*InterfaceResult) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveResponseResultIDs(ids...)
+}
+
+// ClearResponseExamples clears all "response_examples" edges to the InterfaceExample entity.
+func (_u *APIUpdate) ClearResponseExamples() *APIUpdate {
+	_u.mutation.ClearResponseExamples()
+	return _u
+}
+
+// RemoveResponseExampleIDs removes the "response_examples" edge to InterfaceExample entities by IDs.
+func (_u *APIUpdate) RemoveResponseExampleIDs(ids ...int64) *APIUpdate {
+	_u.mutation.RemoveResponseExampleIDs(ids...)
+	return _u
+}
+
+// RemoveResponseExamples removes "response_examples" edges to InterfaceExample entities.
+func (_u *APIUpdate) RemoveResponseExamples(v ...*InterfaceExample) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveResponseExampleIDs(ids...)
+}
+
+// ClearRequestHeaders clears all "request_headers" edges to the InterfaceRequestHeader entity.
+func (_u *APIUpdate) ClearRequestHeaders() *APIUpdate {
+	_u.mutation.ClearRequestHeaders()
+	return _u
+}
+
+// RemoveRequestHeaderIDs removes the "request_headers" edge to InterfaceRequestHeader entities by IDs.
+func (_u *APIUpdate) RemoveRequestHeaderIDs(ids ...int64) *APIUpdate {
+	_u.mutation.RemoveRequestHeaderIDs(ids...)
+	return _u
+}
+
+// RemoveRequestHeaders removes "request_headers" edges to InterfaceRequestHeader entities.
+func (_u *APIUpdate) RemoveRequestHeaders(v ...*InterfaceRequestHeader) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRequestHeaderIDs(ids...)
+}
+
+// ClearQueryParams clears all "query_params" edges to the InterfaceQueryParam entity.
+func (_u *APIUpdate) ClearQueryParams() *APIUpdate {
+	_u.mutation.ClearQueryParams()
+	return _u
+}
+
+// RemoveQueryParamIDs removes the "query_params" edge to InterfaceQueryParam entities by IDs.
+func (_u *APIUpdate) RemoveQueryParamIDs(ids ...int64) *APIUpdate {
+	_u.mutation.RemoveQueryParamIDs(ids...)
+	return _u
+}
+
+// RemoveQueryParams removes "query_params" edges to InterfaceQueryParam entities.
+func (_u *APIUpdate) RemoveQueryParams(v ...*InterfaceQueryParam) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveQueryParamIDs(ids...)
+}
+
+// ClearBodyFields clears all "body_fields" edges to the InterfaceBodyField entity.
+func (_u *APIUpdate) ClearBodyFields() *APIUpdate {
+	_u.mutation.ClearBodyFields()
+	return _u
+}
+
+// RemoveBodyFieldIDs removes the "body_fields" edge to InterfaceBodyField entities by IDs.
+func (_u *APIUpdate) RemoveBodyFieldIDs(ids ...int64) *APIUpdate {
+	_u.mutation.RemoveBodyFieldIDs(ids...)
+	return _u
+}
+
+// RemoveBodyFields removes "body_fields" edges to InterfaceBodyField entities.
+func (_u *APIUpdate) RemoveBodyFields(v ...*InterfaceBodyField) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBodyFieldIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -331,6 +581,16 @@ func (_u *APIUpdate) check() error {
 			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "API.url": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.RequestBodyFormat(); ok {
+		if err := api.RequestBodyFormatValidator(v); err != nil {
+			return &ValidationError{Name: "request_body_format", err: fmt.Errorf(`ent: validator failed for field "API.request_body_format": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RequestBodyDataType(); ok {
+		if err := api.RequestBodyDataTypeValidator(v); err != nil {
+			return &ValidationError{Name: "request_body_data_type", err: fmt.Errorf(`ent: validator failed for field "API.request_body_data_type": %w`, err)}
+		}
+	}
 	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "API.project"`)
 	}
@@ -372,6 +632,12 @@ func (_u *APIUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedStatus(); ok {
 		_spec.AddField(api.FieldStatus, field.TypeUint8, value)
+	}
+	if value, ok := _u.mutation.RequestBodyFormat(); ok {
+		_spec.SetField(api.FieldRequestBodyFormat, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.RequestBodyDataType(); ok {
+		_spec.SetField(api.FieldRequestBodyDataType, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SortOrder(); ok {
 		_spec.SetField(api.FieldSortOrder, field.TypeInt, value)
@@ -507,6 +773,276 @@ func (_u *APIUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ResponseHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseHeadersTable,
+			Columns: []string{api.ResponseHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceheader.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedResponseHeadersIDs(); len(nodes) > 0 && !_u.mutation.ResponseHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseHeadersTable,
+			Columns: []string{api.ResponseHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResponseHeadersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseHeadersTable,
+			Columns: []string{api.ResponseHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ResponseResultsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseResultsTable,
+			Columns: []string{api.ResponseResultsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceresult.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedResponseResultsIDs(); len(nodes) > 0 && !_u.mutation.ResponseResultsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseResultsTable,
+			Columns: []string{api.ResponseResultsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceresult.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResponseResultsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseResultsTable,
+			Columns: []string{api.ResponseResultsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceresult.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ResponseExamplesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseExamplesTable,
+			Columns: []string{api.ResponseExamplesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceexample.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedResponseExamplesIDs(); len(nodes) > 0 && !_u.mutation.ResponseExamplesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseExamplesTable,
+			Columns: []string{api.ResponseExamplesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceexample.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResponseExamplesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseExamplesTable,
+			Columns: []string{api.ResponseExamplesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceexample.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RequestHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.RequestHeadersTable,
+			Columns: []string{api.RequestHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacerequestheader.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRequestHeadersIDs(); len(nodes) > 0 && !_u.mutation.RequestHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.RequestHeadersTable,
+			Columns: []string{api.RequestHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacerequestheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestHeadersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.RequestHeadersTable,
+			Columns: []string{api.RequestHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacerequestheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.QueryParamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.QueryParamsTable,
+			Columns: []string{api.QueryParamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacequeryparam.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedQueryParamsIDs(); len(nodes) > 0 && !_u.mutation.QueryParamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.QueryParamsTable,
+			Columns: []string{api.QueryParamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacequeryparam.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QueryParamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.QueryParamsTable,
+			Columns: []string{api.QueryParamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacequeryparam.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.BodyFieldsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.BodyFieldsTable,
+			Columns: []string{api.BodyFieldsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBodyFieldsIDs(); len(nodes) > 0 && !_u.mutation.BodyFieldsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.BodyFieldsTable,
+			Columns: []string{api.BodyFieldsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BodyFieldsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.BodyFieldsTable,
+			Columns: []string{api.BodyFieldsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{api.Label}
@@ -615,6 +1151,34 @@ func (_u *APIUpdateOne) SetNillableStatus(v *uint8) *APIUpdateOne {
 // AddStatus adds value to the "status" field.
 func (_u *APIUpdateOne) AddStatus(v int8) *APIUpdateOne {
 	_u.mutation.AddStatus(v)
+	return _u
+}
+
+// SetRequestBodyFormat sets the "request_body_format" field.
+func (_u *APIUpdateOne) SetRequestBodyFormat(v string) *APIUpdateOne {
+	_u.mutation.SetRequestBodyFormat(v)
+	return _u
+}
+
+// SetNillableRequestBodyFormat sets the "request_body_format" field if the given value is not nil.
+func (_u *APIUpdateOne) SetNillableRequestBodyFormat(v *string) *APIUpdateOne {
+	if v != nil {
+		_u.SetRequestBodyFormat(*v)
+	}
+	return _u
+}
+
+// SetRequestBodyDataType sets the "request_body_data_type" field.
+func (_u *APIUpdateOne) SetRequestBodyDataType(v string) *APIUpdateOne {
+	_u.mutation.SetRequestBodyDataType(v)
+	return _u
+}
+
+// SetNillableRequestBodyDataType sets the "request_body_data_type" field if the given value is not nil.
+func (_u *APIUpdateOne) SetNillableRequestBodyDataType(v *string) *APIUpdateOne {
+	if v != nil {
+		_u.SetRequestBodyDataType(*v)
+	}
 	return _u
 }
 
@@ -739,6 +1303,96 @@ func (_u *APIUpdateOne) SetUpdater(v *User) *APIUpdateOne {
 	return _u.SetUpdaterID(v.ID)
 }
 
+// AddResponseHeaderIDs adds the "response_headers" edge to the InterfaceHeader entity by IDs.
+func (_u *APIUpdateOne) AddResponseHeaderIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.AddResponseHeaderIDs(ids...)
+	return _u
+}
+
+// AddResponseHeaders adds the "response_headers" edges to the InterfaceHeader entity.
+func (_u *APIUpdateOne) AddResponseHeaders(v ...*InterfaceHeader) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddResponseHeaderIDs(ids...)
+}
+
+// AddResponseResultIDs adds the "response_results" edge to the InterfaceResult entity by IDs.
+func (_u *APIUpdateOne) AddResponseResultIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.AddResponseResultIDs(ids...)
+	return _u
+}
+
+// AddResponseResults adds the "response_results" edges to the InterfaceResult entity.
+func (_u *APIUpdateOne) AddResponseResults(v ...*InterfaceResult) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddResponseResultIDs(ids...)
+}
+
+// AddResponseExampleIDs adds the "response_examples" edge to the InterfaceExample entity by IDs.
+func (_u *APIUpdateOne) AddResponseExampleIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.AddResponseExampleIDs(ids...)
+	return _u
+}
+
+// AddResponseExamples adds the "response_examples" edges to the InterfaceExample entity.
+func (_u *APIUpdateOne) AddResponseExamples(v ...*InterfaceExample) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddResponseExampleIDs(ids...)
+}
+
+// AddRequestHeaderIDs adds the "request_headers" edge to the InterfaceRequestHeader entity by IDs.
+func (_u *APIUpdateOne) AddRequestHeaderIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.AddRequestHeaderIDs(ids...)
+	return _u
+}
+
+// AddRequestHeaders adds the "request_headers" edges to the InterfaceRequestHeader entity.
+func (_u *APIUpdateOne) AddRequestHeaders(v ...*InterfaceRequestHeader) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRequestHeaderIDs(ids...)
+}
+
+// AddQueryParamIDs adds the "query_params" edge to the InterfaceQueryParam entity by IDs.
+func (_u *APIUpdateOne) AddQueryParamIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.AddQueryParamIDs(ids...)
+	return _u
+}
+
+// AddQueryParams adds the "query_params" edges to the InterfaceQueryParam entity.
+func (_u *APIUpdateOne) AddQueryParams(v ...*InterfaceQueryParam) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddQueryParamIDs(ids...)
+}
+
+// AddBodyFieldIDs adds the "body_fields" edge to the InterfaceBodyField entity by IDs.
+func (_u *APIUpdateOne) AddBodyFieldIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.AddBodyFieldIDs(ids...)
+	return _u
+}
+
+// AddBodyFields adds the "body_fields" edges to the InterfaceBodyField entity.
+func (_u *APIUpdateOne) AddBodyFields(v ...*InterfaceBodyField) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddBodyFieldIDs(ids...)
+}
+
 // Mutation returns the APIMutation object of the builder.
 func (_u *APIUpdateOne) Mutation() *APIMutation {
 	return _u.mutation
@@ -766,6 +1420,132 @@ func (_u *APIUpdateOne) ClearCreator() *APIUpdateOne {
 func (_u *APIUpdateOne) ClearUpdater() *APIUpdateOne {
 	_u.mutation.ClearUpdater()
 	return _u
+}
+
+// ClearResponseHeaders clears all "response_headers" edges to the InterfaceHeader entity.
+func (_u *APIUpdateOne) ClearResponseHeaders() *APIUpdateOne {
+	_u.mutation.ClearResponseHeaders()
+	return _u
+}
+
+// RemoveResponseHeaderIDs removes the "response_headers" edge to InterfaceHeader entities by IDs.
+func (_u *APIUpdateOne) RemoveResponseHeaderIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.RemoveResponseHeaderIDs(ids...)
+	return _u
+}
+
+// RemoveResponseHeaders removes "response_headers" edges to InterfaceHeader entities.
+func (_u *APIUpdateOne) RemoveResponseHeaders(v ...*InterfaceHeader) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveResponseHeaderIDs(ids...)
+}
+
+// ClearResponseResults clears all "response_results" edges to the InterfaceResult entity.
+func (_u *APIUpdateOne) ClearResponseResults() *APIUpdateOne {
+	_u.mutation.ClearResponseResults()
+	return _u
+}
+
+// RemoveResponseResultIDs removes the "response_results" edge to InterfaceResult entities by IDs.
+func (_u *APIUpdateOne) RemoveResponseResultIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.RemoveResponseResultIDs(ids...)
+	return _u
+}
+
+// RemoveResponseResults removes "response_results" edges to InterfaceResult entities.
+func (_u *APIUpdateOne) RemoveResponseResults(v ...*InterfaceResult) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveResponseResultIDs(ids...)
+}
+
+// ClearResponseExamples clears all "response_examples" edges to the InterfaceExample entity.
+func (_u *APIUpdateOne) ClearResponseExamples() *APIUpdateOne {
+	_u.mutation.ClearResponseExamples()
+	return _u
+}
+
+// RemoveResponseExampleIDs removes the "response_examples" edge to InterfaceExample entities by IDs.
+func (_u *APIUpdateOne) RemoveResponseExampleIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.RemoveResponseExampleIDs(ids...)
+	return _u
+}
+
+// RemoveResponseExamples removes "response_examples" edges to InterfaceExample entities.
+func (_u *APIUpdateOne) RemoveResponseExamples(v ...*InterfaceExample) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveResponseExampleIDs(ids...)
+}
+
+// ClearRequestHeaders clears all "request_headers" edges to the InterfaceRequestHeader entity.
+func (_u *APIUpdateOne) ClearRequestHeaders() *APIUpdateOne {
+	_u.mutation.ClearRequestHeaders()
+	return _u
+}
+
+// RemoveRequestHeaderIDs removes the "request_headers" edge to InterfaceRequestHeader entities by IDs.
+func (_u *APIUpdateOne) RemoveRequestHeaderIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.RemoveRequestHeaderIDs(ids...)
+	return _u
+}
+
+// RemoveRequestHeaders removes "request_headers" edges to InterfaceRequestHeader entities.
+func (_u *APIUpdateOne) RemoveRequestHeaders(v ...*InterfaceRequestHeader) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRequestHeaderIDs(ids...)
+}
+
+// ClearQueryParams clears all "query_params" edges to the InterfaceQueryParam entity.
+func (_u *APIUpdateOne) ClearQueryParams() *APIUpdateOne {
+	_u.mutation.ClearQueryParams()
+	return _u
+}
+
+// RemoveQueryParamIDs removes the "query_params" edge to InterfaceQueryParam entities by IDs.
+func (_u *APIUpdateOne) RemoveQueryParamIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.RemoveQueryParamIDs(ids...)
+	return _u
+}
+
+// RemoveQueryParams removes "query_params" edges to InterfaceQueryParam entities.
+func (_u *APIUpdateOne) RemoveQueryParams(v ...*InterfaceQueryParam) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveQueryParamIDs(ids...)
+}
+
+// ClearBodyFields clears all "body_fields" edges to the InterfaceBodyField entity.
+func (_u *APIUpdateOne) ClearBodyFields() *APIUpdateOne {
+	_u.mutation.ClearBodyFields()
+	return _u
+}
+
+// RemoveBodyFieldIDs removes the "body_fields" edge to InterfaceBodyField entities by IDs.
+func (_u *APIUpdateOne) RemoveBodyFieldIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.RemoveBodyFieldIDs(ids...)
+	return _u
+}
+
+// RemoveBodyFields removes "body_fields" edges to InterfaceBodyField entities.
+func (_u *APIUpdateOne) RemoveBodyFields(v ...*InterfaceBodyField) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveBodyFieldIDs(ids...)
 }
 
 // Where appends a list predicates to the APIUpdate builder.
@@ -840,6 +1620,16 @@ func (_u *APIUpdateOne) check() error {
 			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "API.url": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.RequestBodyFormat(); ok {
+		if err := api.RequestBodyFormatValidator(v); err != nil {
+			return &ValidationError{Name: "request_body_format", err: fmt.Errorf(`ent: validator failed for field "API.request_body_format": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RequestBodyDataType(); ok {
+		if err := api.RequestBodyDataTypeValidator(v); err != nil {
+			return &ValidationError{Name: "request_body_data_type", err: fmt.Errorf(`ent: validator failed for field "API.request_body_data_type": %w`, err)}
+		}
+	}
 	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "API.project"`)
 	}
@@ -898,6 +1688,12 @@ func (_u *APIUpdateOne) sqlSave(ctx context.Context) (_node *API, err error) {
 	}
 	if value, ok := _u.mutation.AddedStatus(); ok {
 		_spec.AddField(api.FieldStatus, field.TypeUint8, value)
+	}
+	if value, ok := _u.mutation.RequestBodyFormat(); ok {
+		_spec.SetField(api.FieldRequestBodyFormat, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.RequestBodyDataType(); ok {
+		_spec.SetField(api.FieldRequestBodyDataType, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SortOrder(); ok {
 		_spec.SetField(api.FieldSortOrder, field.TypeInt, value)
@@ -1026,6 +1822,276 @@ func (_u *APIUpdateOne) sqlSave(ctx context.Context) (_node *API, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ResponseHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseHeadersTable,
+			Columns: []string{api.ResponseHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceheader.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedResponseHeadersIDs(); len(nodes) > 0 && !_u.mutation.ResponseHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseHeadersTable,
+			Columns: []string{api.ResponseHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResponseHeadersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseHeadersTable,
+			Columns: []string{api.ResponseHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ResponseResultsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseResultsTable,
+			Columns: []string{api.ResponseResultsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceresult.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedResponseResultsIDs(); len(nodes) > 0 && !_u.mutation.ResponseResultsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseResultsTable,
+			Columns: []string{api.ResponseResultsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceresult.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResponseResultsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseResultsTable,
+			Columns: []string{api.ResponseResultsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceresult.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ResponseExamplesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseExamplesTable,
+			Columns: []string{api.ResponseExamplesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceexample.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedResponseExamplesIDs(); len(nodes) > 0 && !_u.mutation.ResponseExamplesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseExamplesTable,
+			Columns: []string{api.ResponseExamplesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceexample.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ResponseExamplesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ResponseExamplesTable,
+			Columns: []string{api.ResponseExamplesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfaceexample.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RequestHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.RequestHeadersTable,
+			Columns: []string{api.RequestHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacerequestheader.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRequestHeadersIDs(); len(nodes) > 0 && !_u.mutation.RequestHeadersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.RequestHeadersTable,
+			Columns: []string{api.RequestHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacerequestheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestHeadersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.RequestHeadersTable,
+			Columns: []string{api.RequestHeadersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacerequestheader.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.QueryParamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.QueryParamsTable,
+			Columns: []string{api.QueryParamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacequeryparam.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedQueryParamsIDs(); len(nodes) > 0 && !_u.mutation.QueryParamsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.QueryParamsTable,
+			Columns: []string{api.QueryParamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacequeryparam.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.QueryParamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.QueryParamsTable,
+			Columns: []string{api.QueryParamsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacequeryparam.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.BodyFieldsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.BodyFieldsTable,
+			Columns: []string{api.BodyFieldsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedBodyFieldsIDs(); len(nodes) > 0 && !_u.mutation.BodyFieldsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.BodyFieldsTable,
+			Columns: []string{api.BodyFieldsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.BodyFieldsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.BodyFieldsTable,
+			Columns: []string{api.BodyFieldsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

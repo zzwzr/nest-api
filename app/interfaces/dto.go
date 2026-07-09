@@ -15,9 +15,89 @@ type Item struct {
 	UpdatedAt     string `json:"updated_at"`
 }
 
+type ParamItem struct {
+	ID          int64  `json:"id,omitempty"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Required    bool   `json:"required"`
+	Description string `json:"description"`
+	Example     string `json:"example"`
+}
+
+type BodyFieldItem struct {
+	ID          int64           `json:"id,omitempty"`
+	ParentID    int64           `json:"parent_id"`
+	Name        string          `json:"name"`
+	Type        string          `json:"type"`
+	Required    bool            `json:"required"`
+	Description string          `json:"description"`
+	Example     string          `json:"example"`
+	Children    []BodyFieldItem `json:"children,omitempty"`
+}
+
+type RequestBodyConfig struct {
+	Format   string          `json:"format"`
+	DataType string          `json:"data_type"`
+	Fields   []BodyFieldItem `json:"fields"`
+}
+
+type ResponseHeaderItem struct {
+	ID          int64  `json:"id,omitempty"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Required    bool   `json:"required"`
+	Description string `json:"description"`
+	Example     string `json:"example"`
+}
+
+type ResponseFieldItem struct {
+	ID          int64               `json:"id,omitempty"`
+	ParentID    int64               `json:"parent_id"`
+	Name        string              `json:"name"`
+	Type        string              `json:"type"`
+	Required    bool                `json:"required"`
+	Description string              `json:"description"`
+	Mock        string              `json:"mock"`
+	Example     string              `json:"example"`
+	Children    []ResponseFieldItem `json:"children,omitempty"`
+}
+
+type ResponseResultItem struct {
+	ID         int64               `json:"id,omitempty"`
+	Name       string              `json:"name"`
+	StatusCode int                 `json:"status_code"`
+	Format     string              `json:"format"`
+	DataType   string              `json:"data_type"`
+	Fields     []ResponseFieldItem `json:"fields"`
+}
+
+type ResponseExampleItem struct {
+	ID          int64  `json:"id,omitempty"`
+	Name        string `json:"name"`
+	StatusCode  int    `json:"status_code"`
+	ContentType string `json:"content_type"`
+	Raw         string `json:"raw"`
+}
+
+type DetailItem struct {
+	Item
+	RequestHeaders   []ParamItem           `json:"request_headers"`
+	RequestBody      RequestBodyConfig     `json:"request_body"`
+	QueryParams      []ParamItem           `json:"query_params"`
+	ResponseHeaders  []ResponseHeaderItem  `json:"response_headers"`
+	ResponseResults  []ResponseResultItem  `json:"response_results"`
+	ResponseExamples []ResponseExampleItem `json:"response_examples"`
+}
+
 type ListRequest struct {
 	WorkspaceID int64 `form:"workspace_id" json:"workspace_id" binding:"required,min=1"`
 	ProjectID   int64 `form:"project_id" json:"project_id" binding:"required,min=1"`
+}
+
+type DetailRequest struct {
+	WorkspaceID int64 `form:"workspace_id" json:"workspace_id" binding:"required,min=1"`
+	ProjectID   int64 `form:"project_id" json:"project_id" binding:"required,min=1"`
+	InterfaceID int64 `form:"interface_id" json:"interface_id" binding:"required,min=1"`
 }
 
 type CreateRequest struct {
@@ -31,13 +111,20 @@ type CreateRequest struct {
 }
 
 type UpdateRequest struct {
-	WorkspaceID int64  `json:"workspace_id" binding:"required,min=1"`
-	ProjectID   int64  `json:"project_id" binding:"required,min=1"`
-	InterfaceID int64  `json:"interface_id" binding:"required,min=1"`
-	Name        string `json:"name" binding:"required,min=1,max=100"`
-	Method      string `json:"method" binding:"required,min=1,max=10"`
-	URL         string `json:"url" binding:"max=500"`
-	Status      uint8  `json:"status"`
+	WorkspaceID      int64                 `json:"workspace_id" binding:"required,min=1"`
+	ProjectID        int64                 `json:"project_id" binding:"required,min=1"`
+	InterfaceID      int64                 `json:"interface_id" binding:"required,min=1"`
+	FolderID         int64                 `json:"folder_id"`
+	Name             string                `json:"name" binding:"required,min=1,max=100"`
+	Method           string                `json:"method" binding:"required,min=1,max=10"`
+	URL              string                `json:"url" binding:"max=500"`
+	Status           uint8                 `json:"status"`
+	RequestHeaders   []ParamItem           `json:"request_headers"`
+	RequestBody      RequestBodyConfig     `json:"request_body"`
+	QueryParams      []ParamItem           `json:"query_params"`
+	ResponseHeaders  []ResponseHeaderItem  `json:"response_headers"`
+	ResponseResults  []ResponseResultItem  `json:"response_results"`
+	ResponseExamples []ResponseExampleItem `json:"response_examples"`
 }
 
 type DeleteRequest struct {

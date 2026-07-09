@@ -11,7 +11,7 @@ import (
 type Handler struct{}
 
 func (*Handler) Status(c *gin.Context) {
-	data := Service{}.Status()
+	data := (Service{}).Status()
 	response.Success(c, data)
 }
 
@@ -22,7 +22,7 @@ func (*Handler) TestDatabase(c *gin.Context) {
 		return
 	}
 
-	data, err := Service{}.TestDatabase(params)
+	data, err := (Service{}).TestDatabase(params)
 	if err != nil {
 		logger.Error("install test database failed", err)
 		response.Fail(c, err)
@@ -39,7 +39,7 @@ func (*Handler) Install(c *gin.Context) {
 		return
 	}
 
-	data, err := Service{}.Install(c.Request.Context(), params)
+	data, err := (Service{}).Install(c.Request.Context(), params)
 	if err != nil {
 		logger.Error("install failed", err)
 		response.Fail(c, err)

@@ -39,6 +39,12 @@
   --color-workspace-menu-bg: #ffffff;
   --color-workspace-menu-hover: rgba(0, 0, 0, 0.06);
   --color-workspace-control-hover: rgba(0, 0, 0, 0.08);
+  --color-interface-accent: #005a9e;
+  --color-interface-field-text: #222222;
+  --color-interface-bar-border: #dcdcdc;
+  --color-interface-focus-ring: #007acc;
+  --color-interface-field-hover-bg: rgba(0, 0, 0, 0.04);
+  --color-interface-section-padding-x: 16px;
 }
 
 :root[data-theme='dark'] {
@@ -81,6 +87,12 @@
   --color-workspace-menu-bg: #2f2f2f;
   --color-workspace-menu-hover: rgba(255, 255, 255, 0.08);
   --color-workspace-control-hover: rgba(255, 255, 255, 0.14);
+  --color-interface-accent: #1a8ad4;
+  --color-interface-field-text: #e8e8e8;
+  --color-interface-bar-border: rgba(255, 255, 255, 0.12);
+  --color-interface-focus-ring: #007acc;
+  --color-interface-field-hover-bg: rgba(255, 255, 255, 0.06);
+  --color-interface-section-padding-x: 16px;
 }
 
 *,

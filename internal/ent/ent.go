@@ -10,6 +10,13 @@ import (
 	"nest-api/internal/ent/environment"
 	"nest-api/internal/ent/environmentvariable"
 	"nest-api/internal/ent/folder"
+	"nest-api/internal/ent/interfacebodyfield"
+	"nest-api/internal/ent/interfaceexample"
+	"nest-api/internal/ent/interfacefield"
+	"nest-api/internal/ent/interfaceheader"
+	"nest-api/internal/ent/interfacequeryparam"
+	"nest-api/internal/ent/interfacerequestheader"
+	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
@@ -80,14 +87,21 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			api.Table:                 api.ValidColumn,
-			environment.Table:         environment.ValidColumn,
-			environmentvariable.Table: environmentvariable.ValidColumn,
-			folder.Table:              folder.ValidColumn,
-			project.Table:             project.ValidColumn,
-			user.Table:                user.ValidColumn,
-			workspace.Table:           workspace.ValidColumn,
-			workspacemember.Table:     workspacemember.ValidColumn,
+			api.Table:                    api.ValidColumn,
+			environment.Table:            environment.ValidColumn,
+			environmentvariable.Table:    environmentvariable.ValidColumn,
+			folder.Table:                 folder.ValidColumn,
+			interfacebodyfield.Table:     interfacebodyfield.ValidColumn,
+			interfaceexample.Table:       interfaceexample.ValidColumn,
+			interfacefield.Table:         interfacefield.ValidColumn,
+			interfaceheader.Table:        interfaceheader.ValidColumn,
+			interfacequeryparam.Table:    interfacequeryparam.ValidColumn,
+			interfacerequestheader.Table: interfacerequestheader.ValidColumn,
+			interfaceresult.Table:        interfaceresult.ValidColumn,
+			project.Table:                project.ValidColumn,
+			user.Table:                   user.ValidColumn,
+			workspace.Table:              workspace.ValidColumn,
+			workspacemember.Table:        workspacemember.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

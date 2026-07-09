@@ -4,9 +4,11 @@ import { Close, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import EnvironmentManagePanel from '@/views/workspace/EnvironmentManagePanel.vue'
 import InterfaceCreateForm from '@/views/workspace/InterfaceCreateForm.vue'
+import InterfaceDetailPanel from '@/views/workspace/InterfaceDetailPanel.vue'
 import ProjectManagePanel from '@/views/workspace/ProjectManagePanel.vue'
 import VariableManagePanel from '@/views/workspace/VariableManagePanel.vue'
 import { useLocale } from '@/composables/useLocale'
+import { interfaceStatusKey } from '@/constants/interface-status'
 import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
 import type { AppModule, HttpMethod, WorkspaceTab } from '@/types/workspace'
 
@@ -33,6 +35,7 @@ const {
   closeTab,
   closeTabsLeft,
   closeTabsRight,
+  closeOtherTabs,
   closeAllTabs,
 } = useWorkspaceContext()
 
@@ -158,7 +161,7 @@ const apiRows = computed(() =>
   folderInterfaces.value.map((item) => ({
     id: item.id,
     name: item.name,
-    status: item.status === 1 ? 'published' : 'testing',
+    status: interfaceStatusKey(item.status),
     method: item.method,
     url: item.url,
     group: item.folder_name || selectedFolder.value?.name || '',
@@ -294,13 +297,13 @@ function hideContextMenu() {
   contextMenu.value.visible = false
 }
 
-function runContextAction(action: 'current' | 'left' | 'right' | 'all') {
+function runContextAction(action: 'others' | 'left' | 'right' | 'all') {
   const tabId = contextMenu.value.tabId
   hideContextMenu()
 
   switch (action) {
-    case 'current':
-      closeTab(tabId)
+    case 'others':
+      closeOtherTabs(tabId)
       break
     case 'left':
       closeTabsLeft(tabId)
@@ -396,9 +399,10 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="workspace-main__tab-menu-item"
-          @click="runContextAction('current')"
+          :disabled="moduleTabs.filter((item) => isTabClosable(item)).length <= 1"
+          @click="runContextAction('others')"
         >
-          {{ t('workspace.tabCloseCurrent') }}
+          {{ t('workspace.tabCloseOthers') }}
         </button>
         <button
           type="button"
@@ -454,10 +458,7 @@ onBeforeUnmount(() => {
       </template>
 
       <template v-else-if="showApiDetail">
-        <div class="workspace-main__placeholder">
-          <h2>{{ tabLabel(activeModuleTab!) }}</h2>
-          <p>{{ pageDesc }}</p>
-        </div>
+        <InterfaceDetailPanel />
       </template>
 
       <template v-else-if="showFolderView">
@@ -508,7 +509,7 @@ onBeforeUnmount(() => {
                 class="workspace-main__status"
                 :class="`workspace-main__status--${row.status}`"
               >
-                {{ row.status === 'published' ? t('workspace.status.published') : t('workspace.status.testing') }}
+                {{ t(`workspace.status.${row.status}`) }}
               </span>
             </template>
           </el-table-column>
@@ -998,6 +999,22 @@ onBeforeUnmount(() => {
 
 .workspace-main__status--testing {
   color: #fca130;
+}
+
+.workspace-main__status--developing {
+  color: #61affe;
+}
+
+.workspace-main__status--abnormal {
+  color: #f93e3e;
+}
+
+.workspace-main__status--maintenance {
+  color: #fca130;
+}
+
+.workspace-main__status--deprecated {
+  color: #909399;
 }
 
 .workspace-main__placeholder {

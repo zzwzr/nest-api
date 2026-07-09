@@ -15,6 +15,7 @@ func Interface(rg *gin.RouterGroup) {
 		r.GET("/interfaces", h.List)
 		r.POST("/interfaces", h.Create)
 		r.PUT("/interfaces", h.Update)
+		r.PUT("/interfaces/reorder", h.Reorder)
 		r.DELETE("/interfaces", h.Delete)
 	}
 }

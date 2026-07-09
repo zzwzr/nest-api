@@ -45,3 +45,10 @@ type DeleteRequest struct {
 	ProjectID   int64 `form:"project_id" json:"project_id" binding:"required,min=1"`
 	InterfaceID int64 `form:"interface_id" json:"interface_id" binding:"required,min=1"`
 }
+
+type ReorderRequest struct {
+	WorkspaceID  int64   `json:"workspace_id" binding:"required,min=1"`
+	ProjectID    int64   `json:"project_id" binding:"required,min=1"`
+	FolderID     int64   `json:"folder_id" binding:"required,min=1"`
+	InterfaceIDs []int64 `json:"interface_ids" binding:"required,min=1,dive,min=1"`
+}

@@ -10,6 +10,7 @@ import {
   createInterface,
   deleteInterface,
   fetchInterfaces,
+  reorderInterfaces,
   updateInterface,
 } from '@/api/interface'
 import { fetchEnvironments } from '@/api/environment'
@@ -948,6 +949,49 @@ export function useWorkspaceContext() {
     await refreshApiData()
   }
 
+  function reorderApiTreeLocal(folderId: number, orderedApiIds: number[]) {
+    const folderNode = findNodeById(apiTree.value, `folder-${folderId}`)
+    if (!folderNode?.children) return
+
+    const subFolders = folderNode.children.filter((item) => item.type === 'folder')
+    const apiMap = new Map(
+      folderNode.children.filter((item) => item.type === 'api').map((item) => [item.id, item]),
+    )
+    const apis = orderedApiIds
+      .map((id) => apiMap.get(`api-${id}`))
+      .filter((item): item is ApiTreeNode => !!item)
+
+    if (apis.length !== orderedApiIds.length) return
+
+    folderNode.children = [...subFolders, ...apis]
+    apiTree.value = [...apiTree.value]
+
+    const orderMap = new Map(orderedApiIds.map((id, index) => [id, index]))
+    interfaces.value = [...interfaces.value].sort((left, right) => {
+      if (left.folder_id !== folderId && right.folder_id !== folderId) return 0
+      if (left.folder_id !== folderId) return 1
+      if (right.folder_id !== folderId) return -1
+      return (orderMap.get(left.id) ?? 0) - (orderMap.get(right.id) ?? 0)
+    })
+  }
+
+  async function submitReorderInterfaces(folderId: number, orderedApiIds: number[]) {
+    if (!activeWorkspaceId.value || !activeProjectId.value) return
+
+    reorderApiTreeLocal(folderId, orderedApiIds)
+    try {
+      await reorderInterfaces(
+        activeWorkspaceId.value,
+        activeProjectId.value,
+        folderId,
+        orderedApiIds,
+      )
+    } catch (error) {
+      await refreshApiData()
+      throw error
+    }
+  }
+
   watch(activeWorkspaceId, () => {
     loadProjects()
   })
@@ -1096,6 +1140,7 @@ export function useWorkspaceContext() {
     submitCreateInterface,
     submitUpdateInterface,
     submitDeleteInterface,
+    submitReorderInterfaces,
     parseFolderId,
     parseApiId,
   }

@@ -59,3 +59,19 @@ export function deleteInterface(workspaceId: number, projectId: number, interfac
     }),
   )
 }
+
+export function reorderInterfaces(
+  workspaceId: number,
+  projectId: number,
+  folderId: number,
+  interfaceIds: number[],
+) {
+  return getData<null>(
+    http.put('/v1/interfaces/reorder', {
+      workspace_id: workspaceId,
+      project_id: projectId,
+      folder_id: folderId,
+      interface_ids: interfaceIds,
+    }),
+  )
+}

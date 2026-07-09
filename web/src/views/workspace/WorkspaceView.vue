@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { Close, Delete, Edit } from '@element-plus/icons-vue'
+import { Close, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import EnvironmentManagePanel from '@/views/workspace/EnvironmentManagePanel.vue'
 import InterfaceCreateForm from '@/views/workspace/InterfaceCreateForm.vue'
@@ -564,21 +564,13 @@ onBeforeUnmount(() => {
           />
           <el-table-column
             :label="t('member.columns.actions')"
-            width="88"
+            width="52"
             fixed="right"
             label-class-name="workspace-main__nowrap"
             class-name="workspace-main__nowrap workspace-main__actions-col"
           >
             <template #default="{ row }">
               <div class="workspace-main__actions">
-                <button
-                  type="button"
-                  class="workspace-main__action-btn"
-                  :title="t('common.edit')"
-                  @click.stop="handleOpenApi(row.id)"
-                >
-                  <el-icon :size="14"><Edit /></el-icon>
-                </button>
                 <button
                   type="button"
                   class="workspace-main__action-btn workspace-main__action-btn--danger"

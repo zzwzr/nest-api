@@ -114,6 +114,7 @@ export default {
     deleteApiConfirm: 'Delete interface "{name}"?',
     deleteApiSuccess: 'Interface deleted',
     deleteApiFailed: 'Failed to delete interface',
+    reorderApiFailed: 'Failed to reorder interfaces',
     updateFolderSuccess: 'Folder updated',
     updateFolderFailed: 'Failed to update folder',
     deleteFolderConfirm: 'Delete folder "{name}"? All subfolders and APIs inside will also be removed.',

@@ -72,3 +72,18 @@ func (*Handler) Delete(c *gin.Context) {
 	}
 	response.Success(c, nil)
 }
+
+func (*Handler) Reorder(c *gin.Context) {
+	var params ReorderRequest
+	if err := validator.Bind(c, &params); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	if err := (Service{}).Reorder(c.Request.Context(), utils.GetUserID(c), params); err != nil {
+		logger.Error("interface reorder failed", err)
+		response.Fail(c, err)
+		return
+	}
+	response.Success(c, nil)
+}

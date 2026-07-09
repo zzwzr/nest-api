@@ -114,6 +114,7 @@ export default {
     deleteApiConfirm: '确定删除接口「{name}」吗？',
     deleteApiSuccess: '接口已删除',
     deleteApiFailed: '删除接口失败',
+    reorderApiFailed: '接口排序失败',
     updateFolderSuccess: '文件夹已更新',
     updateFolderFailed: '更新文件夹失败',
     deleteFolderConfirm: '确定删除文件夹「{name}」吗？删除后其中的子文件夹和接口也将被移除。',

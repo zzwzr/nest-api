@@ -29,7 +29,7 @@ func (Service) List(ctx context.Context, userID int64, params ListRequest) ([]It
 		Where(entapi.ProjectIDEQ(params.ProjectID)).
 		WithFolder().
 		WithUpdater().
-		Order(ent.Desc(entapi.FieldID)).
+		Order(ent.Asc(entapi.FieldSortOrder), ent.Asc(entapi.FieldID)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -76,6 +76,11 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 		status = 1
 	}
 
+	sortOrder, err := nextInterfaceSortOrder(ctx, params.ProjectID, params.FolderID)
+	if err != nil {
+		return 0, err
+	}
+
 	row, err := database.DB.API.
 		Create().
 		SetProjectID(params.ProjectID).
@@ -84,6 +89,7 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 		SetMethod(method).
 		SetURL(params.URL).
 		SetStatus(status).
+		SetSortOrder(sortOrder).
 		SetCreatedBy(userID).
 		SetUpdatedBy(userID).
 		Save(ctx)
@@ -132,6 +138,82 @@ func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) e
 	}
 
 	return database.DB.API.DeleteOneID(params.InterfaceID).Exec(ctx)
+}
+
+func (Service) Reorder(ctx context.Context, userID int64, params ReorderRequest) error {
+	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectUpdate); err != nil {
+		return err
+	}
+	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+		return err
+	}
+	if err := ensureFolder(ctx, params.ProjectID, params.FolderID); err != nil {
+		return err
+	}
+
+	rows, err := database.DB.API.
+		Query().
+		Where(
+			entapi.ProjectIDEQ(params.ProjectID),
+			entapi.FolderIDEQ(params.FolderID),
+		).
+		All(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(params.InterfaceIDs) != len(rows) {
+		return bizerr.New("接口列表不完整")
+	}
+
+	existingIDs := make(map[int64]struct{}, len(rows))
+	for _, row := range rows {
+		existingIDs[row.ID] = struct{}{}
+	}
+
+	seen := make(map[int64]struct{}, len(params.InterfaceIDs))
+	for _, id := range params.InterfaceIDs {
+		if _, ok := existingIDs[id]; !ok {
+			return bizerr.New("接口不存在或不属于该分组")
+		}
+		if _, dup := seen[id]; dup {
+			return bizerr.New("接口列表重复")
+		}
+		seen[id] = struct{}{}
+	}
+
+	tx, err := database.DB.Tx(ctx)
+	if err != nil {
+		return err
+	}
+
+	for index, id := range params.InterfaceIDs {
+		if err := tx.API.UpdateOneID(id).SetSortOrder(index).Exec(ctx); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func nextInterfaceSortOrder(ctx context.Context, projectID, folderID int64) (int, error) {
+	rows, err := database.DB.API.
+		Query().
+		Where(
+			entapi.ProjectIDEQ(projectID),
+			entapi.FolderIDEQ(folderID),
+		).
+		Order(ent.Desc(entapi.FieldSortOrder)).
+		Limit(1).
+		All(ctx)
+	if err != nil {
+		return 0, err
+	}
+	if len(rows) == 0 {
+		return 0, nil
+	}
+	return rows[0].SortOrder + 1, nil
 }
 
 func ensureProject(ctx context.Context, workspaceID, projectID int64) error {

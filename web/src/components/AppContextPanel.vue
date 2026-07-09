@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { ArrowDown, Folder, Plus, Search, Setting, User } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useLocale } from '@/composables/useLocale'
 import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
 import {
@@ -34,6 +34,7 @@ const {
   submitUpdateFolder,
   submitDeleteFolder,
   submitDeleteInterface,
+  submitReorderInterfaces,
   openCreateApi,
   parseFolderId,
   parseApiId,
@@ -43,6 +44,18 @@ const deletingApiId = ref<number | null>(null)
 
 const searchQuery = ref('')
 
+type FlatApiNode = {
+  node: ApiTreeNode
+  depth: number
+  parentFolderId: string | null
+}
+
+const dragApiState = ref<{ apiId: string; folderId: string } | null>(null)
+const dragOverApiId = ref<string | null>(null)
+const reorderingApis = ref(false)
+
+const canDragApis = computed(() => !searchQuery.value.trim())
+
 type FolderDialogMode = 'create-root' | 'create-sub' | 'edit'
 
 const folderDialogVisible = ref(false)
@@ -51,6 +64,26 @@ const folderDialogParentId = ref(0)
 const folderDialogTargetId = ref(0)
 const folderDialogName = ref('')
 const folderDialogSubmitting = ref(false)
+
+type DeleteTarget =
+  | { kind: 'folder'; folderId: number; name: string }
+  | { kind: 'api'; apiId: number; name: string }
+
+const deleteDialogVisible = ref(false)
+const deleteTarget = ref<DeleteTarget | null>(null)
+const deleteDialogSubmitting = ref(false)
+
+const deleteDialogTitle = computed(() => {
+  if (!deleteTarget.value) return ''
+  return deleteTarget.value.kind === 'folder' ? t('workspace.deleteFolder') : t('common.delete')
+})
+
+const deleteDialogMessage = computed(() => {
+  if (!deleteTarget.value) return ''
+  return deleteTarget.value.kind === 'folder'
+    ? t('workspace.deleteFolderConfirm', { name: deleteTarget.value.name })
+    : t('workspace.deleteApiConfirm', { name: deleteTarget.value.name })
+})
 
 const folderDialogTitle = computed(() => {
   if (folderDialogMode.value === 'edit') return t('workspace.editFolder')
@@ -98,13 +131,32 @@ function handleProjectClick(id: number) {
   selectProject(id)
 }
 
-function renderNodes(nodes: ApiTreeNode[], depth = 0): { node: ApiTreeNode; depth: number }[] {
-  const result: { node: ApiTreeNode; depth: number }[] = []
+function findNodeById(nodes: ApiTreeNode[], id: string): ApiTreeNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node
+    if (node.children?.length) {
+      const found = findNodeById(node.children, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+function renderNodes(
+  nodes: ApiTreeNode[],
+  depth = 0,
+  parentFolderId: string | null = null,
+): FlatApiNode[] {
+  const result: FlatApiNode[] = []
 
   for (const node of nodes) {
-    result.push({ node, depth })
+    result.push({
+      node,
+      depth,
+      parentFolderId: node.type === 'api' ? parentFolderId : null,
+    })
     if (node.type === 'folder' && isNodeExpanded(node.id) && node.children?.length) {
-      result.push(...renderNodes(node.children, depth + 1))
+      result.push(...renderNodes(node.children, depth + 1, node.id))
     }
   }
 
@@ -163,9 +215,12 @@ function handleEnvironmentNavClick(id: string) {
   openEnvSectionTab(id === 'env-list' ? 'list' : 'variables')
 }
 
-function handleFolderClick(node: ApiTreeNode) {
-  toggleNode(node.id)
+function handleFolderRowClick(node: ApiTreeNode) {
   selectFolder(node.id)
+}
+
+function handleExpandToggle(nodeId: string) {
+  toggleNode(nodeId)
 }
 
 function handleCreateProject() {
@@ -226,54 +281,148 @@ function handleAddApi(node: ApiTreeNode) {
   openCreateApi()
 }
 
-async function handleDeleteApi(node: ApiTreeNode) {
-  const apiId = parseApiId(node.id)
-  if (!apiId) return
-
-  try {
-    await ElMessageBox.confirm(
-      t('workspace.deleteApiConfirm', { name: node.name }),
-      t('common.delete'),
-      { type: 'warning' },
-    )
-  } catch {
-    return
-  }
-
-  deletingApiId.value = apiId
-  try {
-    await submitDeleteInterface(apiId)
-    ElMessage.success(t('workspace.deleteApiSuccess'))
-  } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : t('workspace.deleteApiFailed'))
-  } finally {
-    deletingApiId.value = null
-  }
+function openDeleteDialog(target: DeleteTarget) {
+  deleteTarget.value = target
+  deleteDialogVisible.value = true
 }
 
-async function handleDeleteFolder(folderId: number, name: string) {
+function handleDeleteApi(node: ApiTreeNode) {
+  const apiId = parseApiId(node.id)
+  if (!apiId) return
+  openDeleteDialog({ kind: 'api', apiId, name: node.name })
+}
+
+function handleDeleteFolder(folderId: number, name: string) {
+  openDeleteDialog({ kind: 'folder', folderId, name })
+}
+
+async function submitDeleteDialog() {
+  const target = deleteTarget.value
+  if (!target) return
+
+  deleteDialogSubmitting.value = true
   try {
-    await ElMessageBox.confirm(
-      t('workspace.deleteFolderConfirm', { name }),
-      t('workspace.deleteFolder'),
-      { type: 'warning' },
-    )
-    await submitDeleteFolder(folderId)
-    ElMessage.success(t('workspace.deleteFolderSuccess'))
-  } catch (error) {
-    if (error !== 'cancel' && error !== 'close') {
-      ElMessage.error(error instanceof Error ? error.message : t('workspace.deleteFolderFailed'))
+    if (target.kind === 'folder') {
+      await submitDeleteFolder(target.folderId)
+      ElMessage.success(t('workspace.deleteFolderSuccess'))
+    } else {
+      deletingApiId.value = target.apiId
+      await submitDeleteInterface(target.apiId)
+      ElMessage.success(t('workspace.deleteApiSuccess'))
     }
+    deleteDialogVisible.value = false
+    deleteTarget.value = null
+  } catch (error) {
+    const fallback =
+      target.kind === 'folder' ? t('workspace.deleteFolderFailed') : t('workspace.deleteApiFailed')
+    ElMessage.error(error instanceof Error ? error.message : fallback)
+  } finally {
+    deleteDialogSubmitting.value = false
+    deletingApiId.value = null
   }
 }
 
 function handleApiAction(command: string, node: ApiTreeNode) {
   switch (command) {
     case 'edit':
+      selectApi(node.id)
       break
     case 'delete':
       handleDeleteApi(node)
       break
+  }
+}
+
+function getApiIdsInFolder(folderId: string) {
+  const folder = findNodeById(apiTree.value, folderId)
+  if (!folder?.children) return []
+  return folder.children.filter((item) => item.type === 'api').map((item) => item.id)
+}
+
+function resetApiDragState() {
+  dragApiState.value = null
+  dragOverApiId.value = null
+}
+
+function handleApiDragStart(event: DragEvent, node: ApiTreeNode, parentFolderId: string | null) {
+  if (!canDragApis.value || !parentFolderId) return
+  dragApiState.value = { apiId: node.id, folderId: parentFolderId }
+  dragOverApiId.value = null
+  event.dataTransfer?.setData('text/plain', node.id)
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+  }
+}
+
+function handleApiDragOver(event: DragEvent, node: ApiTreeNode, parentFolderId: string | null) {
+  const drag = dragApiState.value
+  if (
+    !drag ||
+    node.type !== 'api' ||
+    !parentFolderId ||
+    parentFolderId !== drag.folderId ||
+    node.id === drag.apiId
+  ) {
+    return
+  }
+
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+  dragOverApiId.value = node.id
+}
+
+function handleApiDragLeave(node: ApiTreeNode) {
+  if (dragOverApiId.value === node.id) {
+    dragOverApiId.value = null
+  }
+}
+
+async function handleApiDrop(event: DragEvent, node: ApiTreeNode, parentFolderId: string | null) {
+  event.preventDefault()
+  const drag = dragApiState.value
+  if (
+    !drag ||
+    node.type !== 'api' ||
+    !parentFolderId ||
+    parentFolderId !== drag.folderId ||
+    node.id === drag.apiId
+  ) {
+    resetApiDragState()
+    return
+  }
+
+  const apiIds = getApiIdsInFolder(parentFolderId)
+  const fromIndex = apiIds.indexOf(drag.apiId)
+  const toIndex = apiIds.indexOf(node.id)
+  if (fromIndex === -1 || toIndex === -1) {
+    resetApiDragState()
+    return
+  }
+
+  const nextApiIds = [...apiIds]
+  nextApiIds.splice(fromIndex, 1)
+  // Drop indicator is below the target row — insert after target, not before.
+  const insertIndex = fromIndex < toIndex ? toIndex : toIndex + 1
+  nextApiIds.splice(insertIndex, 0, drag.apiId)
+
+  const folderId = parseFolderId(parentFolderId)
+  const orderedApiIds = nextApiIds
+    .map((id) => parseApiId(id))
+    .filter((id): id is number => id !== null)
+
+  resetApiDragState()
+
+  if (!folderId || orderedApiIds.length !== nextApiIds.length) return
+
+  reorderingApis.value = true
+  try {
+    await submitReorderInterfaces(folderId, orderedApiIds)
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : t('workspace.reorderApiFailed'))
+  } finally {
+    reorderingApis.value = false
   }
 }
 
@@ -297,21 +446,48 @@ function handleFolderAction(command: string, node: ApiTreeNode) {
   }
 }
 
+const panelRef = useTemplateRef<HTMLElement>('panel')
 const panelWidth = ref(readWorkspaceLayout().panelWidth)
 const isResizing = ref(false)
 let resizeStartX = 0
 let resizeStartWidth = panelWidth.value
+let pendingPanelWidth = panelWidth.value
+let resizeRafId = 0
+
+function applyPanelWidth(width: number) {
+  pendingPanelWidth = width
+  const panel = panelRef.value
+  if (panel) {
+    panel.style.width = `${width}px`
+    return
+  }
+  panelWidth.value = width
+}
 
 function onResizeMove(event: MouseEvent) {
-  panelWidth.value = clampPanelWidth(resizeStartWidth + event.clientX - resizeStartX)
+  pendingPanelWidth = clampPanelWidth(resizeStartWidth + event.clientX - resizeStartX)
+  if (resizeRafId) return
+
+  resizeRafId = requestAnimationFrame(() => {
+    resizeRafId = 0
+    applyPanelWidth(pendingPanelWidth)
+  })
 }
 
 function stopResize() {
+  if (resizeRafId) {
+    cancelAnimationFrame(resizeRafId)
+    resizeRafId = 0
+  }
+
   isResizing.value = false
   document.body.style.cursor = ''
   document.body.style.userSelect = ''
   document.removeEventListener('mousemove', onResizeMove)
   document.removeEventListener('mouseup', stopResize)
+
+  panelWidth.value = pendingPanelWidth
+  writeWorkspaceLayout({ panelWidth: pendingPanelWidth })
 }
 
 function startResize(event: MouseEvent) {
@@ -319,6 +495,7 @@ function startResize(event: MouseEvent) {
   isResizing.value = true
   resizeStartX = event.clientX
   resizeStartWidth = panelWidth.value
+  pendingPanelWidth = panelWidth.value
   document.body.style.cursor = 'col-resize'
   document.body.style.userSelect = 'none'
   document.addEventListener('mousemove', onResizeMove)
@@ -328,14 +505,11 @@ function startResize(event: MouseEvent) {
 onBeforeUnmount(() => {
   stopResize()
 })
-
-watch(panelWidth, (width) => {
-  writeWorkspaceLayout({ panelWidth: width })
-})
 </script>
 
 <template>
   <aside
+    ref="panel"
     class="context-panel"
     :class="{ 'context-panel--resizing': isResizing }"
     :style="{ width: `${panelWidth}px` }"
@@ -433,23 +607,36 @@ watch(panelWidth, (width) => {
     <div v-else class="context-panel__body" v-loading="loadingApiTree">
       <ul class="context-panel__tree">
         <li
-          v-for="{ node, depth } in flatApiNodes"
+          v-for="{ node, depth, parentFolderId } in flatApiNodes"
           :key="node.id"
           class="context-panel__tree-item"
           :class="{
             'context-panel__tree-item--folder': node.type === 'folder',
+            'context-panel__tree-item--api': node.type === 'api',
             'context-panel__tree-item--selected':
               (node.type === 'folder' && selectedFolderId === node.id) ||
               (node.type === 'api' && selectedApiId === node.id),
+            'context-panel__tree-item--dragging':
+              node.type === 'api' && dragApiState?.apiId === node.id,
+            'context-panel__tree-item--drag-over':
+              node.type === 'api' && dragOverApiId === node.id,
           }"
-          :style="{ paddingLeft: `${12 + depth * 16}px` }"
-          @click="node.type === 'folder' ? handleFolderClick(node) : selectApi(node.id)"
+          :draggable="node.type === 'api' && canDragApis && !reorderingApis"
+          @click="node.type === 'folder' ? handleFolderRowClick(node) : selectApi(node.id)"
+          @dragstart="handleApiDragStart($event, node, parentFolderId)"
+          @dragover="handleApiDragOver($event, node, parentFolderId)"
+          @dragleave="handleApiDragLeave(node)"
+          @drop="handleApiDrop($event, node, parentFolderId)"
+          @dragend="resetApiDragState"
         >
           <span
-            v-if="node.type === 'folder'"
-            class="context-panel__expand"
+            class="context-panel__expand-zone"
+            :class="{ 'context-panel__expand-zone--leaf': node.type !== 'folder' }"
+            :style="{ width: `${12 + depth * 16 + 16}px` }"
+            @click.stop="node.type === 'folder' ? handleExpandToggle(node.id) : undefined"
           >
             <el-icon
+              v-if="node.type === 'folder'"
               :size="12"
               class="context-panel__expand-icon"
               :class="{ 'context-panel__expand-icon--open': isNodeExpanded(node.id) }"
@@ -457,7 +644,6 @@ watch(panelWidth, (width) => {
               <ArrowDown />
             </el-icon>
           </span>
-          <span v-else class="context-panel__expand context-panel__expand--leaf" />
 
           <el-icon v-if="node.type === 'folder'" :size="14" class="context-panel__folder-icon">
             <Folder />
@@ -564,6 +750,23 @@ watch(panelWidth, (width) => {
         </el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="deleteDialogVisible"
+      :title="deleteDialogTitle"
+      width="420px"
+      class="folder-dialog"
+      align-center
+      destroy-on-close
+    >
+      <p class="context-panel__delete-message">{{ deleteDialogMessage }}</p>
+      <template #footer>
+        <el-button @click="deleteDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="danger" :loading="deleteDialogSubmitting" @click="submitDeleteDialog">
+          {{ t('common.delete') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </aside>
 </template>
 
@@ -577,6 +780,19 @@ watch(panelWidth, (width) => {
   flex-direction: column;
   overflow: hidden;
   font-size: 14px;
+}
+
+.context-panel--resizing {
+  user-select: none;
+}
+
+.context-panel--resizing .context-panel__body {
+  pointer-events: none;
+}
+
+.context-panel--resizing .context-panel__tree-item,
+.context-panel--resizing .context-panel__project-item {
+  transition: none;
 }
 
 .context-panel__resize-handle {
@@ -766,6 +982,23 @@ watch(panelWidth, (width) => {
   color: var(--color-primary-light);
 }
 
+.context-panel__tree-item--api[draggable='true'] {
+  cursor: grab;
+}
+
+.context-panel__tree-item--api[draggable='true']:active {
+  cursor: grabbing;
+}
+
+.context-panel__tree-item--dragging {
+  opacity: 0.45;
+}
+
+.context-panel__tree-item--drag-over {
+  background: var(--color-workspace-item-selected);
+  box-shadow: inset 0 -2px 0 var(--color-primary);
+}
+
 .context-panel__folder-menu {
   margin-left: auto;
   flex-shrink: 0;
@@ -817,22 +1050,19 @@ watch(panelWidth, (width) => {
   box-shadow: 0 5px 0 currentColor, 0 10px 0 currentColor;
 }
 
-.context-panel__expand {
-  width: 16px;
-  height: 16px;
-  border: none;
-  padding: 0;
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
+.context-panel__expand-zone {
+  flex-shrink: 0;
+  height: 34px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  color: var(--color-text-secondary);
+  cursor: pointer;
 }
 
-.context-panel__expand--leaf {
+.context-panel__expand-zone--leaf {
   cursor: default;
+  pointer-events: none;
 }
 
 .context-panel__expand-icon {
@@ -904,5 +1134,12 @@ watch(panelWidth, (width) => {
   text-align: center;
   font-size: 14px;
   color: var(--color-text-secondary);
+}
+
+.context-panel__delete-message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
 }
 </style>

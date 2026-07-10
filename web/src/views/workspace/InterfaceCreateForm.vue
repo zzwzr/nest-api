@@ -121,7 +121,8 @@ function handleCancel() {
       <el-button @click="handleCancel">{{ t('common.cancel') }}</el-button>
     </div>
 
-    <div class="interface-create__section">
+    <div class="interface-create__scroll">
+      <div class="interface-create__section">
       <div class="interface-create__row">
         <InterfaceUrlBar
           v-model:protocol="form.protocol"
@@ -156,20 +157,37 @@ function handleCancel() {
         <span class="interface-create__label">{{ t('workspace.columns.status') }}</span>
         <InterfaceStatusRadio v-model="form.status" />
       </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .interface-create {
-  padding: 12px 0 32px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .interface-create__toolbar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-workspace-content);
+}
+
+.interface-create__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px 0 32px;
 }
 
 .interface-create__section {

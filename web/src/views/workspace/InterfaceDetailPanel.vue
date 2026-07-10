@@ -4,10 +4,24 @@ import { ElMessage } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { fetchInterfaceDetail } from '@/api/interface'
 import InterfaceRequestParams from '@/components/interface/InterfaceRequestParams.vue'
+import InterfaceResponseHeaderTable from '@/components/interface/InterfaceResponseHeaderTable.vue'
+import InterfaceResponseExamples from '@/components/interface/InterfaceResponseExamples.vue'
+import InterfaceResponseResults from '@/components/interface/InterfaceResponseResults.vue'
 import InterfaceStatusRadio from '@/components/interface/InterfaceStatusRadio.vue'
 import InterfaceUrlBar from '@/components/interface/InterfaceUrlBar.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useWorkspaceContext, parseApiId } from '@/composables/useWorkspaceContext'
+import {
+  compactFieldTree,
+  compactResponseFieldTree,
+  emptyFieldNode,
+  fieldTreeFromApi,
+  responseFieldTreeFromApi,
+} from '@/utils/interface-field-tree'
+import {
+  enrichResponseExample,
+  normalizeResponseExampleForSave,
+} from '@/utils/response-example-format'
 import {
   compactParamRows,
   emptyParamRow,
@@ -21,8 +35,6 @@ import type {
   InterfaceDetail,
   InterfaceRequestBody,
   InterfaceResponseExample,
-  InterfaceResponseField,
-  InterfaceResponseHeader,
   InterfaceResponseResult,
   InterfaceStatus,
 } from '@/types/workspace'
@@ -43,8 +55,13 @@ const {
 const mode = ref<DetailMode>('edit')
 const loading = ref(false)
 const saving = ref(false)
-const activeResultIndex = ref(0)
-const activeExampleIndex = ref(0)
+
+const openPanels = reactive({
+  requestParams: true,
+  responseHeader: true,
+  responseResult: true,
+  responseExample: true,
+})
 
 const form = reactive({
   protocol: 'HTTP' as HttpProtocol,
@@ -57,17 +74,14 @@ const form = reactive({
   requestBody: {
     format: 'json',
     data_type: 'Object',
-    fields: [emptyParamRow()],
+    raw: '',
+    fields: [emptyFieldNode()],
   } as InterfaceRequestBody,
   queryParams: [emptyParamRow()] as ParamRow[],
-  responseHeaders: [] as InterfaceResponseHeader[],
+  responseHeaders: [emptyParamRow()] as ParamRow[],
   responseResults: [] as InterfaceResponseResult[],
   responseExamples: [] as InterfaceResponseExample[],
 })
-
-const fieldTypeOptions = ['string', 'number', 'boolean', 'object', 'array']
-const formatOptions = ['JSON', 'XML', 'HTML', 'Text']
-const dataTypeOptions = ['Object', 'Array', 'String', 'Number', 'Boolean']
 
 const interfaceId = computed(() => {
   const tab = activeModuleTab.value
@@ -75,8 +89,6 @@ const interfaceId = computed(() => {
   return parseApiId(tab.apiId)
 })
 
-const activeResult = computed(() => form.responseResults[activeResultIndex.value] ?? null)
-const activeExample = computed(() => form.responseExamples[activeExampleIndex.value] ?? null)
 const readOnly = computed(() => mode.value === 'doc')
 
 interface FolderOption {
@@ -121,17 +133,19 @@ function defaultResult(): InterfaceResponseResult {
     status_code: 200,
     format: 'JSON',
     data_type: 'Object',
-    fields: [],
+    fields: responseFieldTreeFromApi([]),
   }
 }
 
 function defaultExample(): InterfaceResponseExample {
-  return {
+  return normalizeResponseExampleForSave({
     name: t('workspace.interfaceForm.successExample'),
     status_code: 200,
     content_type: 'application/json',
-    raw: '{\n  \n}',
-  }
+    format: 'JSON',
+    data_type: 'Object',
+    raw: '',
+  })
 }
 
 function applyDetail(detail: InterfaceDetail) {
@@ -144,23 +158,20 @@ function applyDetail(detail: InterfaceDetail) {
   form.requestBody = {
     format: detail.request_body?.format || 'json',
     data_type: detail.request_body?.data_type || 'Object',
-    fields: toParamRows(detail.request_body?.fields ?? []),
+    raw: detail.request_body?.raw ?? '',
+    fields: fieldTreeFromApi(detail.request_body?.fields ?? []),
   }
   form.queryParams = toParamRows(detail.query_params ?? [])
-  form.responseHeaders = detail.response_headers?.length
-    ? detail.response_headers.map((item) => ({ ...item }))
-    : []
+  form.responseHeaders = toParamRows(detail.response_headers ?? [])
   form.responseResults = detail.response_results?.length
     ? detail.response_results.map((item) => ({
         ...item,
-        fields: item.fields?.map((field) => ({ ...field })) ?? [],
+        fields: responseFieldTreeFromApi(item.fields ?? []),
       }))
     : [defaultResult()]
   form.responseExamples = detail.response_examples?.length
-    ? detail.response_examples.map((item) => ({ ...item }))
+    ? detail.response_examples.map((item) => enrichResponseExample({ ...item }))
     : [defaultExample()]
-  activeResultIndex.value = 0
-  activeExampleIndex.value = 0
 }
 
 async function loadDetail() {
@@ -192,62 +203,6 @@ watch(
   { deep: true },
 )
 
-function addResponseHeader() {
-  form.responseHeaders.push({
-    name: '',
-    type: 'string',
-    required: false,
-    description: '',
-    example: '',
-  })
-}
-
-function removeResponseHeader(index: number) {
-  form.responseHeaders.splice(index, 1)
-}
-
-function addResponseResult() {
-  form.responseResults.push(defaultResult())
-  activeResultIndex.value = form.responseResults.length - 1
-}
-
-function removeResponseResult(index: number) {
-  if (form.responseResults.length <= 1) return
-  form.responseResults.splice(index, 1)
-  if (activeResultIndex.value >= form.responseResults.length) {
-    activeResultIndex.value = form.responseResults.length - 1
-  }
-}
-
-function addResponseField(fields: InterfaceResponseField[]) {
-  fields.push({
-    parent_id: 0,
-    name: '',
-    type: 'string',
-    required: false,
-    description: '',
-    mock: '',
-    example: '',
-  })
-}
-
-function removeResponseField(fields: InterfaceResponseField[], index: number) {
-  fields.splice(index, 1)
-}
-
-function addResponseExample() {
-  form.responseExamples.push(defaultExample())
-  activeExampleIndex.value = form.responseExamples.length - 1
-}
-
-function removeResponseExample(index: number) {
-  if (form.responseExamples.length <= 1) return
-  form.responseExamples.splice(index, 1)
-  if (activeExampleIndex.value >= form.responseExamples.length) {
-    activeExampleIndex.value = form.responseExamples.length - 1
-  }
-}
-
 async function handleSave() {
   if (!interfaceId.value) return
   if (!form.name.trim()) {
@@ -271,12 +226,16 @@ async function handleSave() {
       request_body: {
         format: form.requestBody.format,
         data_type: form.requestBody.data_type,
-        fields: compactParamRows(form.requestBody.fields),
+        raw: form.requestBody.raw ?? '',
+        fields: compactFieldTree(form.requestBody.fields),
       },
       query_params: compactParamRows(form.queryParams),
-      response_headers: form.responseHeaders,
-      response_results: form.responseResults,
-      response_examples: form.responseExamples,
+      response_headers: compactParamRows(form.responseHeaders),
+      response_results: form.responseResults.map((result) => ({
+        ...result,
+        fields: compactResponseFieldTree(result.fields),
+      })),
+      response_examples: form.responseExamples.map((item) => normalizeResponseExampleForSave(item)),
     })
     ElMessage.success(t('workspace.updateApiSuccess'))
     await loadDetail()
@@ -290,32 +249,35 @@ async function handleSave() {
 
 <template>
   <div v-loading="loading" class="interface-detail interface-editor">
-    <nav class="interface-detail__subnav">
-      <button
-        type="button"
-        class="interface-detail__subnav-item"
-        :class="{ 'interface-detail__subnav-item--active': mode === 'doc' }"
-        @click="mode = 'doc'"
-      >
-        {{ t('workspace.apiSubnav.doc') }}
-      </button>
-      <button
-        type="button"
-        class="interface-detail__subnav-item"
-        :class="{ 'interface-detail__subnav-item--active': mode === 'edit' }"
-        @click="mode = 'edit'"
-      >
-        {{ t('workspace.apiSubnav.edit') }}
-      </button>
-    </nav>
+    <div class="interface-detail__header">
+      <nav class="interface-detail__subnav">
+        <button
+          type="button"
+          class="interface-detail__subnav-item"
+          :class="{ 'interface-detail__subnav-item--active': mode === 'doc' }"
+          @click="mode = 'doc'"
+        >
+          {{ t('workspace.apiSubnav.doc') }}
+        </button>
+        <button
+          type="button"
+          class="interface-detail__subnav-item"
+          :class="{ 'interface-detail__subnav-item--active': mode === 'edit' }"
+          @click="mode = 'edit'"
+        >
+          {{ t('workspace.apiSubnav.edit') }}
+        </button>
+      </nav>
 
-    <div v-if="!readOnly" class="interface-detail__toolbar">
-      <el-button type="primary" :loading="saving" @click="handleSave">
-        {{ t('common.save') }}
-      </el-button>
+      <div v-if="!readOnly" class="interface-detail__toolbar">
+        <el-button type="primary" :loading="saving" @click="handleSave">
+          {{ t('common.save') }}
+        </el-button>
+      </div>
     </div>
 
-    <div class="interface-detail__section">
+    <div class="interface-detail__scroll">
+      <div class="interface-detail__section">
       <div class="interface-detail__row">
         <InterfaceUrlBar
           v-model:protocol="form.protocol"
@@ -356,180 +318,93 @@ async function handleSave() {
     </div>
 
     <div class="interface-detail__panels">
-    <details class="interface-panel" open>
-      <summary class="interface-panel__summary">
+    <section class="interface-panel" :class="{ 'interface-panel--open': openPanels.requestParams }">
+      <button
+        type="button"
+        class="interface-panel__summary"
+        :aria-expanded="openPanels.requestParams"
+        @click="openPanels.requestParams = !openPanels.requestParams"
+      >
         <span class="interface-panel__arrow"><el-icon :size="12"><ArrowDown /></el-icon></span>
         {{ t('workspace.interfaceForm.requestParams') }}
-      </summary>
-      <div class="interface-panel__body">
-        <InterfaceRequestParams
-          v-model:request-headers="form.requestHeaders"
-          v-model:query-params="form.queryParams"
-          v-model:request-body="form.requestBody"
-          :readonly="readOnly"
-        />
+      </button>
+      <div class="interface-panel__collapse">
+        <div class="interface-panel__body">
+          <InterfaceRequestParams
+            v-model:request-headers="form.requestHeaders"
+            v-model:query-params="form.queryParams"
+            v-model:request-body="form.requestBody"
+            :readonly="readOnly"
+          />
+        </div>
       </div>
-    </details>
+    </section>
 
-    <details class="interface-panel" open>
-      <summary class="interface-panel__summary">
+    <section class="interface-panel" :class="{ 'interface-panel--open': openPanels.responseHeader }">
+      <button
+        type="button"
+        class="interface-panel__summary"
+        :aria-expanded="openPanels.responseHeader"
+        @click="openPanels.responseHeader = !openPanels.responseHeader"
+      >
         <span class="interface-panel__arrow"><el-icon :size="12"><ArrowDown /></el-icon></span>
         {{ t('workspace.interfaceForm.responseHeader') }}
-      </summary>
-      <div class="interface-panel__body">
-      <div class="interface-detail__table-wrap">
-        <table class="interface-param-table">
-          <thead>
-            <tr>
-              <th>{{ t('workspace.interfaceForm.paramName') }}</th>
-              <th>{{ t('workspace.interfaceForm.paramType') }}</th>
-              <th>{{ t('workspace.interfaceForm.required') }}</th>
-              <th>{{ t('workspace.interfaceForm.description') }}</th>
-              <th>{{ t('workspace.interfaceForm.example') }}</th>
-              <th v-if="!readOnly" />
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, index) in form.responseHeaders" :key="index">
-              <td><el-input v-model="row.name" :readonly="readOnly" /></td>
-              <td>
-                <el-select v-model="row.type" :disabled="readOnly" popper-class="app-action-dropdown">
-                  <el-option v-for="type in fieldTypeOptions" :key="type" :label="type" :value="type" />
-                </el-select>
-              </td>
-              <td class="interface-detail__center"><el-checkbox v-model="row.required" :disabled="readOnly" /></td>
-              <td><el-input v-model="row.description" :readonly="readOnly" /></td>
-              <td><el-input v-model="row.example" :readonly="readOnly" /></td>
-              <td v-if="!readOnly">
-                <button type="button" class="interface-detail__row-btn" @click="removeResponseHeader(index)">
-                  {{ t('common.delete') }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <button v-if="!readOnly" type="button" class="interface-detail__add-btn" @click="addResponseHeader">
-          + {{ t('workspace.interfaceForm.addRow') }}
-        </button>
+      </button>
+      <div class="interface-panel__collapse">
+        <div class="interface-panel__body">
+          <InterfaceResponseHeaderTable
+            v-model="form.responseHeaders"
+            :readonly="readOnly"
+          />
+        </div>
       </div>
-      </div>
-    </details>
+    </section>
 
-    <details class="interface-panel" open>
-      <summary class="interface-panel__summary">
+    <section class="interface-panel" :class="{ 'interface-panel--open': openPanels.responseResult }">
+      <button
+        type="button"
+        class="interface-panel__summary"
+        :aria-expanded="openPanels.responseResult"
+        @click="openPanels.responseResult = !openPanels.responseResult"
+      >
         <span class="interface-panel__arrow"><el-icon :size="12"><ArrowDown /></el-icon></span>
         {{ t('workspace.interfaceForm.responseResult') }}
-      </summary>
-      <div class="interface-panel__body">
-      <div class="interface-detail__result-tabs">
-        <button
-          v-for="(result, index) in form.responseResults"
-          :key="index"
-          type="button"
-          class="interface-detail__result-tab"
-          :class="{ 'interface-detail__result-tab--active': activeResultIndex === index }"
-          @click="activeResultIndex = index"
-        >
-          {{ result.name || t('workspace.interfaceForm.responseResult') }} ({{ result.status_code }})
-        </button>
-        <button v-if="!readOnly" type="button" class="interface-detail__result-tab-add" @click="addResponseResult">+</button>
+      </button>
+      <div class="interface-panel__collapse">
+        <div class="interface-panel__body">
+          <InterfaceResponseResults
+            v-model="form.responseResults"
+            :readonly="readOnly"
+          />
+        </div>
       </div>
+    </section>
 
-      <div v-if="activeResult" class="interface-detail__result-meta">
-        <el-input v-model="activeResult.name" :readonly="readOnly" class="interface-detail__result-name" />
-        <el-input-number v-model="activeResult.status_code" :min="100" :max="599" :disabled="readOnly" controls-position="right" />
-        <el-select v-model="activeResult.format" :disabled="readOnly" popper-class="app-action-dropdown">
-          <el-option v-for="item in formatOptions" :key="item" :label="item" :value="item" />
-        </el-select>
-        <el-select v-model="activeResult.data_type" :disabled="readOnly" popper-class="app-action-dropdown">
-          <el-option v-for="item in dataTypeOptions" :key="item" :label="item" :value="item" />
-        </el-select>
-        <button v-if="!readOnly && form.responseResults.length > 1" type="button" class="interface-detail__row-btn" @click="removeResponseResult(activeResultIndex)">
-          {{ t('common.delete') }}
-        </button>
-      </div>
-
-      <div v-if="activeResult" class="interface-detail__table-wrap">
-        <table class="interface-param-table">
-          <thead>
-            <tr>
-              <th>{{ t('workspace.interfaceForm.paramName') }}</th>
-              <th>{{ t('workspace.interfaceForm.paramType') }}</th>
-              <th>{{ t('workspace.interfaceForm.required') }}</th>
-              <th>{{ t('workspace.interfaceForm.description') }}</th>
-              <th>Mock</th>
-              <th>{{ t('workspace.interfaceForm.example') }}</th>
-              <th v-if="!readOnly" />
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, index) in activeResult.fields" :key="index">
-              <td><el-input v-model="row.name" :readonly="readOnly" /></td>
-              <td>
-                <el-select v-model="row.type" :disabled="readOnly" popper-class="app-action-dropdown">
-                  <el-option v-for="type in fieldTypeOptions" :key="type" :label="type" :value="type" />
-                </el-select>
-              </td>
-              <td class="interface-detail__center"><el-checkbox v-model="row.required" :disabled="readOnly" /></td>
-              <td><el-input v-model="row.description" :readonly="readOnly" /></td>
-              <td><el-input v-model="row.mock" :readonly="readOnly" /></td>
-              <td><el-input v-model="row.example" :readonly="readOnly" /></td>
-              <td v-if="!readOnly">
-                <button type="button" class="interface-detail__row-btn" @click="removeResponseField(activeResult.fields, index)">
-                  {{ t('common.delete') }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <button v-if="!readOnly && activeResult" type="button" class="interface-detail__add-btn" @click="addResponseField(activeResult.fields)">
-          + {{ t('workspace.interfaceForm.addRow') }}
-        </button>
-      </div>
-      </div>
-    </details>
-
-    <details class="interface-panel" open>
-      <summary class="interface-panel__summary">
+    <section class="interface-panel" :class="{ 'interface-panel--open': openPanels.responseExample }">
+      <button
+        type="button"
+        class="interface-panel__summary"
+        :aria-expanded="openPanels.responseExample"
+        @click="openPanels.responseExample = !openPanels.responseExample"
+      >
         <span class="interface-panel__arrow"><el-icon :size="12"><ArrowDown /></el-icon></span>
         {{ t('workspace.interfaceForm.responseExample') }}
-      </summary>
-      <div class="interface-panel__body">
-      <div class="interface-detail__result-tabs">
-        <button
-          v-for="(example, index) in form.responseExamples"
-          :key="index"
-          type="button"
-          class="interface-detail__result-tab"
-          :class="{ 'interface-detail__result-tab--active': activeExampleIndex === index }"
-          @click="activeExampleIndex = index"
-        >
-          {{ example.name }}
-        </button>
-        <button v-if="!readOnly" type="button" class="interface-detail__result-tab-add" @click="addResponseExample">+</button>
+      </button>
+      <div class="interface-panel__collapse">
+        <div class="interface-panel__body">
+          <InterfaceResponseExamples
+            v-model="form.responseExamples"
+            :readonly="readOnly"
+          />
+        </div>
       </div>
-
-      <div v-if="activeExample" class="interface-detail__example-meta">
-        <el-input v-model="activeExample.name" :readonly="readOnly" class="interface-detail__result-name" />
-        <el-input-number v-model="activeExample.status_code" :min="100" :max="599" :disabled="readOnly" controls-position="right" />
-        <el-input v-model="activeExample.content_type" :readonly="readOnly" class="interface-detail__content-type" />
-        <button v-if="!readOnly && form.responseExamples.length > 1" type="button" class="interface-detail__row-btn" @click="removeResponseExample(activeExampleIndex)">
-          {{ t('common.delete') }}
-        </button>
-      </div>
-
-      <el-input v-if="activeExample" v-model="activeExample.raw" type="textarea" :rows="12" class="interface-detail__raw" :readonly="readOnly" />
-      </div>
-    </details>
+    </section>
+    </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.interface-detail {
-  padding: 0 0 32px;
-}
-
 .interface-detail__subnav {
   display: flex;
   align-items: stretch;
@@ -567,13 +442,14 @@ async function handleSave() {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .interface-detail__section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
   padding: 16px var(--color-interface-section-padding-x);
   border-bottom: 1px solid var(--color-border);
 }
@@ -594,68 +470,5 @@ async function handleSave() {
 .interface-detail__label {
   flex-shrink: 0;
   color: var(--color-interface-field-text);
-}
-
-.interface-detail__table-wrap {
-  padding: 12px 12px 0;
-}
-
-.interface-detail__center {
-  text-align: center;
-}
-
-.interface-detail__add-btn,
-.interface-detail__row-btn {
-  margin-top: 8px;
-  border: none;
-  background: transparent;
-  color: var(--color-interface-accent);
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.interface-detail__row-btn {
-  margin-top: 0;
-  color: var(--color-danger);
-}
-
-.interface-detail__result-tabs {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 12px 12px;
-  flex-wrap: wrap;
-}
-
-.interface-detail__result-tab,
-.interface-detail__result-tab-add {
-  border: none;
-  background: transparent;
-  color: var(--color-workspace-tab-text);
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.interface-detail__result-meta,
-.interface-detail__example-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 12px 12px;
-  flex-wrap: wrap;
-}
-
-.interface-detail__result-name {
-  width: 160px;
-}
-
-.interface-detail__content-type {
-  width: 220px;
-}
-
-.interface-detail__raw {
-  margin: 0 12px;
-  width: calc(100% - 24px);
 }
 </style>

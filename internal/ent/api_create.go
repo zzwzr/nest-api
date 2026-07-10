@@ -141,6 +141,20 @@ func (_c *APICreate) SetNillableRequestBodyDataType(v *string) *APICreate {
 	return _c
 }
 
+// SetRequestBodyRaw sets the "request_body_raw" field.
+func (_c *APICreate) SetRequestBodyRaw(v string) *APICreate {
+	_c.mutation.SetRequestBodyRaw(v)
+	return _c
+}
+
+// SetNillableRequestBodyRaw sets the "request_body_raw" field if the given value is not nil.
+func (_c *APICreate) SetNillableRequestBodyRaw(v *string) *APICreate {
+	if v != nil {
+		_c.SetRequestBodyRaw(*v)
+	}
+	return _c
+}
+
 // SetSortOrder sets the "sort_order" field.
 func (_c *APICreate) SetSortOrder(v int) *APICreate {
 	_c.mutation.SetSortOrder(v)
@@ -422,6 +436,10 @@ func (_c *APICreate) defaults() error {
 		v := api.DefaultRequestBodyDataType
 		_c.mutation.SetRequestBodyDataType(v)
 	}
+	if _, ok := _c.mutation.RequestBodyRaw(); !ok {
+		v := api.DefaultRequestBodyRaw
+		_c.mutation.SetRequestBodyRaw(v)
+	}
 	if _, ok := _c.mutation.SortOrder(); !ok {
 		v := api.DefaultSortOrder
 		_c.mutation.SetSortOrder(v)
@@ -501,6 +519,9 @@ func (_c *APICreate) check() error {
 		if err := api.RequestBodyDataTypeValidator(v); err != nil {
 			return &ValidationError{Name: "request_body_data_type", err: fmt.Errorf(`ent: validator failed for field "API.request_body_data_type": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.RequestBodyRaw(); !ok {
+		return &ValidationError{Name: "request_body_raw", err: errors.New(`ent: missing required field "API.request_body_raw"`)}
 	}
 	if _, ok := _c.mutation.SortOrder(); !ok {
 		return &ValidationError{Name: "sort_order", err: errors.New(`ent: missing required field "API.sort_order"`)}
@@ -589,6 +610,10 @@ func (_c *APICreate) createSpec() (*API, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.RequestBodyDataType(); ok {
 		_spec.SetField(api.FieldRequestBodyDataType, field.TypeString, value)
 		_node.RequestBodyDataType = value
+	}
+	if value, ok := _c.mutation.RequestBodyRaw(); ok {
+		_spec.SetField(api.FieldRequestBodyRaw, field.TypeString, value)
+		_node.RequestBodyRaw = value
 	}
 	if value, ok := _c.mutation.SortOrder(); ok {
 		_spec.SetField(api.FieldSortOrder, field.TypeInt, value)

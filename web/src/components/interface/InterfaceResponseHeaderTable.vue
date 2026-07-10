@@ -11,6 +11,11 @@ import {
   setAllParamsRequired,
   type ParamRow,
 } from '@/utils/interface-params'
+import { COMMON_RESPONSE_HEADERS } from '@/utils/response-header-options'
+
+interface HeaderSuggestion {
+  value: string
+}
 
 const props = defineProps<{
   modelValue: ParamRow[]
@@ -41,6 +46,14 @@ const requiredHeaderTooltip = computed(() =>
     ? t('workspace.interfaceForm.clearAllRequired')
     : t('workspace.interfaceForm.toggleAllRequired'),
 )
+
+function searchResponseHeaders(query: string, cb: (results: HeaderSuggestion[]) => void) {
+  const keyword = query.trim().toLowerCase()
+  const results = COMMON_RESPONSE_HEADERS
+    .filter((header) => !keyword || header.toLowerCase().includes(keyword))
+    .map((value) => ({ value }))
+  cb([...results])
+}
 
 function syncRows(rows: ParamRow[]) {
   const normalized = props.readonly ? rows : ensureTrailingEmptyRow(rows)
@@ -120,7 +133,7 @@ defineExpose({ compact: () => compactParamRows(props.modelValue) })
     <thead>
       <tr>
         <th class="interface-param-table__sort" />
-        <th class="interface-param-table__col-name">{{ t('workspace.interfaceForm.paramName') }}</th>
+        <th class="interface-param-table__col-name">{{ t('workspace.interfaceForm.headerLabel') }}</th>
         <th class="interface-param-table__col-type">{{ t('workspace.interfaceForm.paramType') }}</th>
         <th class="interface-param-table__center interface-param-table__required-header">
           <template v-if="readonly">{{ t('workspace.interfaceForm.required') }}</template>
@@ -167,11 +180,15 @@ defineExpose({ compact: () => compactParamRows(props.modelValue) })
           </span>
         </td>
         <td class="interface-param-table__col-name">
-          <el-input
+          <el-autocomplete
             :model-value="row.name"
-            :placeholder="t('workspace.interfaceForm.paramName')"
-            :readonly="readonly"
-            @update:model-value="updateRow(index, { name: $event })"
+            :fetch-suggestions="searchResponseHeaders"
+            :trigger-on-focus="true"
+            clearable
+            :disabled="readonly"
+            :placeholder="t('workspace.interfaceForm.headerLabelPlaceholder')"
+            popper-class="app-action-dropdown"
+            @update:model-value="updateRow(index, { name: $event ?? '' })"
           />
         </td>
         <td class="interface-param-table__col-type">

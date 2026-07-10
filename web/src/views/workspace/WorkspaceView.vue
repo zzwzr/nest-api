@@ -606,6 +606,8 @@ onBeforeUnmount(() => {
 .workspace-main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--color-workspace-content);
@@ -815,6 +817,7 @@ onBeforeUnmount(() => {
 
 .workspace-main__content {
   flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 0;
   background: var(--color-workspace-content);
@@ -827,6 +830,19 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 10px 10px 10px 8px;
   background: var(--color-workspace-content);
+}
+
+.workspace-main__content:has(.interface-detail),
+.workspace-main__content:has(.interface-create) {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.workspace-main__content :is(.interface-detail, .interface-create) {
+  flex: 1;
+  min-height: 0;
 }
 
 .workspace-main__content:has(.workspace-main__folder-view) {

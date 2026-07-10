@@ -75,24 +75,28 @@ func init() {
 	api.DefaultRequestBodyDataType = apiDescRequestBodyDataType.Default.(string)
 	// api.RequestBodyDataTypeValidator is a validator for the "request_body_data_type" field. It is called by the builders before save.
 	api.RequestBodyDataTypeValidator = apiDescRequestBodyDataType.Validators[0].(func(string) error)
+	// apiDescRequestBodyRaw is the schema descriptor for request_body_raw field.
+	apiDescRequestBodyRaw := apiFields[9].Descriptor()
+	// api.DefaultRequestBodyRaw holds the default value on creation for the request_body_raw field.
+	api.DefaultRequestBodyRaw = apiDescRequestBodyRaw.Default.(string)
 	// apiDescSortOrder is the schema descriptor for sort_order field.
-	apiDescSortOrder := apiFields[9].Descriptor()
+	apiDescSortOrder := apiFields[10].Descriptor()
 	// api.DefaultSortOrder holds the default value on creation for the sort_order field.
 	api.DefaultSortOrder = apiDescSortOrder.Default.(int)
 	// apiDescCreatedBy is the schema descriptor for created_by field.
-	apiDescCreatedBy := apiFields[10].Descriptor()
+	apiDescCreatedBy := apiFields[11].Descriptor()
 	// api.DefaultCreatedBy holds the default value on creation for the created_by field.
 	api.DefaultCreatedBy = apiDescCreatedBy.Default.(int64)
 	// apiDescUpdatedBy is the schema descriptor for updated_by field.
-	apiDescUpdatedBy := apiFields[11].Descriptor()
+	apiDescUpdatedBy := apiFields[12].Descriptor()
 	// api.DefaultUpdatedBy holds the default value on creation for the updated_by field.
 	api.DefaultUpdatedBy = apiDescUpdatedBy.Default.(int64)
 	// apiDescCreatedAt is the schema descriptor for created_at field.
-	apiDescCreatedAt := apiFields[12].Descriptor()
+	apiDescCreatedAt := apiFields[13].Descriptor()
 	// api.DefaultCreatedAt holds the default value on creation for the created_at field.
 	api.DefaultCreatedAt = apiDescCreatedAt.Default.(func() utils.DateTime)
 	// apiDescUpdatedAt is the schema descriptor for updated_at field.
-	apiDescUpdatedAt := apiFields[13].Descriptor()
+	apiDescUpdatedAt := apiFields[14].Descriptor()
 	// api.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	api.DefaultUpdatedAt = apiDescUpdatedAt.Default.(func() utils.DateTime)
 	// api.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

@@ -31,6 +31,8 @@ const (
 	FieldRequestBodyFormat = "request_body_format"
 	// FieldRequestBodyDataType holds the string denoting the request_body_data_type field in the database.
 	FieldRequestBodyDataType = "request_body_data_type"
+	// FieldRequestBodyRaw holds the string denoting the request_body_raw field in the database.
+	FieldRequestBodyRaw = "request_body_raw"
 	// FieldSortOrder holds the string denoting the sort_order field in the database.
 	FieldSortOrder = "sort_order"
 	// FieldCreatedBy holds the string denoting the created_by field in the database.
@@ -148,6 +150,7 @@ var Columns = []string{
 	FieldStatus,
 	FieldRequestBodyFormat,
 	FieldRequestBodyDataType,
+	FieldRequestBodyRaw,
 	FieldSortOrder,
 	FieldCreatedBy,
 	FieldUpdatedBy,
@@ -200,6 +203,8 @@ var (
 	DefaultRequestBodyDataType string
 	// RequestBodyDataTypeValidator is a validator for the "request_body_data_type" field. It is called by the builders before save.
 	RequestBodyDataTypeValidator func(string) error
+	// DefaultRequestBodyRaw holds the default value on creation for the "request_body_raw" field.
+	DefaultRequestBodyRaw string
 	// DefaultSortOrder holds the default value on creation for the "sort_order" field.
 	DefaultSortOrder int
 	// DefaultCreatedBy holds the default value on creation for the "created_by" field.
@@ -262,6 +267,11 @@ func ByRequestBodyFormat(opts ...sql.OrderTermOption) OrderOption {
 // ByRequestBodyDataType orders the results by the request_body_data_type field.
 func ByRequestBodyDataType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRequestBodyDataType, opts...).ToFunc()
+}
+
+// ByRequestBodyRaw orders the results by the request_body_raw field.
+func ByRequestBodyRaw(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequestBodyRaw, opts...).ToFunc()
 }
 
 // BySortOrder orders the results by the sort_order field.

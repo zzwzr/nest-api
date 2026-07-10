@@ -37,6 +37,8 @@ type API struct {
 	RequestBodyFormat string `json:"request_body_format,omitempty"`
 	// 请求体数据类型
 	RequestBodyDataType string `json:"request_body_data_type,omitempty"`
+	// Raw 请求体内容
+	RequestBodyRaw string `json:"request_body_raw,omitempty"`
 	// 排序
 	SortOrder int `json:"sort_order,omitempty"`
 	// 创建者用户 ID
@@ -189,7 +191,7 @@ func (*API) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(utils.DateTime)}
 		case api.FieldID, api.FieldProjectID, api.FieldFolderID, api.FieldStatus, api.FieldSortOrder, api.FieldCreatedBy, api.FieldUpdatedBy:
 			values[i] = new(sql.NullInt64)
-		case api.FieldName, api.FieldMethod, api.FieldURL, api.FieldRequestBodyFormat, api.FieldRequestBodyDataType:
+		case api.FieldName, api.FieldMethod, api.FieldURL, api.FieldRequestBodyFormat, api.FieldRequestBodyDataType, api.FieldRequestBodyRaw:
 			values[i] = new(sql.NullString)
 		case api.FieldCreatedAt, api.FieldUpdatedAt:
 			values[i] = new(utils.DateTime)
@@ -261,6 +263,12 @@ func (_m *API) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field request_body_data_type", values[i])
 			} else if value.Valid {
 				_m.RequestBodyDataType = value.String
+			}
+		case api.FieldRequestBodyRaw:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field request_body_raw", values[i])
+			} else if value.Valid {
+				_m.RequestBodyRaw = value.String
 			}
 		case api.FieldSortOrder:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -408,6 +416,9 @@ func (_m *API) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("request_body_data_type=")
 	builder.WriteString(_m.RequestBodyDataType)
+	builder.WriteString(", ")
+	builder.WriteString("request_body_raw=")
+	builder.WriteString(_m.RequestBodyRaw)
 	builder.WriteString(", ")
 	builder.WriteString("sort_order=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SortOrder))

@@ -38,25 +38,9 @@ const statusOptions = computed(() =>
       :value="item.value"
       class="interface-status-radio__item"
     >
-      <span class="interface-status-radio__label" :style="{ color: item.color }">
-        {{ item.label }}
+      <span class="interface-status-radio__pill" :style="{ '--status-color': item.color }">
+        <span class="interface-status-radio__label">{{ item.label }}</span>
       </span>
     </el-radio>
   </el-radio-group>
 </template>
-
-<style scoped>
-.interface-status-radio {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 14px;
-}
-
-.interface-status-radio__item {
-  margin-right: 0;
-}
-
-.interface-status-radio__label {
-  font-size: 14px;
-}
-</style>

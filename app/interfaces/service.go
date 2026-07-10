@@ -8,6 +8,7 @@ import (
 	"nest-api/internal/database"
 	"nest-api/internal/ent"
 	entapi "nest-api/internal/ent/api"
+	entfolder "nest-api/internal/ent/folder"
 	entbodyfield "nest-api/internal/ent/interfacebodyfield"
 	entexample "nest-api/internal/ent/interfaceexample"
 	entfield "nest-api/internal/ent/interfacefield"
@@ -15,7 +16,6 @@ import (
 	entquery "nest-api/internal/ent/interfacequeryparam"
 	entreqheader "nest-api/internal/ent/interfacerequestheader"
 	entresult "nest-api/internal/ent/interfaceresult"
-	entfolder "nest-api/internal/ent/folder"
 	entproject "nest-api/internal/ent/project"
 	"nest-api/internal/utils"
 	bizerr "nest-api/pkg/errors"
@@ -135,6 +135,7 @@ func (Service) Detail(ctx context.Context, userID int64, params DetailRequest) (
 		RequestBody: RequestBodyConfig{
 			Format:   row.RequestBodyFormat,
 			DataType: row.RequestBodyDataType,
+			Raw:      row.RequestBodyRaw,
 			Fields:   buildBodyFieldTree(row.Edges.BodyFields),
 		},
 		QueryParams:      buildQueryParamItems(row.Edges.QueryParams),
@@ -223,6 +224,7 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) e
 		SetStatus(status).
 		SetRequestBodyFormat(bodyFormat).
 		SetRequestBodyDataType(bodyDataType).
+		SetRequestBodyRaw(params.RequestBody.Raw).
 		SetUpdatedBy(userID)
 
 	if params.FolderID > 0 {

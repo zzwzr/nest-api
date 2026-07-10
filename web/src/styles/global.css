@@ -41,10 +41,24 @@
   --color-workspace-control-hover: rgba(0, 0, 0, 0.08);
   --color-interface-accent: #005a9e;
   --color-interface-field-text: #222222;
+  --color-interface-placeholder: #949494;
   --color-interface-bar-border: #dcdcdc;
   --color-interface-focus-ring: #007acc;
   --color-interface-field-hover-bg: rgba(0, 0, 0, 0.04);
+  --color-interface-checkbox-border: #b8b8b8;
+  --color-interface-input-radius: 4px;
   --color-interface-section-padding-x: 16px;
+  --raw-editor-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --raw-hl-plain: #333333;
+  --raw-hl-key: #0451a5;
+  --raw-hl-string: #a31515;
+  --raw-hl-number: #098658;
+  --raw-hl-bool: #0000ff;
+  --raw-hl-null: #0000ff;
+  --raw-hl-punct: #333333;
+  --raw-hl-tag: #800000;
+  --raw-hl-attr: #ff0000;
+  --raw-hl-comment: #008000;
 }
 
 :root[data-theme='dark'] {
@@ -89,10 +103,24 @@
   --color-workspace-control-hover: rgba(255, 255, 255, 0.14);
   --color-interface-accent: #1a8ad4;
   --color-interface-field-text: #e8e8e8;
+  --color-interface-placeholder: #686868;
   --color-interface-bar-border: rgba(255, 255, 255, 0.12);
   --color-interface-focus-ring: #007acc;
   --color-interface-field-hover-bg: rgba(255, 255, 255, 0.06);
+  --color-interface-checkbox-border: #6e6e6e;
+  --color-interface-input-radius: 4px;
   --color-interface-section-padding-x: 16px;
+  --raw-editor-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --raw-hl-plain: #d4d4d4;
+  --raw-hl-key: #9cdcfe;
+  --raw-hl-string: #ce9178;
+  --raw-hl-number: #b5cea8;
+  --raw-hl-bool: #569cd6;
+  --raw-hl-null: #569cd6;
+  --raw-hl-punct: #d4d4d4;
+  --raw-hl-tag: #569cd6;
+  --raw-hl-attr: #9cdcfe;
+  --raw-hl-comment: #6a9955;
 }
 
 *,
@@ -512,6 +540,18 @@ a {
 
 .app-action-dropdown .el-select-dropdown__item.is-disabled {
   color: var(--color-text-secondary);
+}
+
+.app-action-dropdown .el-autocomplete-suggestion li {
+  color: var(--color-text);
+  -webkit-text-fill-color: var(--color-text);
+}
+
+.app-action-dropdown .el-autocomplete-suggestion li:hover,
+.app-action-dropdown .el-autocomplete-suggestion li.highlighted {
+  color: var(--color-text);
+  -webkit-text-fill-color: var(--color-text);
+  background: var(--color-workspace-menu-hover);
 }
 
 .app-action-dropdown.locale-switcher-popover {

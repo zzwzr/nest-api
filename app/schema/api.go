@@ -72,6 +72,10 @@ func (API) Fields() []ent.Field {
 			Default("Object").
 			Comment("请求体数据类型"),
 
+		field.Text("request_body_raw").
+			Default("").
+			Comment("Raw 请求体内容"),
+
 		field.Int("sort_order").
 			Default(0).
 			Comment("排序"),

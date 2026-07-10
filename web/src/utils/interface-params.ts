@@ -32,3 +32,10 @@ export function ensureTrailingEmptyRow(rows: ParamRow[]): ParamRow[] {
 export function compactParamRows(rows: ParamRow[]): ParamRow[] {
   return rows.filter(hasParamContent)
 }
+
+export function setAllParamsRequired(rows: ParamRow[], required: boolean): ParamRow[] {
+  return rows.map((row) => ({
+    ...row,
+    required: hasParamContent(row) ? required : row.required,
+  }))
+}

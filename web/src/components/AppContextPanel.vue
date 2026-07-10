@@ -774,6 +774,8 @@ onBeforeUnmount(() => {
 .context-panel {
   position: relative;
   flex-shrink: 0;
+  height: 100%;
+  min-height: 0;
   border-right: 1px solid var(--color-border);
   background: var(--color-workspace-content);
   display: flex;
@@ -905,7 +907,9 @@ onBeforeUnmount(() => {
 
 .context-panel__body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0;
   background: var(--color-workspace-content);
 }

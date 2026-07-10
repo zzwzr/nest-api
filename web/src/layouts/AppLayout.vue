@@ -58,10 +58,12 @@ onMounted(() => {
 
 <style scoped>
 .app-layout {
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background: var(--color-bg);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .app-layout__body {
@@ -76,6 +78,9 @@ onMounted(() => {
 .app-layout__nav {
   display: flex;
   flex-shrink: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   transition: opacity 0.2s ease;
 }
 
@@ -87,6 +92,9 @@ onMounted(() => {
 .app-layout__main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: var(--color-workspace-content);
 }

@@ -38,6 +38,7 @@ type BodyFieldItem struct {
 type RequestBodyConfig struct {
 	Format   string          `json:"format"`
 	DataType string          `json:"data_type"`
+	Raw      string          `json:"raw"`
 	Fields   []BodyFieldItem `json:"fields"`
 }
 

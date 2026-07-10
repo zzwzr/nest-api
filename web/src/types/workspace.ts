@@ -54,10 +54,22 @@ export interface InterfaceParamItem {
   example: string
 }
 
+export interface InterfaceBodyField {
+  id?: number
+  parent_id: number
+  name: string
+  type: string
+  required: boolean
+  description: string
+  example: string
+  children?: InterfaceBodyField[]
+}
+
 export interface InterfaceRequestBody {
   format: string
   data_type: string
-  fields: InterfaceParamItem[]
+  raw?: string
+  fields: InterfaceBodyField[]
 }
 
 export interface InterfaceResponseHeader {
@@ -96,6 +108,8 @@ export interface InterfaceResponseExample {
   status_code: number
   content_type: string
   raw: string
+  format?: string
+  data_type?: string
 }
 
 export interface InterfaceItem {

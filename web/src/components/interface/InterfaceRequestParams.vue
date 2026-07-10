@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useLocale } from '@/composables/useLocale'
+import InterfaceFieldTreeTable from '@/components/interface/InterfaceFieldTreeTable.vue'
 import InterfaceParamTable from '@/components/interface/InterfaceParamTable.vue'
+import InterfaceRequestBodyImportDialog from '@/components/interface/InterfaceRequestBodyImportDialog.vue'
+import InterfaceRequestBodyRaw from '@/components/interface/InterfaceRequestBodyRaw.vue'
+import { compactFieldTree, emptyFieldNode, ensureTrailingEmptyRoot } from '@/utils/interface-field-tree'
 import { compactParamRows, emptyParamRow, ensureTrailingEmptyRow, type ParamRow } from '@/utils/interface-params'
-import type { InterfaceRequestBody } from '@/types/workspace'
+import {
+  applyBodyFieldsImport,
+  applyRawBodyImport,
+  type BodyImportMode,
+} from '@/utils/json-body-import'
+import type { InterfaceBodyField, InterfaceRequestBody } from '@/types/workspace'
 
 type RequestTab = 'header' | 'body' | 'query'
 
@@ -22,13 +32,12 @@ const emit = defineEmits<{
 
 const { t } = useLocale()
 const activeTab = ref<RequestTab>('body')
+const importVisible = ref(false)
 
 const bodyFormatOptions = [
   { value: 'form-data', label: 'Form-data' },
   { value: 'json', label: 'JSON' },
-  { value: 'xml', label: 'XML' },
   { value: 'raw', label: 'Raw' },
-  { value: 'binary', label: 'Binary' },
 ]
 
 const tabs = computed(() => [
@@ -37,15 +46,21 @@ const tabs = computed(() => [
   { key: 'query' as const, label: t('workspace.interfaceForm.queryParams') },
 ])
 
+const isRawBody = computed(() => props.requestBody.format === 'raw')
+
 const bodyFields = computed({
   get: () => props.requestBody.fields,
-  set: (fields: ParamRow[]) => {
+  set: (fields: InterfaceBodyField[]) => {
     emit('update:requestBody', { ...props.requestBody, fields })
   },
 })
 
 function initRows(rows: ParamRow[]) {
   return ensureTrailingEmptyRow(rows.length ? rows : [emptyParamRow()])
+}
+
+function initBodyFields(fields: InterfaceBodyField[]) {
+  return ensureTrailingEmptyRoot(fields.length ? fields : [emptyFieldNode()])
 }
 
 watch(
@@ -66,34 +81,76 @@ watch(
 
 watch(
   () => props.requestBody.fields,
-  (rows) => {
-    if (!rows.length) {
-      emit('update:requestBody', { ...props.requestBody, fields: initRows([]) })
+  (fields) => {
+    if (props.requestBody.format === 'raw') return
+    if (!fields.length) {
+      emit('update:requestBody', { ...props.requestBody, fields: initBodyFields([]) })
     }
   },
   { immediate: true },
 )
 
+const rawContentTypes = new Set(['JSON', 'Text', 'XML', 'HTML'])
+const schemaDataTypes = new Set(['Object', 'Array', 'String', 'Number', 'Boolean'])
+
 function updateBodyFormat(format: string) {
-  emit('update:requestBody', { ...props.requestBody, format })
+  const next: InterfaceRequestBody = { ...props.requestBody, format }
+  if (format === 'raw') {
+    if (!rawContentTypes.has(next.data_type)) {
+      next.data_type = 'JSON'
+    }
+    if (next.raw === undefined) {
+      next.raw = ''
+    }
+  } else if (rawContentTypes.has(next.data_type) || !schemaDataTypes.has(next.data_type)) {
+    next.data_type = 'Object'
+  }
+  emit('update:requestBody', next)
+}
+
+function handleImportApply(payload: { mode: BodyImportMode; jsonText: string }) {
+  try {
+    if (isRawBody.value) {
+      const raw = applyRawBodyImport(props.requestBody.raw ?? '', payload.jsonText, payload.mode)
+      emit('update:requestBody', { ...props.requestBody, raw })
+    } else {
+      const fields = ensureTrailingEmptyRoot(
+        applyBodyFieldsImport(props.requestBody.fields, payload.jsonText, payload.mode),
+      )
+      emit('update:requestBody', { ...props.requestBody, fields })
+    }
+    ElMessage.success(t('workspace.interfaceForm.importJsonSuccess'))
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'empty') {
+        ElMessage.warning(t('workspace.interfaceForm.importJsonEmpty'))
+        return
+      }
+      if (error.message === 'root-object') {
+        ElMessage.warning(t('workspace.interfaceForm.importJsonRootInvalid'))
+        return
+      }
+    }
+    ElMessage.warning(t('workspace.interfaceForm.importJsonInvalid'))
+  }
 }
 
 defineExpose({
   compactHeaders: () => compactParamRows(props.requestHeaders),
   compactQuery: () => compactParamRows(props.queryParams),
-  compactBodyFields: () => compactParamRows(props.requestBody.fields),
+  compactBodyFields: () => compactFieldTree(props.requestBody.fields),
 })
 </script>
 
 <template>
   <div class="interface-request-params">
-    <div class="interface-request-params__tabs">
+    <div class="interface-submodule-tabs">
       <button
         v-for="tab in tabs"
         :key="tab.key"
         type="button"
-        class="interface-request-params__tab"
-        :class="{ 'interface-request-params__tab--active': activeTab === tab.key }"
+        class="interface-submodule-tabs__tab"
+        :class="{ 'interface-submodule-tabs__tab--active': activeTab === tab.key }"
         @click="activeTab = tab.key"
       >
         {{ tab.label }}
@@ -120,16 +177,42 @@ defineExpose({
       <div class="interface-request-params__body-toolbar">
         <el-radio-group
           :model-value="requestBody.format"
+          class="interface-body-format-radio"
+          :class="{ 'interface-body-format-radio--readonly': readonly }"
           :disabled="readonly"
           @update:model-value="updateBodyFormat"
         >
-          <el-radio v-for="item in bodyFormatOptions" :key="item.value" :value="item.value">
-            {{ item.label }}
+          <el-radio
+            v-for="item in bodyFormatOptions"
+            :key="item.value"
+            :value="item.value"
+            class="interface-body-format-radio__item"
+          >
+            <span class="interface-body-format-radio__pill">
+              <span class="interface-body-format-radio__label">{{ item.label }}</span>
+            </span>
           </el-radio>
         </el-radio-group>
+        <button
+          v-if="!readonly"
+          type="button"
+          class="interface-body-import-btn"
+          @click="importVisible = true"
+        >
+          {{ t('workspace.interfaceForm.importJson') }}
+        </button>
       </div>
-      <InterfaceParamTable v-model="bodyFields" :readonly="readonly" />
+      <InterfaceRequestBodyImportDialog
+        v-model:visible="importVisible"
+        @apply="handleImportApply"
+      />
+      <InterfaceRequestBodyRaw
+        v-if="isRawBody"
+        :model-value="requestBody"
+        :readonly="readonly"
+        @update:model-value="emit('update:requestBody', $event)"
+      />
+      <InterfaceFieldTreeTable v-else v-model="bodyFields" :readonly="readonly" />
     </div>
   </div>
 </template>
-

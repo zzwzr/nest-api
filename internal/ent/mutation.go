@@ -68,6 +68,7 @@ type APIMutation struct {
 	addstatus                *int8
 	request_body_format      *string
 	request_body_data_type   *string
+	request_body_raw         *string
 	sort_order               *int
 	addsort_order            *int
 	created_at               *utils.DateTime
@@ -515,6 +516,42 @@ func (m *APIMutation) OldRequestBodyDataType(ctx context.Context) (v string, err
 // ResetRequestBodyDataType resets all changes to the "request_body_data_type" field.
 func (m *APIMutation) ResetRequestBodyDataType() {
 	m.request_body_data_type = nil
+}
+
+// SetRequestBodyRaw sets the "request_body_raw" field.
+func (m *APIMutation) SetRequestBodyRaw(s string) {
+	m.request_body_raw = &s
+}
+
+// RequestBodyRaw returns the value of the "request_body_raw" field in the mutation.
+func (m *APIMutation) RequestBodyRaw() (r string, exists bool) {
+	v := m.request_body_raw
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestBodyRaw returns the old "request_body_raw" field's value of the API entity.
+// If the API object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIMutation) OldRequestBodyRaw(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestBodyRaw is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestBodyRaw requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestBodyRaw: %w", err)
+	}
+	return oldValue.RequestBodyRaw, nil
+}
+
+// ResetRequestBodyRaw resets all changes to the "request_body_raw" field.
+func (m *APIMutation) ResetRequestBodyRaw() {
+	m.request_body_raw = nil
 }
 
 // SetSortOrder sets the "sort_order" field.
@@ -1258,7 +1295,7 @@ func (m *APIMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *APIMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
 	if m.project != nil {
 		fields = append(fields, api.FieldProjectID)
 	}
@@ -1282,6 +1319,9 @@ func (m *APIMutation) Fields() []string {
 	}
 	if m.request_body_data_type != nil {
 		fields = append(fields, api.FieldRequestBodyDataType)
+	}
+	if m.request_body_raw != nil {
+		fields = append(fields, api.FieldRequestBodyRaw)
 	}
 	if m.sort_order != nil {
 		fields = append(fields, api.FieldSortOrder)
@@ -1325,6 +1365,8 @@ func (m *APIMutation) Field(name string) (ent.Value, bool) {
 		return m.RequestBodyFormat()
 	case api.FieldRequestBodyDataType:
 		return m.RequestBodyDataType()
+	case api.FieldRequestBodyRaw:
+		return m.RequestBodyRaw()
 	case api.FieldSortOrder:
 		return m.SortOrder()
 	case api.FieldCreatedBy:
@@ -1362,6 +1404,8 @@ func (m *APIMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldRequestBodyFormat(ctx)
 	case api.FieldRequestBodyDataType:
 		return m.OldRequestBodyDataType(ctx)
+	case api.FieldRequestBodyRaw:
+		return m.OldRequestBodyRaw(ctx)
 	case api.FieldSortOrder:
 		return m.OldSortOrder(ctx)
 	case api.FieldCreatedBy:
@@ -1438,6 +1482,13 @@ func (m *APIMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRequestBodyDataType(v)
+		return nil
+	case api.FieldRequestBodyRaw:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestBodyRaw(v)
 		return nil
 	case api.FieldSortOrder:
 		v, ok := value.(int)
@@ -1589,6 +1640,9 @@ func (m *APIMutation) ResetField(name string) error {
 		return nil
 	case api.FieldRequestBodyDataType:
 		m.ResetRequestBodyDataType()
+		return nil
+	case api.FieldRequestBodyRaw:
+		m.ResetRequestBodyRaw()
 		return nil
 	case api.FieldSortOrder:
 		m.ResetSortOrder()

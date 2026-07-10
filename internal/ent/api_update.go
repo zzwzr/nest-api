@@ -156,6 +156,20 @@ func (_u *APIUpdate) SetNillableRequestBodyDataType(v *string) *APIUpdate {
 	return _u
 }
 
+// SetRequestBodyRaw sets the "request_body_raw" field.
+func (_u *APIUpdate) SetRequestBodyRaw(v string) *APIUpdate {
+	_u.mutation.SetRequestBodyRaw(v)
+	return _u
+}
+
+// SetNillableRequestBodyRaw sets the "request_body_raw" field if the given value is not nil.
+func (_u *APIUpdate) SetNillableRequestBodyRaw(v *string) *APIUpdate {
+	if v != nil {
+		_u.SetRequestBodyRaw(*v)
+	}
+	return _u
+}
+
 // SetSortOrder sets the "sort_order" field.
 func (_u *APIUpdate) SetSortOrder(v int) *APIUpdate {
 	_u.mutation.ResetSortOrder()
@@ -638,6 +652,9 @@ func (_u *APIUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.RequestBodyDataType(); ok {
 		_spec.SetField(api.FieldRequestBodyDataType, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.RequestBodyRaw(); ok {
+		_spec.SetField(api.FieldRequestBodyRaw, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SortOrder(); ok {
 		_spec.SetField(api.FieldSortOrder, field.TypeInt, value)
@@ -1182,6 +1199,20 @@ func (_u *APIUpdateOne) SetNillableRequestBodyDataType(v *string) *APIUpdateOne 
 	return _u
 }
 
+// SetRequestBodyRaw sets the "request_body_raw" field.
+func (_u *APIUpdateOne) SetRequestBodyRaw(v string) *APIUpdateOne {
+	_u.mutation.SetRequestBodyRaw(v)
+	return _u
+}
+
+// SetNillableRequestBodyRaw sets the "request_body_raw" field if the given value is not nil.
+func (_u *APIUpdateOne) SetNillableRequestBodyRaw(v *string) *APIUpdateOne {
+	if v != nil {
+		_u.SetRequestBodyRaw(*v)
+	}
+	return _u
+}
+
 // SetSortOrder sets the "sort_order" field.
 func (_u *APIUpdateOne) SetSortOrder(v int) *APIUpdateOne {
 	_u.mutation.ResetSortOrder()
@@ -1694,6 +1725,9 @@ func (_u *APIUpdateOne) sqlSave(ctx context.Context) (_node *API, err error) {
 	}
 	if value, ok := _u.mutation.RequestBodyDataType(); ok {
 		_spec.SetField(api.FieldRequestBodyDataType, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.RequestBodyRaw(); ok {
+		_spec.SetField(api.FieldRequestBodyRaw, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SortOrder(); ok {
 		_spec.SetField(api.FieldSortOrder, field.TypeInt, value)

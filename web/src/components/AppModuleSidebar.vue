@@ -38,6 +38,8 @@ const modules: { key: AppModule; icon: typeof Connection; labelKey: string }[] =
 <style scoped>
 .module-sidebar {
   width: 148px;
+  height: 100%;
+  min-height: 0;
   flex-shrink: 0;
   border-right: 1px solid var(--color-border);
   background: var(--color-sidebar);

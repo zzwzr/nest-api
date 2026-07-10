@@ -95,6 +95,11 @@ func RequestBodyDataType(v string) predicate.API {
 	return predicate.API(sql.FieldEQ(FieldRequestBodyDataType, v))
 }
 
+// RequestBodyRaw applies equality check predicate on the "request_body_raw" field. It's identical to RequestBodyRawEQ.
+func RequestBodyRaw(v string) predicate.API {
+	return predicate.API(sql.FieldEQ(FieldRequestBodyRaw, v))
+}
+
 // SortOrder applies equality check predicate on the "sort_order" field. It's identical to SortOrderEQ.
 func SortOrder(v int) predicate.API {
 	return predicate.API(sql.FieldEQ(FieldSortOrder, v))
@@ -528,6 +533,71 @@ func RequestBodyDataTypeEqualFold(v string) predicate.API {
 // RequestBodyDataTypeContainsFold applies the ContainsFold predicate on the "request_body_data_type" field.
 func RequestBodyDataTypeContainsFold(v string) predicate.API {
 	return predicate.API(sql.FieldContainsFold(FieldRequestBodyDataType, v))
+}
+
+// RequestBodyRawEQ applies the EQ predicate on the "request_body_raw" field.
+func RequestBodyRawEQ(v string) predicate.API {
+	return predicate.API(sql.FieldEQ(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawNEQ applies the NEQ predicate on the "request_body_raw" field.
+func RequestBodyRawNEQ(v string) predicate.API {
+	return predicate.API(sql.FieldNEQ(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawIn applies the In predicate on the "request_body_raw" field.
+func RequestBodyRawIn(vs ...string) predicate.API {
+	return predicate.API(sql.FieldIn(FieldRequestBodyRaw, vs...))
+}
+
+// RequestBodyRawNotIn applies the NotIn predicate on the "request_body_raw" field.
+func RequestBodyRawNotIn(vs ...string) predicate.API {
+	return predicate.API(sql.FieldNotIn(FieldRequestBodyRaw, vs...))
+}
+
+// RequestBodyRawGT applies the GT predicate on the "request_body_raw" field.
+func RequestBodyRawGT(v string) predicate.API {
+	return predicate.API(sql.FieldGT(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawGTE applies the GTE predicate on the "request_body_raw" field.
+func RequestBodyRawGTE(v string) predicate.API {
+	return predicate.API(sql.FieldGTE(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawLT applies the LT predicate on the "request_body_raw" field.
+func RequestBodyRawLT(v string) predicate.API {
+	return predicate.API(sql.FieldLT(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawLTE applies the LTE predicate on the "request_body_raw" field.
+func RequestBodyRawLTE(v string) predicate.API {
+	return predicate.API(sql.FieldLTE(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawContains applies the Contains predicate on the "request_body_raw" field.
+func RequestBodyRawContains(v string) predicate.API {
+	return predicate.API(sql.FieldContains(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawHasPrefix applies the HasPrefix predicate on the "request_body_raw" field.
+func RequestBodyRawHasPrefix(v string) predicate.API {
+	return predicate.API(sql.FieldHasPrefix(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawHasSuffix applies the HasSuffix predicate on the "request_body_raw" field.
+func RequestBodyRawHasSuffix(v string) predicate.API {
+	return predicate.API(sql.FieldHasSuffix(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawEqualFold applies the EqualFold predicate on the "request_body_raw" field.
+func RequestBodyRawEqualFold(v string) predicate.API {
+	return predicate.API(sql.FieldEqualFold(FieldRequestBodyRaw, v))
+}
+
+// RequestBodyRawContainsFold applies the ContainsFold predicate on the "request_body_raw" field.
+func RequestBodyRawContainsFold(v string) predicate.API {
+	return predicate.API(sql.FieldContainsFold(FieldRequestBodyRaw, v))
 }
 
 // SortOrderEQ applies the EQ predicate on the "sort_order" field.

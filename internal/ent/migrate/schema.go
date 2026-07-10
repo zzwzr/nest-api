@@ -18,6 +18,7 @@ var (
 		{Name: "status", Type: field.TypeUint8, Default: 2},
 		{Name: "request_body_format", Type: field.TypeString, Size: 20, Default: "json"},
 		{Name: "request_body_data_type", Type: field.TypeString, Size: 20, Default: "Object"},
+		{Name: "request_body_raw", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "sort_order", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
@@ -35,25 +36,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "interfaces_folders_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[11]},
+				Columns:    []*schema.Column{InterfacesColumns[12]},
 				RefColumns: []*schema.Column{FoldersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "interfaces_projects_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[12]},
+				Columns:    []*schema.Column{InterfacesColumns[13]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "interfaces_users_created_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[13]},
+				Columns:    []*schema.Column{InterfacesColumns[14]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "interfaces_users_updated_interfaces",
-				Columns:    []*schema.Column{InterfacesColumns[14]},
+				Columns:    []*schema.Column{InterfacesColumns[15]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

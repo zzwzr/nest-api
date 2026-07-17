@@ -4,19 +4,11 @@ import (
 	"context"
 	"strings"
 
+	"nest-api/app/folder"
+	"nest-api/app/project"
 	"nest-api/app/workspace"
 	"nest-api/internal/database"
 	"nest-api/internal/ent"
-	entapi "nest-api/internal/ent/api"
-	entfolder "nest-api/internal/ent/folder"
-	entbodyfield "nest-api/internal/ent/interfacebodyfield"
-	entexample "nest-api/internal/ent/interfaceexample"
-	entfield "nest-api/internal/ent/interfacefield"
-	entheader "nest-api/internal/ent/interfaceheader"
-	entquery "nest-api/internal/ent/interfacequeryparam"
-	entreqheader "nest-api/internal/ent/interfacerequestheader"
-	entresult "nest-api/internal/ent/interfaceresult"
-	entproject "nest-api/internal/ent/project"
 	"nest-api/internal/utils"
 	bizerr "nest-api/pkg/errors"
 )
@@ -27,17 +19,11 @@ func (Service) List(ctx context.Context, userID int64, params ListRequest) ([]It
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectRead); err != nil {
 		return nil, err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return nil, err
 	}
 
-	rows, err := database.DB.API.
-		Query().
-		Where(entapi.ProjectIDEQ(params.ProjectID)).
-		WithFolder().
-		WithUpdater().
-		Order(ent.Asc(entapi.FieldSortOrder), ent.Asc(entapi.FieldID)).
-		All(ctx)
+	rows, err := Repo{}.ListByProject(ctx, params.ProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -70,10 +56,10 @@ func (Service) Detail(ctx context.Context, userID int64, params DetailRequest) (
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectRead); err != nil {
 		return nil, err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return nil, err
 	}
-	if err := ensureInterface(ctx, params.ProjectID, params.InterfaceID); err != nil {
+	if err := EnsureExists(ctx, params.ProjectID, params.InterfaceID); err != nil {
 		return nil, err
 	}
 
@@ -82,36 +68,7 @@ func (Service) Detail(ctx context.Context, userID int64, params DetailRequest) (
 
 // LoadDetail loads interface detail without membership checks (for share access).
 func LoadDetail(ctx context.Context, projectID, interfaceID int64) (*DetailItem, error) {
-	row, err := database.DB.API.
-		Query().
-		Where(
-			entapi.IDEQ(interfaceID),
-			entapi.ProjectIDEQ(projectID),
-		).
-		WithFolder().
-		WithUpdater().
-		WithRequestHeaders(func(q *ent.InterfaceRequestHeaderQuery) {
-			q.Order(ent.Asc(entreqheader.FieldSortOrder), ent.Asc(entreqheader.FieldID))
-		}).
-		WithQueryParams(func(q *ent.InterfaceQueryParamQuery) {
-			q.Order(ent.Asc(entquery.FieldSortOrder), ent.Asc(entquery.FieldID))
-		}).
-		WithBodyFields(func(q *ent.InterfaceBodyFieldQuery) {
-			q.Order(ent.Asc(entbodyfield.FieldSortOrder), ent.Asc(entbodyfield.FieldID))
-		}).
-		WithResponseHeaders(func(q *ent.InterfaceHeaderQuery) {
-			q.Order(ent.Asc(entheader.FieldSortOrder), ent.Asc(entheader.FieldID))
-		}).
-		WithResponseResults(func(q *ent.InterfaceResultQuery) {
-			q.Order(ent.Asc(entresult.FieldSortOrder), ent.Asc(entresult.FieldID)).
-				WithFields(func(fq *ent.InterfaceFieldQuery) {
-					fq.Order(ent.Asc(entfield.FieldSortOrder), ent.Asc(entfield.FieldID))
-				})
-		}).
-		WithResponseExamples(func(q *ent.InterfaceExampleQuery) {
-			q.Order(ent.Asc(entexample.FieldSortOrder), ent.Asc(entexample.FieldID))
-		}).
-		Only(ctx)
+	row, err := Repo{}.GetWithDetails(ctx, projectID, interfaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,10 +111,10 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectCreate); err != nil {
 		return 0, err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return 0, err
 	}
-	if err := ensureFolder(ctx, params.ProjectID, params.FolderID); err != nil {
+	if err := folder.EnsureExists(ctx, params.ProjectID, params.FolderID); err != nil {
 		return 0, err
 	}
 
@@ -167,23 +124,13 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 		status = 1
 	}
 
-	sortOrder, err := nextInterfaceSortOrder(ctx, params.ProjectID, params.FolderID)
+	repo := Repo{}
+	sortOrder, err := repo.NextSortOrder(ctx, params.ProjectID, params.FolderID)
 	if err != nil {
 		return 0, err
 	}
 
-	row, err := database.DB.API.
-		Create().
-		SetProjectID(params.ProjectID).
-		SetFolderID(params.FolderID).
-		SetName(params.Name).
-		SetMethod(method).
-		SetURL(params.URL).
-		SetStatus(status).
-		SetSortOrder(sortOrder).
-		SetCreatedBy(userID).
-		SetUpdatedBy(userID).
-		Save(ctx)
+	row, err := repo.Create(ctx, params.ProjectID, params.FolderID, userID, params.Name, method, params.URL, status, sortOrder)
 	if err != nil {
 		return 0, err
 	}
@@ -194,10 +141,10 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) e
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectUpdate); err != nil {
 		return err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return err
 	}
-	if err := ensureInterface(ctx, params.ProjectID, params.InterfaceID); err != nil {
+	if err := EnsureExists(ctx, params.ProjectID, params.InterfaceID); err != nil {
 		return err
 	}
 
@@ -232,7 +179,7 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) e
 		SetUpdatedBy(userID)
 
 	if params.FolderID > 0 {
-		if err := ensureFolder(ctx, params.ProjectID, params.FolderID); err != nil {
+		if err := folder.EnsureExists(ctx, params.ProjectID, params.FolderID); err != nil {
 			_ = tx.Rollback()
 			return err
 		}
@@ -244,27 +191,28 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) e
 		return err
 	}
 
-	if err := replaceRequestHeaders(ctx, tx, params.InterfaceID, params.RequestHeaders); err != nil {
+	repo := Repo{}
+	if err := repo.ReplaceRequestHeaders(ctx, tx, params.InterfaceID, params.RequestHeaders); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
-	if err := replaceQueryParams(ctx, tx, params.InterfaceID, params.QueryParams); err != nil {
+	if err := repo.ReplaceQueryParams(ctx, tx, params.InterfaceID, params.QueryParams); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
-	if err := replaceBodyFields(ctx, tx, params.InterfaceID, params.RequestBody.Fields); err != nil {
+	if err := repo.ReplaceBodyFields(ctx, tx, params.InterfaceID, params.RequestBody.Fields); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
-	if err := replaceResponseHeaders(ctx, tx, params.InterfaceID, params.ResponseHeaders); err != nil {
+	if err := repo.ReplaceResponseHeaders(ctx, tx, params.InterfaceID, params.ResponseHeaders); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
-	if err := replaceResponseResults(ctx, tx, params.InterfaceID, params.ResponseResults); err != nil {
+	if err := repo.ReplaceResponseResults(ctx, tx, params.InterfaceID, params.ResponseResults); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
-	if err := replaceResponseExamples(ctx, tx, params.InterfaceID, params.ResponseExamples); err != nil {
+	if err := repo.ReplaceResponseExamples(ctx, tx, params.InterfaceID, params.ResponseExamples); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
@@ -276,34 +224,28 @@ func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) e
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectDelete); err != nil {
 		return err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return err
 	}
-	if err := ensureInterface(ctx, params.ProjectID, params.InterfaceID); err != nil {
+	if err := EnsureExists(ctx, params.ProjectID, params.InterfaceID); err != nil {
 		return err
 	}
 
-	return database.DB.API.DeleteOneID(params.InterfaceID).Exec(ctx)
+	return (Repo{}).Delete(ctx, params.InterfaceID)
 }
 
 func (Service) Reorder(ctx context.Context, userID int64, params ReorderRequest) error {
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectUpdate); err != nil {
 		return err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return err
 	}
-	if err := ensureFolder(ctx, params.ProjectID, params.FolderID); err != nil {
+	if err := folder.EnsureExists(ctx, params.ProjectID, params.FolderID); err != nil {
 		return err
 	}
 
-	rows, err := database.DB.API.
-		Query().
-		Where(
-			entapi.ProjectIDEQ(params.ProjectID),
-			entapi.FolderIDEQ(params.FolderID),
-		).
-		All(ctx)
+	rows, err := Repo{}.ListByFolder(ctx, params.ProjectID, params.FolderID)
 	if err != nil {
 		return err
 	}
@@ -378,16 +320,16 @@ func buildBodyFieldTree(rows []*ent.InterfaceBodyField) []BodyFieldItem {
 		return []BodyFieldItem{}
 	}
 
-	byParent := make(map[int64][]*ent.InterfaceBodyField)
+	children := make(map[int64][]*ent.InterfaceBodyField)
 	for _, row := range rows {
-		byParent[row.ParentID] = append(byParent[row.ParentID], row)
+		children[row.ParentID] = append(children[row.ParentID], row)
 	}
 
-	var walk func(parentID int64) []BodyFieldItem
-	walk = func(parentID int64) []BodyFieldItem {
-		children := byParent[parentID]
-		items := make([]BodyFieldItem, 0, len(children))
-		for _, row := range children {
+	var build func(parentID int64) []BodyFieldItem
+	build = func(parentID int64) []BodyFieldItem {
+		list := children[parentID]
+		items := make([]BodyFieldItem, 0, len(list))
+		for _, row := range list {
 			items = append(items, BodyFieldItem{
 				ID:          row.ID,
 				ParentID:    row.ParentID,
@@ -396,13 +338,12 @@ func buildBodyFieldTree(rows []*ent.InterfaceBodyField) []BodyFieldItem {
 				Required:    row.Required,
 				Description: row.Description,
 				Example:     row.Example,
-				Children:    walk(row.ID),
+				Children:    build(row.ID),
 			})
 		}
 		return items
 	}
-
-	return walk(0)
+	return build(0)
 }
 
 func buildResponseHeaders(rows []*ent.InterfaceHeader) []ResponseHeaderItem {
@@ -440,16 +381,16 @@ func buildResponseFieldTree(rows []*ent.InterfaceField) []ResponseFieldItem {
 		return []ResponseFieldItem{}
 	}
 
-	byParent := make(map[int64][]*ent.InterfaceField)
+	children := make(map[int64][]*ent.InterfaceField)
 	for _, row := range rows {
-		byParent[row.ParentID] = append(byParent[row.ParentID], row)
+		children[row.ParentID] = append(children[row.ParentID], row)
 	}
 
-	var walk func(parentID int64) []ResponseFieldItem
-	walk = func(parentID int64) []ResponseFieldItem {
-		children := byParent[parentID]
-		items := make([]ResponseFieldItem, 0, len(children))
-		for _, row := range children {
+	var build func(parentID int64) []ResponseFieldItem
+	build = func(parentID int64) []ResponseFieldItem {
+		list := children[parentID]
+		items := make([]ResponseFieldItem, 0, len(list))
+		for _, row := range list {
 			items = append(items, ResponseFieldItem{
 				ID:          row.ID,
 				ParentID:    row.ParentID,
@@ -459,13 +400,12 @@ func buildResponseFieldTree(rows []*ent.InterfaceField) []ResponseFieldItem {
 				Description: row.Description,
 				Mock:        row.Mock,
 				Example:     row.Example,
-				Children:    walk(row.ID),
+				Children:    build(row.ID),
 			})
 		}
 		return items
 	}
-
-	return walk(0)
+	return build(0)
 }
 
 func buildResponseExamples(rows []*ent.InterfaceExample) []ResponseExampleItem {
@@ -480,320 +420,4 @@ func buildResponseExamples(rows []*ent.InterfaceExample) []ResponseExampleItem {
 		})
 	}
 	return items
-}
-
-func replaceRequestHeaders(ctx context.Context, tx *ent.Tx, interfaceID int64, headers []ParamItem) error {
-	if _, err := tx.InterfaceRequestHeader.Delete().Where(entreqheader.InterfaceIDEQ(interfaceID)).Exec(ctx); err != nil {
-		return err
-	}
-	for index, header := range headers {
-		if strings.TrimSpace(header.Name) == "" {
-			continue
-		}
-		headerType := header.Type
-		if headerType == "" {
-			headerType = "string"
-		}
-		if _, err := tx.InterfaceRequestHeader.
-			Create().
-			SetInterfaceID(interfaceID).
-			SetName(header.Name).
-			SetType(headerType).
-			SetRequired(header.Required).
-			SetDescription(header.Description).
-			SetExample(header.Example).
-			SetSortOrder(index).
-			Save(ctx); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func replaceQueryParams(ctx context.Context, tx *ent.Tx, interfaceID int64, params []ParamItem) error {
-	if _, err := tx.InterfaceQueryParam.Delete().Where(entquery.InterfaceIDEQ(interfaceID)).Exec(ctx); err != nil {
-		return err
-	}
-	for index, param := range params {
-		if strings.TrimSpace(param.Name) == "" {
-			continue
-		}
-		paramType := param.Type
-		if paramType == "" {
-			paramType = "string"
-		}
-		if _, err := tx.InterfaceQueryParam.
-			Create().
-			SetInterfaceID(interfaceID).
-			SetName(param.Name).
-			SetType(paramType).
-			SetRequired(param.Required).
-			SetDescription(param.Description).
-			SetExample(param.Example).
-			SetSortOrder(index).
-			Save(ctx); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func replaceBodyFields(ctx context.Context, tx *ent.Tx, interfaceID int64, fields []BodyFieldItem) error {
-	if _, err := tx.InterfaceBodyField.Delete().Where(entbodyfield.InterfaceIDEQ(interfaceID)).Exec(ctx); err != nil {
-		return err
-	}
-	return saveBodyFields(ctx, tx, interfaceID, 0, fields)
-}
-
-func saveBodyFields(ctx context.Context, tx *ent.Tx, interfaceID, parentID int64, fields []BodyFieldItem) error {
-	for index, fieldItem := range fields {
-		if strings.TrimSpace(fieldItem.Name) == "" {
-			continue
-		}
-		fieldType := fieldItem.Type
-		if fieldType == "" {
-			fieldType = "string"
-		}
-
-		saved, err := tx.InterfaceBodyField.
-			Create().
-			SetInterfaceID(interfaceID).
-			SetParentID(parentID).
-			SetName(fieldItem.Name).
-			SetType(fieldType).
-			SetRequired(fieldItem.Required).
-			SetDescription(fieldItem.Description).
-			SetExample(fieldItem.Example).
-			SetSortOrder(index).
-			Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		if len(fieldItem.Children) > 0 {
-			if err := saveBodyFields(ctx, tx, interfaceID, saved.ID, fieldItem.Children); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func replaceResponseHeaders(ctx context.Context, tx *ent.Tx, interfaceID int64, headers []ResponseHeaderItem) error {
-	if _, err := tx.InterfaceHeader.Delete().Where(entheader.InterfaceIDEQ(interfaceID)).Exec(ctx); err != nil {
-		return err
-	}
-
-	for index, header := range headers {
-		if strings.TrimSpace(header.Name) == "" {
-			continue
-		}
-		headerType := header.Type
-		if headerType == "" {
-			headerType = "string"
-		}
-		if _, err := tx.InterfaceHeader.
-			Create().
-			SetInterfaceID(interfaceID).
-			SetName(header.Name).
-			SetType(headerType).
-			SetRequired(header.Required).
-			SetDescription(header.Description).
-			SetExample(header.Example).
-			SetSortOrder(index).
-			Save(ctx); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func replaceResponseResults(ctx context.Context, tx *ent.Tx, interfaceID int64, results []ResponseResultItem) error {
-	existingResults, err := tx.InterfaceResult.
-		Query().
-		Where(entresult.InterfaceIDEQ(interfaceID)).
-		All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, row := range existingResults {
-		if _, err := tx.InterfaceField.Delete().Where(entfield.ResultIDEQ(row.ID)).Exec(ctx); err != nil {
-			return err
-		}
-	}
-	if _, err := tx.InterfaceResult.Delete().Where(entresult.InterfaceIDEQ(interfaceID)).Exec(ctx); err != nil {
-		return err
-	}
-
-	for index, result := range results {
-		format := result.Format
-		if format == "" {
-			format = "JSON"
-		}
-		dataType := result.DataType
-		if dataType == "" {
-			dataType = "Object"
-		}
-		statusCode := result.StatusCode
-		if statusCode == 0 {
-			statusCode = 200
-		}
-
-		saved, err := tx.InterfaceResult.
-			Create().
-			SetInterfaceID(interfaceID).
-			SetName(result.Name).
-			SetStatusCode(statusCode).
-			SetFormat(format).
-			SetDataType(dataType).
-			SetSortOrder(index).
-			Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		if err := saveResponseFields(ctx, tx, saved.ID, 0, result.Fields); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func saveResponseFields(ctx context.Context, tx *ent.Tx, resultID, parentID int64, fields []ResponseFieldItem) error {
-	for index, fieldItem := range fields {
-		if strings.TrimSpace(fieldItem.Name) == "" {
-			continue
-		}
-		fieldType := fieldItem.Type
-		if fieldType == "" {
-			fieldType = "string"
-		}
-
-		saved, err := tx.InterfaceField.
-			Create().
-			SetResultID(resultID).
-			SetParentID(parentID).
-			SetName(fieldItem.Name).
-			SetType(fieldType).
-			SetRequired(fieldItem.Required).
-			SetDescription(fieldItem.Description).
-			SetMock(fieldItem.Mock).
-			SetExample(fieldItem.Example).
-			SetSortOrder(index).
-			Save(ctx)
-		if err != nil {
-			return err
-		}
-
-		if len(fieldItem.Children) > 0 {
-			if err := saveResponseFields(ctx, tx, resultID, saved.ID, fieldItem.Children); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func replaceResponseExamples(ctx context.Context, tx *ent.Tx, interfaceID int64, examples []ResponseExampleItem) error {
-	if _, err := tx.InterfaceExample.Delete().Where(entexample.InterfaceIDEQ(interfaceID)).Exec(ctx); err != nil {
-		return err
-	}
-
-	for index, example := range examples {
-		statusCode := example.StatusCode
-		if statusCode == 0 {
-			statusCode = 200
-		}
-		contentType := example.ContentType
-		if contentType == "" {
-			contentType = "application/json"
-		}
-		name := example.Name
-		if name == "" {
-			name = "示例"
-		}
-
-		if _, err := tx.InterfaceExample.
-			Create().
-			SetInterfaceID(interfaceID).
-			SetName(name).
-			SetStatusCode(statusCode).
-			SetContentType(contentType).
-			SetRaw(example.Raw).
-			SetSortOrder(index).
-			Save(ctx); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func nextInterfaceSortOrder(ctx context.Context, projectID, folderID int64) (int, error) {
-	rows, err := database.DB.API.
-		Query().
-		Where(
-			entapi.ProjectIDEQ(projectID),
-			entapi.FolderIDEQ(folderID),
-		).
-		Order(ent.Desc(entapi.FieldSortOrder)).
-		Limit(1).
-		All(ctx)
-	if err != nil {
-		return 0, err
-	}
-	if len(rows) == 0 {
-		return 0, nil
-	}
-	return rows[0].SortOrder + 1, nil
-}
-
-func ensureProject(ctx context.Context, workspaceID, projectID int64) error {
-	exists, err := database.DB.Project.
-		Query().
-		Where(
-			entproject.IDEQ(projectID),
-			entproject.WorkspaceIDEQ(workspaceID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("项目不存在")
-	}
-	return nil
-}
-
-func ensureFolder(ctx context.Context, projectID, folderID int64) error {
-	exists, err := database.DB.Folder.
-		Query().
-		Where(
-			entfolder.IDEQ(folderID),
-			entfolder.ProjectIDEQ(projectID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("文件夹不存在")
-	}
-	return nil
-}
-
-func ensureInterface(ctx context.Context, projectID, interfaceID int64) error {
-	exists, err := database.DB.API.
-		Query().
-		Where(
-			entapi.IDEQ(interfaceID),
-			entapi.ProjectIDEQ(projectID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("接口不存在")
-	}
-	return nil
 }

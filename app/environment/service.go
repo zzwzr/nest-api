@@ -3,11 +3,8 @@ package environment
 import (
 	"context"
 
+	"nest-api/app/project"
 	"nest-api/app/workspace"
-	"nest-api/internal/database"
-	"nest-api/internal/ent"
-	entenv "nest-api/internal/ent/environment"
-	entproject "nest-api/internal/ent/project"
 	"nest-api/internal/utils"
 	bizerr "nest-api/pkg/errors"
 )
@@ -15,15 +12,14 @@ import (
 type Service struct{}
 
 func (Service) List(ctx context.Context, userID int64, params ListRequest) ([]Item, error) {
-	if err := ensureProject(ctx, userID, params.WorkspaceID, params.ProjectID); err != nil {
+	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectRead); err != nil {
+		return nil, err
+	}
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return nil, err
 	}
 
-	rows, err := database.DB.Environment.
-		Query().
-		Where(entenv.ProjectIDEQ(params.ProjectID)).
-		Order(ent.Desc(entenv.FieldIsDefault), ent.Asc(entenv.FieldID)).
-		All(ctx)
+	rows, err := Repo{}.ListByProject(ctx, params.ProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,18 +39,15 @@ func (Service) List(ctx context.Context, userID int64, params ListRequest) ([]It
 }
 
 func (Service) Create(ctx context.Context, userID int64, params CreateRequest) error {
-	if err := ensureProject(ctx, userID, params.WorkspaceID, params.ProjectID); err != nil {
+	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectCreate); err != nil {
 		return err
 	}
-	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectCreate); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return err
 	}
 
 	isDefault := params.IsDefault
-	count, err := database.DB.Environment.
-		Query().
-		Where(entenv.ProjectIDEQ(params.ProjectID)).
-		Count(ctx)
+	count, err := Repo{}.CountByProject(ctx, params.ProjectID)
 	if err != nil {
 		return err
 	}
@@ -63,66 +56,47 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) e
 	}
 
 	if isDefault {
-		if err := clearDefault(ctx, params.ProjectID); err != nil {
+		if err := (Repo{}).ClearDefault(ctx, params.ProjectID); err != nil {
 			return err
 		}
 	}
 
-	_, err = database.DB.Environment.
-		Create().
-		SetProjectID(params.ProjectID).
-		SetName(params.Name).
-		SetBaseURL(params.BaseURL).
-		SetIsDefault(isDefault).
-		SetCreatedBy(userID).
-		Save(ctx)
+	_, err = Repo{}.Create(ctx, params.ProjectID, userID, params.Name, params.BaseURL, isDefault)
 	return err
 }
 
 func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) error {
-	if err := ensureProject(ctx, userID, params.WorkspaceID, params.ProjectID); err != nil {
-		return err
-	}
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectUpdate); err != nil {
 		return err
 	}
-	if err := ensureEnvironment(ctx, params.ProjectID, params.EnvironmentID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+		return err
+	}
+	if err := EnsureExists(ctx, params.ProjectID, params.EnvironmentID); err != nil {
 		return err
 	}
 
 	if params.IsDefault {
-		if err := clearDefault(ctx, params.ProjectID); err != nil {
+		if err := (Repo{}).ClearDefault(ctx, params.ProjectID); err != nil {
 			return err
 		}
 	}
 
-	_, err := database.DB.Environment.
-		UpdateOneID(params.EnvironmentID).
-		SetName(params.Name).
-		SetBaseURL(params.BaseURL).
-		SetIsDefault(params.IsDefault).
-		Save(ctx)
-	return err
+	return (Repo{}).Update(ctx, params.EnvironmentID, params.Name, params.BaseURL, params.IsDefault)
 }
 
 func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) error {
-	if err := ensureProject(ctx, userID, params.WorkspaceID, params.ProjectID); err != nil {
-		return err
-	}
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectDelete); err != nil {
 		return err
 	}
-	if err := ensureEnvironment(ctx, params.ProjectID, params.EnvironmentID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+		return err
+	}
+	if err := EnsureExists(ctx, params.ProjectID, params.EnvironmentID); err != nil {
 		return err
 	}
 
-	n, err := database.DB.Environment.
-		Delete().
-		Where(
-			entenv.IDEQ(params.EnvironmentID),
-			entenv.ProjectIDEQ(params.ProjectID),
-		).
-		Exec(ctx)
+	n, err := Repo{}.Delete(ctx, params.ProjectID, params.EnvironmentID)
 	if err != nil {
 		return err
 	}
@@ -130,54 +104,4 @@ func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) e
 		return bizerr.New("环境不存在")
 	}
 	return nil
-}
-
-func ensureProject(ctx context.Context, userID, workspaceID, projectID int64) error {
-	if _, err := workspace.Require(ctx, userID, workspaceID, workspace.ActionProjectRead); err != nil {
-		return err
-	}
-
-	exists, err := database.DB.Project.
-		Query().
-		Where(
-			entproject.IDEQ(projectID),
-			entproject.WorkspaceIDEQ(workspaceID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("项目不存在")
-	}
-	return nil
-}
-
-func ensureEnvironment(ctx context.Context, projectID, environmentID int64) error {
-	exists, err := database.DB.Environment.
-		Query().
-		Where(
-			entenv.IDEQ(environmentID),
-			entenv.ProjectIDEQ(projectID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("环境不存在")
-	}
-	return nil
-}
-
-func clearDefault(ctx context.Context, projectID int64) error {
-	_, err := database.DB.Environment.
-		Update().
-		Where(
-			entenv.ProjectIDEQ(projectID),
-			entenv.IsDefaultEQ(true),
-		).
-		SetIsDefault(false).
-		Save(ctx)
-	return err
 }

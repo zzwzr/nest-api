@@ -10,14 +10,10 @@ import (
 	"unicode/utf8"
 
 	"nest-api/app/interfaces"
+	"nest-api/app/project"
 	"nest-api/app/workspace"
 	"nest-api/internal/database"
 	"nest-api/internal/ent"
-	entapi "nest-api/internal/ent/api"
-	entfolder "nest-api/internal/ent/folder"
-	entproject "nest-api/internal/ent/project"
-	"nest-api/internal/ent/projectshare"
-	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/runtime"
 	"nest-api/internal/utils"
 	bizerr "nest-api/pkg/errors"
@@ -48,23 +44,6 @@ func buildShareURL(code string) string {
 		base = "http://localhost:5173"
 	}
 	return fmt.Sprintf("%s/share?shareCode=%s", base, code)
-}
-
-func ensureProject(ctx context.Context, workspaceID, projectID int64) error {
-	exists, err := database.DB.Project.
-		Query().
-		Where(
-			entproject.IDEQ(projectID),
-			entproject.WorkspaceIDEQ(workspaceID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("项目不存在")
-	}
-	return nil
 }
 
 func uniqueInterfaceIDs(ids []int64) []int64 {
@@ -100,13 +79,7 @@ func (Service) validateInterfaces(ctx context.Context, projectID int64, interfac
 		return nil, bizerr.New("请至少选择一个接口")
 	}
 
-	count, err := database.DB.API.
-		Query().
-		Where(
-			entapi.ProjectIDEQ(projectID),
-			entapi.IDIn(ids...),
-		).
-		Count(ctx)
+	count, err := (interfaces.Repo{}).CountInProject(ctx, projectID, ids)
 	if err != nil {
 		return nil, err
 	}
@@ -114,26 +87,6 @@ func (Service) validateInterfaces(ctx context.Context, projectID int64, interfac
 		return nil, bizerr.New("存在不属于该项目的接口")
 	}
 	return ids, nil
-}
-
-func replaceShareInterfaces(ctx context.Context, tx *ent.Tx, shareID int64, interfaceIDs []int64) error {
-	_, err := tx.ProjectShareInterface.
-		Delete().
-		Where(projectshareinterface.ShareIDEQ(shareID)).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	builders := make([]*ent.ProjectShareInterfaceCreate, 0, len(interfaceIDs))
-	for _, interfaceID := range interfaceIDs {
-		builders = append(builders, tx.ProjectShareInterface.
-			Create().
-			SetShareID(shareID).
-			SetInterfaceID(interfaceID),
-		)
-	}
-	return tx.ProjectShareInterface.CreateBulk(builders...).Exec(ctx)
 }
 
 func toItem(row *ent.ProjectShare, interfaceIDs []int64) Item {
@@ -162,19 +115,11 @@ func (Service) List(ctx context.Context, userID int64, params ListRequest) ([]It
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectRead); err != nil {
 		return nil, err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return nil, err
 	}
 
-	rows, err := database.DB.ProjectShare.
-		Query().
-		Where(
-			projectshare.WorkspaceIDEQ(params.WorkspaceID),
-			projectshare.ProjectIDEQ(params.ProjectID),
-		).
-		WithItems().
-		Order(ent.Desc(projectshare.FieldID)).
-		All(ctx)
+	rows, err := Repo{}.ListByProject(ctx, params.WorkspaceID, params.ProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -195,18 +140,8 @@ func (Service) Get(ctx context.Context, userID int64, params GetRequest) (*Item,
 		return nil, err
 	}
 
-	row, err := database.DB.ProjectShare.
-		Query().
-		Where(
-			projectshare.IDEQ(params.ShareID),
-			projectshare.WorkspaceIDEQ(params.WorkspaceID),
-		).
-		WithItems().
-		Only(ctx)
+	row, err := Repo{}.GetByID(ctx, params.WorkspaceID, params.ShareID)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, bizerr.New("分享不存在")
-		}
 		return nil, err
 	}
 
@@ -222,7 +157,7 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectUpdate); err != nil {
 		return nil, err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return nil, err
 	}
 
@@ -254,16 +189,14 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 		}
 	}
 
+	repo := Repo{}
 	var code string
 	for range 8 {
 		code, err = generateShareCode()
 		if err != nil {
 			return nil, err
 		}
-		exists, err := database.DB.ProjectShare.
-			Query().
-			Where(projectshare.ShareCodeEQ(code)).
-			Exist(ctx)
+		exists, err := repo.ShareCodeExists(ctx, code)
 		if err != nil {
 			return nil, err
 		}
@@ -281,23 +214,13 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 		return nil, err
 	}
 
-	row, err := tx.ProjectShare.
-		Create().
-		SetProjectID(params.ProjectID).
-		SetWorkspaceID(params.WorkspaceID).
-		SetName(name).
-		SetShareCode(code).
-		SetEnabled(enabled).
-		SetPassword(passwordHash).
-		SetPermission(permission).
-		SetCreatedBy(userID).
-		Save(ctx)
+	row, err := repo.Create(ctx, tx, params.ProjectID, params.WorkspaceID, userID, name, code, enabled, passwordHash, permission)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
-	if err = replaceShareInterfaces(ctx, tx, row.ID, interfaceIDs); err != nil {
+	if err = repo.ReplaceInterfaces(ctx, tx, row.ID, interfaceIDs); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -315,17 +238,9 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) (
 		return nil, err
 	}
 
-	row, err := database.DB.ProjectShare.
-		Query().
-		Where(
-			projectshare.IDEQ(params.ShareID),
-			projectshare.WorkspaceIDEQ(params.WorkspaceID),
-		).
-		Only(ctx)
+	repo := Repo{}
+	row, err := repo.GetByIDForUpdate(ctx, params.WorkspaceID, params.ShareID)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, bizerr.New("分享不存在")
-		}
 		return nil, err
 	}
 
@@ -367,19 +282,13 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) (
 		return nil, err
 	}
 
-	updated, err := tx.ProjectShare.
-		UpdateOneID(row.ID).
-		SetName(name).
-		SetEnabled(enabled).
-		SetPassword(passwordHash).
-		SetPermission(permission).
-		Save(ctx)
+	updated, err := repo.Update(ctx, tx, row.ID, name, enabled, passwordHash, permission)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
-	if err = replaceShareInterfaces(ctx, tx, row.ID, interfaceIDs); err != nil {
+	if err = repo.ReplaceInterfaces(ctx, tx, row.ID, interfaceIDs); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -397,13 +306,7 @@ func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) e
 		return err
 	}
 
-	n, err := database.DB.ProjectShare.
-		Delete().
-		Where(
-			projectshare.IDEQ(params.ShareID),
-			projectshare.WorkspaceIDEQ(params.WorkspaceID),
-		).
-		Exec(ctx)
+	n, err := Repo{}.Delete(ctx, params.WorkspaceID, params.ShareID)
 	if err != nil {
 		return err
 	}
@@ -414,16 +317,8 @@ func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) e
 }
 
 func (Service) Preview(ctx context.Context, params PreviewRequest) (*PreviewResponse, error) {
-	code := strings.TrimSpace(params.ShareCode)
-	row, err := database.DB.ProjectShare.
-		Query().
-		Where(projectshare.ShareCodeEQ(code)).
-		WithProject().
-		Only(ctx)
+	row, err := Repo{}.FindByCode(ctx, params.ShareCode)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, bizerr.New("分享链接无效或已关闭")
-		}
 		return nil, err
 	}
 
@@ -442,33 +337,9 @@ func (Service) Preview(ctx context.Context, params PreviewRequest) (*PreviewResp
 	}, nil
 }
 
-func (Service) loadEnabledShare(ctx context.Context, shareCode, password string) (*ent.ProjectShare, error) {
-	code := strings.TrimSpace(shareCode)
-	row, err := database.DB.ProjectShare.
-		Query().
-		Where(projectshare.ShareCodeEQ(code)).
-		WithProject().
-		WithItems().
-		Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, bizerr.New("分享链接无效或已关闭")
-		}
-		return nil, err
-	}
-	if !row.Enabled {
-		return nil, bizerr.New("分享已关闭")
-	}
-	if strings.TrimSpace(row.Password) != "" {
-		if !utils.Verify(password, row.Password) {
-			return nil, bizerr.New("访问密码错误")
-		}
-	}
-	return row, nil
-}
-
 func (Service) AccessContent(ctx context.Context, params AccessRequest) (*AccessContentResponse, error) {
-	row, err := (Service{}).loadEnabledShare(ctx, params.ShareCode, params.Password)
+	repo := Repo{}
+	row, err := repo.LoadEnabledShare(ctx, params.ShareCode, params.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -478,27 +349,12 @@ func (Service) AccessContent(ctx context.Context, params AccessRequest) (*Access
 		interfaceIDs = append(interfaceIDs, item.InterfaceID)
 	}
 
-	apis := []*ent.API{}
-	if len(interfaceIDs) > 0 {
-		apis, err = database.DB.API.
-			Query().
-			Where(
-				entapi.ProjectIDEQ(row.ProjectID),
-				entapi.IDIn(interfaceIDs...),
-			).
-			WithFolder().
-			Order(ent.Asc(entapi.FieldSortOrder), ent.Asc(entapi.FieldID)).
-			All(ctx)
-		if err != nil {
-			return nil, err
-		}
+	apis, err := repo.ListAPIsByIDs(ctx, row.ProjectID, interfaceIDs)
+	if err != nil {
+		return nil, err
 	}
 
-	folders, err := database.DB.Folder.
-		Query().
-		Where(entfolder.ProjectIDEQ(row.ProjectID)).
-		Order(ent.Asc(entfolder.FieldSortOrder), ent.Asc(entfolder.FieldID)).
-		All(ctx)
+	folders, err := repo.ListFoldersByProject(ctx, row.ProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -637,7 +493,7 @@ func buildShareTree(folders []*ent.Folder, apis []*ent.API) []ShareTreeNode {
 }
 
 func (Service) AccessDetail(ctx context.Context, params AccessDetailRequest) (*interfaces.DetailItem, error) {
-	row, err := (Service{}).loadEnabledShare(ctx, params.ShareCode, params.Password)
+	row, err := Repo{}.LoadEnabledShare(ctx, params.ShareCode, params.Password)
 	if err != nil {
 		return nil, err
 	}

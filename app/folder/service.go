@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"sort"
 
+	"nest-api/app/project"
 	"nest-api/app/workspace"
-	"nest-api/internal/database"
 	"nest-api/internal/ent"
-	entapi "nest-api/internal/ent/api"
-	entfolder "nest-api/internal/ent/folder"
-	entproject "nest-api/internal/ent/project"
-	bizerr "nest-api/pkg/errors"
 )
 
 type Service struct{}
@@ -21,20 +17,12 @@ func (Service) Tree(ctx context.Context, userID int64, params ProjectScopeReques
 		return nil, err
 	}
 
-	folders, err := database.DB.Folder.
-		Query().
-		Where(entfolder.ProjectIDEQ(params.ProjectID)).
-		Order(ent.Asc(entfolder.FieldSortOrder), ent.Asc(entfolder.FieldID)).
-		All(ctx)
+	folders, err := Repo{}.ListByProject(ctx, params.ProjectID)
 	if err != nil {
 		return nil, err
 	}
 
-	ifaces, err := database.DB.API.
-		Query().
-		Where(entapi.ProjectIDEQ(params.ProjectID)).
-		Order(ent.Asc(entapi.FieldSortOrder), ent.Asc(entapi.FieldID)).
-		All(ctx)
+	ifaces, err := Repo{}.ListAPIsByProject(ctx, params.ProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -46,22 +34,16 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectCreate); err != nil {
 		return 0, err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return 0, err
 	}
 	if params.ParentID > 0 {
-		if err := ensureFolder(ctx, params.ProjectID, params.ParentID); err != nil {
+		if err := EnsureExists(ctx, params.ProjectID, params.ParentID); err != nil {
 			return 0, err
 		}
 	}
 
-	row, err := database.DB.Folder.
-		Create().
-		SetProjectID(params.ProjectID).
-		SetParentID(params.ParentID).
-		SetName(params.Name).
-		SetCreatedBy(userID).
-		Save(ctx)
+	row, err := Repo{}.Create(ctx, params.ProjectID, params.ParentID, userID, params.Name)
 	if err != nil {
 		return 0, err
 	}
@@ -72,43 +54,33 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) e
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectUpdate); err != nil {
 		return err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return err
 	}
-	if err := ensureFolder(ctx, params.ProjectID, params.FolderID); err != nil {
+	if err := EnsureExists(ctx, params.ProjectID, params.FolderID); err != nil {
 		return err
 	}
 
-	_, err := database.DB.Folder.
-		UpdateOneID(params.FolderID).
-		SetName(params.Name).
-		Save(ctx)
-	return err
+	return (Repo{}).UpdateName(ctx, params.FolderID, params.Name)
 }
 
 func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) error {
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectDelete); err != nil {
 		return err
 	}
-	if err := ensureProject(ctx, params.WorkspaceID, params.ProjectID); err != nil {
+	if err := project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return err
 	}
-	if err := ensureFolder(ctx, params.ProjectID, params.FolderID); err != nil {
+	if err := EnsureExists(ctx, params.ProjectID, params.FolderID); err != nil {
 		return err
 	}
 
-	folders, err := database.DB.Folder.
-		Query().
-		Where(entfolder.ProjectIDEQ(params.ProjectID)).
-		All(ctx)
+	folders, err := Repo{}.ListByProject(ctx, params.ProjectID)
 	if err != nil {
 		return err
 	}
 
-	ifaces, err := database.DB.API.
-		Query().
-		Where(entapi.ProjectIDEQ(params.ProjectID)).
-		All(ctx)
+	ifaces, err := Repo{}.ListAPIsByProject(ctx, params.ProjectID)
 	if err != nil {
 		return err
 	}
@@ -119,16 +91,17 @@ func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) e
 		folderIDSet[id] = struct{}{}
 	}
 
+	repo := Repo{}
 	for _, item := range ifaces {
 		if _, ok := folderIDSet[item.FolderID]; ok {
-			if err := database.DB.API.DeleteOneID(item.ID).Exec(ctx); err != nil {
+			if err := repo.DeleteAPI(ctx, item.ID); err != nil {
 				return err
 			}
 		}
 	}
 
 	for i := len(folderIDs) - 1; i >= 0; i-- {
-		if err := database.DB.Folder.DeleteOneID(folderIDs[i]).Exec(ctx); err != nil {
+		if err := repo.DeleteOne(ctx, folderIDs[i]); err != nil {
 			return err
 		}
 	}
@@ -139,41 +112,7 @@ func requireProject(ctx context.Context, userID int64, params ProjectScopeReques
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectRead); err != nil {
 		return err
 	}
-	return ensureProject(ctx, params.WorkspaceID, params.ProjectID)
-}
-
-func ensureProject(ctx context.Context, workspaceID, projectID int64) error {
-	exists, err := database.DB.Project.
-		Query().
-		Where(
-			entproject.IDEQ(projectID),
-			entproject.WorkspaceIDEQ(workspaceID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("项目不存在")
-	}
-	return nil
-}
-
-func ensureFolder(ctx context.Context, projectID, folderID int64) error {
-	exists, err := database.DB.Folder.
-		Query().
-		Where(
-			entfolder.IDEQ(folderID),
-			entfolder.ProjectIDEQ(projectID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return bizerr.New("文件夹不存在")
-	}
-	return nil
+	return project.EnsureExists(ctx, params.WorkspaceID, params.ProjectID)
 }
 
 func buildTree(folders []*ent.Folder, ifaces []*ent.API) []TreeNode {

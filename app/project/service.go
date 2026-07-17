@@ -4,9 +4,6 @@ import (
 	"context"
 
 	"nest-api/app/workspace"
-	"nest-api/internal/database"
-	"nest-api/internal/ent"
-	entproject "nest-api/internal/ent/project"
 	"nest-api/internal/utils"
 	bizerr "nest-api/pkg/errors"
 )
@@ -18,12 +15,7 @@ func (Service) List(ctx context.Context, userID int64, params ListRequest) ([]It
 		return nil, err
 	}
 
-	projects, err := database.DB.Project.
-		Query().
-		Where(entproject.WorkspaceIDEQ(params.WorkspaceID)).
-		WithCreator().
-		Order(ent.Desc(entproject.FieldID)).
-		All(ctx)
+	projects, err := Repo{}.ListByWorkspace(ctx, params.WorkspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +39,7 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) e
 		return err
 	}
 
-	_, err := database.DB.Project.
-		Create().
-		SetWorkspaceID(params.WorkspaceID).
-		SetName(params.Name).
-		SetCreatedBy(userID).
-		Save(ctx)
+	_, err := Repo{}.Create(ctx, params.WorkspaceID, userID, params.Name)
 	return err
 }
 
@@ -60,26 +47,11 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) e
 	if _, err := workspace.Require(ctx, userID, params.WorkspaceID, workspace.ActionProjectUpdate); err != nil {
 		return err
 	}
-
-	exists, err := database.DB.Project.
-		Query().
-		Where(
-			entproject.IDEQ(params.ProjectID),
-			entproject.WorkspaceIDEQ(params.WorkspaceID),
-		).
-		Exist(ctx)
-	if err != nil {
+	if err := EnsureExists(ctx, params.WorkspaceID, params.ProjectID); err != nil {
 		return err
 	}
-	if !exists {
-		return bizerr.New("项目不存在")
-	}
 
-	_, err = database.DB.Project.
-		UpdateOneID(params.ProjectID).
-		SetName(params.Name).
-		Save(ctx)
-	return err
+	return (Repo{}).UpdateName(ctx, params.ProjectID, params.Name)
 }
 
 func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) error {
@@ -87,13 +59,7 @@ func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) e
 		return err
 	}
 
-	n, err := database.DB.Project.
-		Delete().
-		Where(
-			entproject.IDEQ(params.ProjectID),
-			entproject.WorkspaceIDEQ(params.WorkspaceID),
-		).
-		Exec(ctx)
+	n, err := Repo{}.Delete(ctx, params.WorkspaceID, params.ProjectID)
 	if err != nil {
 		return err
 	}

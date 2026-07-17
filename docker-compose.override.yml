@@ -1,36 +1,12 @@
 services:
 
-  nest-api:
-    image: golang:1.26.3-trixie
-
-    working_dir: /app
+  nest:
+    image: nest:latest
     expose:
       - 3000
     volumes:
-      - ./:/app
-      - /app/.git
-
-    environment:
-      TZ: Asia/Shanghai
-
-      APP_ENV: local
-      GIN_MODE: debug
-
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: 123123
-      DB_NAME: nest
-
-      JWT_SECRET: JWT_SECRET
-
-      REDIS_HOST: valkey
-      REDIS_PORT: 6379
-      REDIS_PASSWORD:
-      REDIS_DB: 0
-
-    # 配置过多再引入 env_file
-    command: go run cmd/api/main.go
+      - D:\data\nest\runtime:/app/runtime
+    restart: unless-stopped
 
     networks:
       - default

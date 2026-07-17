@@ -514,6 +514,10 @@ onMounted(async () => {
   --color-border: #e2e8f0;
   --color-surface: #ffffff;
   --shadow-card: 0 12px 32px rgba(15, 23, 42, 0.08);
+  /* Override global dark theme so Element Plus result text stays readable */
+  --el-text-color-primary: #0f172a;
+  --el-text-color-regular: #475569;
+  --el-text-color-secondary: #64748b;
   color: var(--color-text);
   background: #f8fafc;
 }
@@ -563,12 +567,14 @@ onMounted(async () => {
   color: var(--color-text-secondary);
 }
 
-.install-page :deep(.el-result__title) {
-  color: var(--color-text);
+.install-page :deep(.el-result__title),
+.install-page :deep(.el-result__title p) {
+  color: var(--el-text-color-primary) !important;
 }
 
-.install-page :deep(.el-result__subtitle) {
-  color: var(--color-text-secondary);
+.install-page :deep(.el-result__subtitle),
+.install-page :deep(.el-result__subtitle p) {
+  color: var(--el-text-color-regular) !important;
 }
 
 .install-bg {

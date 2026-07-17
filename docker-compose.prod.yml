@@ -1,34 +1,11 @@
 services:
-  nest-api:
-    image: nest-api:1.0.0
-
+  nest:
+    image: nest:1.0.0
     expose:
       - 3000
-
-    environment:
-      TZ: Asia/Shanghai
-
-      APP_ENV: local
-      GIN_MODE: debug
-
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: 123123
-      DB_NAME: nest
-
-      JWT_SECRET: JWT_SECRET
-
-      REDIS_HOST: valkey
-      REDIS_PORT: 6379
-      REDIS_PASSWORD:
-      REDIS_DB: 0
-
     volumes:
       - /data/www/nest/runtime/:/app/runtime
-
     restart: unless-stopped
-
     networks:
       - nest-network
       - common-network

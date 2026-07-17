@@ -26,6 +26,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
   color-scheme: light;
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --el-text-color-primary: #0f172a;
+  --el-text-color-regular: #475569;
   --el-text-color-placeholder: #94a3b8;
   --el-input-text-color: #1e293b;
 }
@@ -121,9 +125,12 @@
 
 .auth-page :deep(.el-input__inner),
 .auth-page :deep(.el-input input),
+.auth-page :deep(.el-input__inner:not(:placeholder-shown)),
+.auth-page :deep(.el-input input:not(:placeholder-shown)),
 .auth-page :deep(.el-select__selected-item),
 .auth-page :deep(.el-select__placeholder) {
   color: #1e293b !important;
+  -webkit-text-fill-color: #1e293b !important;
 }
 
 .auth-page :deep(.el-input__inner:placeholder-shown),

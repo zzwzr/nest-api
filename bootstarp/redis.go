@@ -12,7 +12,8 @@ func InitRedis() {
 		return
 	}
 
+	// Redis is optional for now; business code does not depend on it yet.
 	if err := redis.Init(); err != nil {
-		log.Fatal(err)
+		log.Printf("redis unavailable, skip: %v", err)
 	}
 }

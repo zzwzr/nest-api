@@ -1,0 +1,21 @@
+.git
+.gitignore
+**/.DS_Store
+
+# frontend
+web/node_modules
+web/dist
+web/pnpm-lock.yaml
+
+# local runtime / docker volumes
+docker/postgres/data
+docker/valkey/data
+docker/caddy/data
+docker/caddy/config
+runtime
+
+# docs / ide
+*.md
+.vscode
+.idea
+agent-transcripts

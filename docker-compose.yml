@@ -25,13 +25,13 @@ services:
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
-  valkey:
-    image: valkey/valkey:9.1.0-trixie
+  # valkey:
+  #   image: valkey/valkey:9.1.0-trixie
 
-    volumes:
-      - ./docker/valkey/data:/data
-    command: valkey-server --appendonly yes
-    restart: unless-stopped
+  #   volumes:
+  #     - ./docker/valkey/data:/data
+  #   command: valkey-server --appendonly yes
+  #   restart: unless-stopped
 
 networks:
   default:

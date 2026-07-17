@@ -1,6 +1,6 @@
 # ApiNest
 
-> Open-source API collaboration platform (v0.0.1)
+> Open-source API collaboration platform (1.0.0)
 
 [中文](README.md) | [English](README_en.md)
 
@@ -26,6 +26,65 @@ It replaces scattered spreadsheets and private API lists, keeping API definition
 - **Team collaboration**: Invite members to a workspace with role-based edit permissions
 - **Project sharing**: Share records so guests can view selected APIs without login
 - **System**: Install wizard, auth, admin console (users & workspace transfer), zh/en UI
+
+## Install
+
+Image: [Docker Hub · zzwzr/nest](https://hub.docker.com/r/zzwzr/nest/tags)
+
+```bash
+docker pull zzwzr/nest:latest
+# or a specific version
+docker pull zzwzr/nest:0.0.1
+```
+
+> **Before you deploy**
+>
+> - Prepare a reachable **PostgreSQL** instance (14+ recommended)
+> - **No built-in database** — connection details are entered in the install wizard; no container env vars needed
+> - The image includes frontend and backend; default port is **`3000`**
+> - Mount a **`runtime`** volume to persist install configuration
+
+### Docker Compose
+
+```yaml
+services:
+  nest:
+    image: zzwzr/nest:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./runtime:/app/runtime
+    restart: unless-stopped
+```
+
+```bash
+docker compose up -d
+```
+
+### Docker Run
+
+```bash
+docker run -d --name nest \
+  -p 3000:3000 \
+  -v ./runtime:/app/runtime \
+  zzwzr/nest:latest
+```
+
+### Reverse proxy
+
+Point Nginx, Caddy, or similar at the ApiNest service only (default `http://127.0.0.1:3000`, or `nest:3000` on a Docker network). Frontend and API are same-origin; no separate static hosting is needed.
+
+Caddy example:
+
+```caddyfile
+your.domain.com {
+    reverse_proxy nest:3000
+}
+```
+
+### Finish setup
+
+Open the site in a browser and complete the install wizard (PostgreSQL connection + admin account). After that you can sign in and use the app.
 
 ## Roadmap
 

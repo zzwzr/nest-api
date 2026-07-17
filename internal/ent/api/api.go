@@ -65,6 +65,8 @@ const (
 	EdgeQueryParams = "query_params"
 	// EdgeBodyFields holds the string denoting the body_fields edge name in mutations.
 	EdgeBodyFields = "body_fields"
+	// EdgeShareItems holds the string denoting the share_items edge name in mutations.
+	EdgeShareItems = "share_items"
 	// Table holds the table name of the api in the database.
 	Table = "interfaces"
 	// ProjectTable is the table that holds the project relation/edge.
@@ -137,6 +139,13 @@ const (
 	BodyFieldsInverseTable = "interface_body_fields"
 	// BodyFieldsColumn is the table column denoting the body_fields relation/edge.
 	BodyFieldsColumn = "interface_id"
+	// ShareItemsTable is the table that holds the share_items relation/edge.
+	ShareItemsTable = "project_share_interfaces"
+	// ShareItemsInverseTable is the table name for the ProjectShareInterface entity.
+	// It exists in this package in order to avoid circular dependency with the "projectshareinterface" package.
+	ShareItemsInverseTable = "project_share_interfaces"
+	// ShareItemsColumn is the table column denoting the share_items relation/edge.
+	ShareItemsColumn = "interface_id"
 )
 
 // Columns holds all SQL columns for api fields.
@@ -415,6 +424,20 @@ func ByBodyFields(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newBodyFieldsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByShareItemsCount orders the results by share_items count.
+func ByShareItemsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newShareItemsStep(), opts...)
+	}
+}
+
+// ByShareItems orders the results by share_items terms.
+func ByShareItems(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newShareItemsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newProjectStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -483,5 +506,12 @@ func newBodyFieldsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BodyFieldsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, BodyFieldsTable, BodyFieldsColumn),
+	)
+}
+func newShareItemsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ShareItemsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ShareItemsTable, ShareItemsColumn),
 	)
 }

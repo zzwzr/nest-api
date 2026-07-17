@@ -59,6 +59,26 @@ func (_u *WorkspaceUpdate) SetNillableOwnerID(v *int64) *WorkspaceUpdate {
 	return _u
 }
 
+// SetInviteCode sets the "invite_code" field.
+func (_u *WorkspaceUpdate) SetInviteCode(v string) *WorkspaceUpdate {
+	_u.mutation.SetInviteCode(v)
+	return _u
+}
+
+// SetNillableInviteCode sets the "invite_code" field if the given value is not nil.
+func (_u *WorkspaceUpdate) SetNillableInviteCode(v *string) *WorkspaceUpdate {
+	if v != nil {
+		_u.SetInviteCode(*v)
+	}
+	return _u
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (_u *WorkspaceUpdate) ClearInviteCode() *WorkspaceUpdate {
+	_u.mutation.ClearInviteCode()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *WorkspaceUpdate) SetCreatedAt(v utils.DateTime) *WorkspaceUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -236,6 +256,11 @@ func (_u *WorkspaceUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Workspace.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.InviteCode(); ok {
+		if err := workspace.InviteCodeValidator(v); err != nil {
+			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "Workspace.invite_code": %w`, err)}
+		}
+	}
 	if _u.mutation.OwnerCleared() && len(_u.mutation.OwnerIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Workspace.owner"`)
 	}
@@ -256,6 +281,12 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(workspace.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.InviteCode(); ok {
+		_spec.SetField(workspace.FieldInviteCode, field.TypeString, value)
+	}
+	if _u.mutation.InviteCodeCleared() {
+		_spec.ClearField(workspace.FieldInviteCode, field.TypeString)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(workspace.FieldCreatedAt, field.TypeTime, value)
@@ -433,6 +464,26 @@ func (_u *WorkspaceUpdateOne) SetNillableOwnerID(v *int64) *WorkspaceUpdateOne {
 	if v != nil {
 		_u.SetOwnerID(*v)
 	}
+	return _u
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (_u *WorkspaceUpdateOne) SetInviteCode(v string) *WorkspaceUpdateOne {
+	_u.mutation.SetInviteCode(v)
+	return _u
+}
+
+// SetNillableInviteCode sets the "invite_code" field if the given value is not nil.
+func (_u *WorkspaceUpdateOne) SetNillableInviteCode(v *string) *WorkspaceUpdateOne {
+	if v != nil {
+		_u.SetInviteCode(*v)
+	}
+	return _u
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (_u *WorkspaceUpdateOne) ClearInviteCode() *WorkspaceUpdateOne {
+	_u.mutation.ClearInviteCode()
 	return _u
 }
 
@@ -626,6 +677,11 @@ func (_u *WorkspaceUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Workspace.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.InviteCode(); ok {
+		if err := workspace.InviteCodeValidator(v); err != nil {
+			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "Workspace.invite_code": %w`, err)}
+		}
+	}
 	if _u.mutation.OwnerCleared() && len(_u.mutation.OwnerIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Workspace.owner"`)
 	}
@@ -663,6 +719,12 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(workspace.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.InviteCode(); ok {
+		_spec.SetField(workspace.FieldInviteCode, field.TypeString, value)
+	}
+	if _u.mutation.InviteCodeCleared() {
+		_spec.ClearField(workspace.FieldInviteCode, field.TypeString)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(workspace.FieldCreatedAt, field.TypeTime, value)

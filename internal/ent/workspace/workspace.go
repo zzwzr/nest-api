@@ -19,6 +19,8 @@ const (
 	FieldName = "name"
 	// FieldOwnerID holds the string denoting the owner_id field in the database.
 	FieldOwnerID = "owner_id"
+	// FieldInviteCode holds the string denoting the invite_code field in the database.
+	FieldInviteCode = "invite_code"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -61,6 +63,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldOwnerID,
+	FieldInviteCode,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
@@ -90,6 +93,8 @@ var (
 	NameValidator func(string) error
 	// DefaultOwnerID holds the default value on creation for the "owner_id" field.
 	DefaultOwnerID int64
+	// InviteCodeValidator is a validator for the "invite_code" field. It is called by the builders before save.
+	InviteCodeValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() utils.DateTime
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -116,6 +121,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByOwnerID orders the results by the owner_id field.
 func ByOwnerID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOwnerID, opts...).ToFunc()
+}
+
+// ByInviteCode orders the results by the invite_code field.
+func ByInviteCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInviteCode, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

@@ -20,6 +20,8 @@ import (
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/ent/workspacemember"
@@ -407,6 +409,60 @@ func (f TraverseProject) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.ProjectQuery", q)
 }
 
+// The ProjectShareFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ProjectShareFunc func(context.Context, *ent.ProjectShareQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ProjectShareFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ProjectShareQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ProjectShareQuery", q)
+}
+
+// The TraverseProjectShare type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseProjectShare func(context.Context, *ent.ProjectShareQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseProjectShare) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseProjectShare) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ProjectShareQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ProjectShareQuery", q)
+}
+
+// The ProjectShareInterfaceFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ProjectShareInterfaceFunc func(context.Context, *ent.ProjectShareInterfaceQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ProjectShareInterfaceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ProjectShareInterfaceQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ProjectShareInterfaceQuery", q)
+}
+
+// The TraverseProjectShareInterface type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseProjectShareInterface func(context.Context, *ent.ProjectShareInterfaceQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseProjectShareInterface) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseProjectShareInterface) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ProjectShareInterfaceQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ProjectShareInterfaceQuery", q)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary function as a Querier.
 type UserFunc func(context.Context, *ent.UserQuery) (ent.Value, error)
 
@@ -515,6 +571,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.InterfaceResultQuery, predicate.InterfaceResult, interfaceresult.OrderOption]{typ: ent.TypeInterfaceResult, tq: q}, nil
 	case *ent.ProjectQuery:
 		return &query[*ent.ProjectQuery, predicate.Project, project.OrderOption]{typ: ent.TypeProject, tq: q}, nil
+	case *ent.ProjectShareQuery:
+		return &query[*ent.ProjectShareQuery, predicate.ProjectShare, projectshare.OrderOption]{typ: ent.TypeProjectShare, tq: q}, nil
+	case *ent.ProjectShareInterfaceQuery:
+		return &query[*ent.ProjectShareInterfaceQuery, predicate.ProjectShareInterface, projectshareinterface.OrderOption]{typ: ent.TypeProjectShareInterface, tq: q}, nil
 	case *ent.UserQuery:
 		return &query[*ent.UserQuery, predicate.User, user.OrderOption]{typ: ent.TypeUser, tq: q}, nil
 	case *ent.WorkspaceQuery:

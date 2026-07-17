@@ -50,9 +50,11 @@ type ProjectEdges struct {
 	Interfaces []*API `json:"interfaces,omitempty"`
 	// Environments holds the value of the environments edge.
 	Environments []*Environment `json:"environments,omitempty"`
+	// Shares holds the value of the shares edge.
+	Shares []*ProjectShare `json:"shares,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -102,6 +104,15 @@ func (e ProjectEdges) EnvironmentsOrErr() ([]*Environment, error) {
 		return e.Environments, nil
 	}
 	return nil, &NotLoadedError{edge: "environments"}
+}
+
+// SharesOrErr returns the Shares value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) SharesOrErr() ([]*ProjectShare, error) {
+	if e.loadedTypes[5] {
+		return e.Shares, nil
+	}
+	return nil, &NotLoadedError{edge: "shares"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -211,6 +222,11 @@ func (_m *Project) QueryInterfaces() *APIQuery {
 // QueryEnvironments queries the "environments" edge of the Project entity.
 func (_m *Project) QueryEnvironments() *EnvironmentQuery {
 	return NewProjectClient(_m.config).QueryEnvironments(_m)
+}
+
+// QueryShares queries the "shares" edge of the Project entity.
+func (_m *Project) QueryShares() *ProjectShareQuery {
+	return NewProjectClient(_m.config).QueryShares(_m)
 }
 
 // Update returns a builder for updating this Project.

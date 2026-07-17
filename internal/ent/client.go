@@ -23,6 +23,8 @@ import (
 	"nest-api/internal/ent/interfacerequestheader"
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/ent/workspacemember"
@@ -62,6 +64,10 @@ type Client struct {
 	InterfaceResult *InterfaceResultClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
+	// ProjectShare is the client for interacting with the ProjectShare builders.
+	ProjectShare *ProjectShareClient
+	// ProjectShareInterface is the client for interacting with the ProjectShareInterface builders.
+	ProjectShareInterface *ProjectShareInterfaceClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// Workspace is the client for interacting with the Workspace builders.
@@ -91,6 +97,8 @@ func (c *Client) init() {
 	c.InterfaceRequestHeader = NewInterfaceRequestHeaderClient(c.config)
 	c.InterfaceResult = NewInterfaceResultClient(c.config)
 	c.Project = NewProjectClient(c.config)
+	c.ProjectShare = NewProjectShareClient(c.config)
+	c.ProjectShareInterface = NewProjectShareInterfaceClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
 	c.WorkspaceMember = NewWorkspaceMemberClient(c.config)
@@ -198,6 +206,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		InterfaceRequestHeader: NewInterfaceRequestHeaderClient(cfg),
 		InterfaceResult:        NewInterfaceResultClient(cfg),
 		Project:                NewProjectClient(cfg),
+		ProjectShare:           NewProjectShareClient(cfg),
+		ProjectShareInterface:  NewProjectShareInterfaceClient(cfg),
 		User:                   NewUserClient(cfg),
 		Workspace:              NewWorkspaceClient(cfg),
 		WorkspaceMember:        NewWorkspaceMemberClient(cfg),
@@ -232,6 +242,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		InterfaceRequestHeader: NewInterfaceRequestHeaderClient(cfg),
 		InterfaceResult:        NewInterfaceResultClient(cfg),
 		Project:                NewProjectClient(cfg),
+		ProjectShare:           NewProjectShareClient(cfg),
+		ProjectShareInterface:  NewProjectShareInterfaceClient(cfg),
 		User:                   NewUserClient(cfg),
 		Workspace:              NewWorkspaceClient(cfg),
 		WorkspaceMember:        NewWorkspaceMemberClient(cfg),
@@ -266,8 +278,8 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.InterfaceBodyField,
 		c.InterfaceExample, c.InterfaceField, c.InterfaceHeader, c.InterfaceQueryParam,
-		c.InterfaceRequestHeader, c.InterfaceResult, c.Project, c.User, c.Workspace,
-		c.WorkspaceMember,
+		c.InterfaceRequestHeader, c.InterfaceResult, c.Project, c.ProjectShare,
+		c.ProjectShareInterface, c.User, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -279,8 +291,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.API, c.Environment, c.EnvironmentVariable, c.Folder, c.InterfaceBodyField,
 		c.InterfaceExample, c.InterfaceField, c.InterfaceHeader, c.InterfaceQueryParam,
-		c.InterfaceRequestHeader, c.InterfaceResult, c.Project, c.User, c.Workspace,
-		c.WorkspaceMember,
+		c.InterfaceRequestHeader, c.InterfaceResult, c.Project, c.ProjectShare,
+		c.ProjectShareInterface, c.User, c.Workspace, c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -313,6 +325,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.InterfaceResult.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
+	case *ProjectShareMutation:
+		return c.ProjectShare.mutate(ctx, m)
+	case *ProjectShareInterfaceMutation:
+		return c.ProjectShareInterface.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	case *WorkspaceMutation:
@@ -585,6 +601,22 @@ func (c *APIClient) QueryBodyFields(_m *API) *InterfaceBodyFieldQuery {
 			sqlgraph.From(api.Table, api.FieldID, id),
 			sqlgraph.To(interfacebodyfield.Table, interfacebodyfield.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, api.BodyFieldsTable, api.BodyFieldsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryShareItems queries the share_items edge of a API.
+func (c *APIClient) QueryShareItems(_m *API) *ProjectShareInterfaceQuery {
+	query := (&ProjectShareInterfaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, id),
+			sqlgraph.To(projectshareinterface.Table, projectshareinterface.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ShareItemsTable, api.ShareItemsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2413,6 +2445,22 @@ func (c *ProjectClient) QueryEnvironments(_m *Project) *EnvironmentQuery {
 	return query
 }
 
+// QueryShares queries the shares edge of a Project.
+func (c *ProjectClient) QueryShares(_m *Project) *ProjectShareQuery {
+	query := (&ProjectShareClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectshare.Table, projectshare.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.SharesTable, project.SharesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	hooks := c.hooks.Project
@@ -2437,6 +2485,354 @@ func (c *ProjectClient) mutate(ctx context.Context, m *ProjectMutation) (Value, 
 		return (&ProjectDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Project mutation op: %q", m.Op())
+	}
+}
+
+// ProjectShareClient is a client for the ProjectShare schema.
+type ProjectShareClient struct {
+	config
+}
+
+// NewProjectShareClient returns a client for the ProjectShare from the given config.
+func NewProjectShareClient(c config) *ProjectShareClient {
+	return &ProjectShareClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectshare.Hooks(f(g(h())))`.
+func (c *ProjectShareClient) Use(hooks ...Hook) {
+	c.hooks.ProjectShare = append(c.hooks.ProjectShare, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `projectshare.Intercept(f(g(h())))`.
+func (c *ProjectShareClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProjectShare = append(c.inters.ProjectShare, interceptors...)
+}
+
+// Create returns a builder for creating a ProjectShare entity.
+func (c *ProjectShareClient) Create() *ProjectShareCreate {
+	mutation := newProjectShareMutation(c.config, OpCreate)
+	return &ProjectShareCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectShare entities.
+func (c *ProjectShareClient) CreateBulk(builders ...*ProjectShareCreate) *ProjectShareCreateBulk {
+	return &ProjectShareCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ProjectShareClient) MapCreateBulk(slice any, setFunc func(*ProjectShareCreate, int)) *ProjectShareCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ProjectShareCreateBulk{err: fmt.Errorf("calling to ProjectShareClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ProjectShareCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ProjectShareCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectShare.
+func (c *ProjectShareClient) Update() *ProjectShareUpdate {
+	mutation := newProjectShareMutation(c.config, OpUpdate)
+	return &ProjectShareUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectShareClient) UpdateOne(_m *ProjectShare) *ProjectShareUpdateOne {
+	mutation := newProjectShareMutation(c.config, OpUpdateOne, withProjectShare(_m))
+	return &ProjectShareUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectShareClient) UpdateOneID(id int64) *ProjectShareUpdateOne {
+	mutation := newProjectShareMutation(c.config, OpUpdateOne, withProjectShareID(id))
+	return &ProjectShareUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectShare.
+func (c *ProjectShareClient) Delete() *ProjectShareDelete {
+	mutation := newProjectShareMutation(c.config, OpDelete)
+	return &ProjectShareDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProjectShareClient) DeleteOne(_m *ProjectShare) *ProjectShareDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProjectShareClient) DeleteOneID(id int64) *ProjectShareDeleteOne {
+	builder := c.Delete().Where(projectshare.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectShareDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectShare.
+func (c *ProjectShareClient) Query() *ProjectShareQuery {
+	return &ProjectShareQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProjectShare},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProjectShare entity by its id.
+func (c *ProjectShareClient) Get(ctx context.Context, id int64) (*ProjectShare, error) {
+	return c.Query().Where(projectshare.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectShareClient) GetX(ctx context.Context, id int64) *ProjectShare {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a ProjectShare.
+func (c *ProjectShareClient) QueryProject(_m *ProjectShare) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectshare.Table, projectshare.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectshare.ProjectTable, projectshare.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreator queries the creator edge of a ProjectShare.
+func (c *ProjectShareClient) QueryCreator(_m *ProjectShare) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectshare.Table, projectshare.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectshare.CreatorTable, projectshare.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryItems queries the items edge of a ProjectShare.
+func (c *ProjectShareClient) QueryItems(_m *ProjectShare) *ProjectShareInterfaceQuery {
+	query := (&ProjectShareInterfaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectshare.Table, projectshare.FieldID, id),
+			sqlgraph.To(projectshareinterface.Table, projectshareinterface.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, projectshare.ItemsTable, projectshare.ItemsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectShareClient) Hooks() []Hook {
+	hooks := c.hooks.ProjectShare
+	return append(hooks[:len(hooks):len(hooks)], projectshare.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProjectShareClient) Interceptors() []Interceptor {
+	inters := c.inters.ProjectShare
+	return append(inters[:len(inters):len(inters)], projectshare.Interceptors[:]...)
+}
+
+func (c *ProjectShareClient) mutate(ctx context.Context, m *ProjectShareMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProjectShareCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProjectShareUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProjectShareUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProjectShareDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProjectShare mutation op: %q", m.Op())
+	}
+}
+
+// ProjectShareInterfaceClient is a client for the ProjectShareInterface schema.
+type ProjectShareInterfaceClient struct {
+	config
+}
+
+// NewProjectShareInterfaceClient returns a client for the ProjectShareInterface from the given config.
+func NewProjectShareInterfaceClient(c config) *ProjectShareInterfaceClient {
+	return &ProjectShareInterfaceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectshareinterface.Hooks(f(g(h())))`.
+func (c *ProjectShareInterfaceClient) Use(hooks ...Hook) {
+	c.hooks.ProjectShareInterface = append(c.hooks.ProjectShareInterface, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `projectshareinterface.Intercept(f(g(h())))`.
+func (c *ProjectShareInterfaceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProjectShareInterface = append(c.inters.ProjectShareInterface, interceptors...)
+}
+
+// Create returns a builder for creating a ProjectShareInterface entity.
+func (c *ProjectShareInterfaceClient) Create() *ProjectShareInterfaceCreate {
+	mutation := newProjectShareInterfaceMutation(c.config, OpCreate)
+	return &ProjectShareInterfaceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectShareInterface entities.
+func (c *ProjectShareInterfaceClient) CreateBulk(builders ...*ProjectShareInterfaceCreate) *ProjectShareInterfaceCreateBulk {
+	return &ProjectShareInterfaceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ProjectShareInterfaceClient) MapCreateBulk(slice any, setFunc func(*ProjectShareInterfaceCreate, int)) *ProjectShareInterfaceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ProjectShareInterfaceCreateBulk{err: fmt.Errorf("calling to ProjectShareInterfaceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ProjectShareInterfaceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ProjectShareInterfaceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectShareInterface.
+func (c *ProjectShareInterfaceClient) Update() *ProjectShareInterfaceUpdate {
+	mutation := newProjectShareInterfaceMutation(c.config, OpUpdate)
+	return &ProjectShareInterfaceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectShareInterfaceClient) UpdateOne(_m *ProjectShareInterface) *ProjectShareInterfaceUpdateOne {
+	mutation := newProjectShareInterfaceMutation(c.config, OpUpdateOne, withProjectShareInterface(_m))
+	return &ProjectShareInterfaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectShareInterfaceClient) UpdateOneID(id int64) *ProjectShareInterfaceUpdateOne {
+	mutation := newProjectShareInterfaceMutation(c.config, OpUpdateOne, withProjectShareInterfaceID(id))
+	return &ProjectShareInterfaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectShareInterface.
+func (c *ProjectShareInterfaceClient) Delete() *ProjectShareInterfaceDelete {
+	mutation := newProjectShareInterfaceMutation(c.config, OpDelete)
+	return &ProjectShareInterfaceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProjectShareInterfaceClient) DeleteOne(_m *ProjectShareInterface) *ProjectShareInterfaceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProjectShareInterfaceClient) DeleteOneID(id int64) *ProjectShareInterfaceDeleteOne {
+	builder := c.Delete().Where(projectshareinterface.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectShareInterfaceDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectShareInterface.
+func (c *ProjectShareInterfaceClient) Query() *ProjectShareInterfaceQuery {
+	return &ProjectShareInterfaceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProjectShareInterface},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProjectShareInterface entity by its id.
+func (c *ProjectShareInterfaceClient) Get(ctx context.Context, id int64) (*ProjectShareInterface, error) {
+	return c.Query().Where(projectshareinterface.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectShareInterfaceClient) GetX(ctx context.Context, id int64) *ProjectShareInterface {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryShare queries the share edge of a ProjectShareInterface.
+func (c *ProjectShareInterfaceClient) QueryShare(_m *ProjectShareInterface) *ProjectShareQuery {
+	query := (&ProjectShareClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectshareinterface.Table, projectshareinterface.FieldID, id),
+			sqlgraph.To(projectshare.Table, projectshare.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectshareinterface.ShareTable, projectshareinterface.ShareColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInterface queries the interface edge of a ProjectShareInterface.
+func (c *ProjectShareInterfaceClient) QueryInterface(_m *ProjectShareInterface) *APIQuery {
+	query := (&APIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectshareinterface.Table, projectshareinterface.FieldID, id),
+			sqlgraph.To(api.Table, api.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectshareinterface.InterfaceTable, projectshareinterface.InterfaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectShareInterfaceClient) Hooks() []Hook {
+	return c.hooks.ProjectShareInterface
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProjectShareInterfaceClient) Interceptors() []Interceptor {
+	return c.inters.ProjectShareInterface
+}
+
+func (c *ProjectShareInterfaceClient) mutate(ctx context.Context, m *ProjectShareInterfaceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProjectShareInterfaceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProjectShareInterfaceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProjectShareInterfaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProjectShareInterfaceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProjectShareInterface mutation op: %q", m.Op())
 	}
 }
 
@@ -2669,6 +3065,22 @@ func (c *UserClient) QueryCreatedEnvironmentVariables(_m *User) *EnvironmentVari
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(environmentvariable.Table, environmentvariable.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedEnvironmentVariablesTable, user.CreatedEnvironmentVariablesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedProjectShares queries the created_project_shares edge of a User.
+func (c *UserClient) QueryCreatedProjectShares(_m *User) *ProjectShareQuery {
+	query := (&ProjectShareClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(projectshare.Table, projectshare.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedProjectSharesTable, user.CreatedProjectSharesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -3058,13 +3470,13 @@ type (
 	hooks struct {
 		API, Environment, EnvironmentVariable, Folder, InterfaceBodyField,
 		InterfaceExample, InterfaceField, InterfaceHeader, InterfaceQueryParam,
-		InterfaceRequestHeader, InterfaceResult, Project, User, Workspace,
-		WorkspaceMember []ent.Hook
+		InterfaceRequestHeader, InterfaceResult, Project, ProjectShare,
+		ProjectShareInterface, User, Workspace, WorkspaceMember []ent.Hook
 	}
 	inters struct {
 		API, Environment, EnvironmentVariable, Folder, InterfaceBodyField,
 		InterfaceExample, InterfaceField, InterfaceHeader, InterfaceQueryParam,
-		InterfaceRequestHeader, InterfaceResult, Project, User, Workspace,
-		WorkspaceMember []ent.Interceptor
+		InterfaceRequestHeader, InterfaceResult, Project, ProjectShare,
+		ProjectShareInterface, User, Workspace, WorkspaceMember []ent.Interceptor
 	}
 )

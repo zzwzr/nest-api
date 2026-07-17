@@ -79,9 +79,11 @@ type APIEdges struct {
 	QueryParams []*InterfaceQueryParam `json:"query_params,omitempty"`
 	// BodyFields holds the value of the body_fields edge.
 	BodyFields []*InterfaceBodyField `json:"body_fields,omitempty"`
+	// ShareItems holds the value of the share_items edge.
+	ShareItems []*ProjectShareInterface `json:"share_items,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -180,6 +182,15 @@ func (e APIEdges) BodyFieldsOrErr() ([]*InterfaceBodyField, error) {
 		return e.BodyFields, nil
 	}
 	return nil, &NotLoadedError{edge: "body_fields"}
+}
+
+// ShareItemsOrErr returns the ShareItems value or an error if the edge
+// was not loaded in eager-loading.
+func (e APIEdges) ShareItemsOrErr() ([]*ProjectShareInterface, error) {
+	if e.loadedTypes[10] {
+		return e.ShareItems, nil
+	}
+	return nil, &NotLoadedError{edge: "share_items"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -368,6 +379,11 @@ func (_m *API) QueryQueryParams() *InterfaceQueryParamQuery {
 // QueryBodyFields queries the "body_fields" edge of the API entity.
 func (_m *API) QueryBodyFields() *InterfaceBodyFieldQuery {
 	return NewAPIClient(_m.config).QueryBodyFields(_m)
+}
+
+// QueryShareItems queries the "share_items" edge of the API entity.
+func (_m *API) QueryShareItems() *ProjectShareInterfaceQuery {
+	return NewAPIClient(_m.config).QueryShareItems(_m)
 }
 
 // Update returns a builder for updating this API.

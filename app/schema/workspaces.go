@@ -36,6 +36,12 @@ func (Workspace) Fields() []ent.Field {
 			Default(0).
 			Comment("拥有者用户 ID"),
 
+		field.String("invite_code").
+			MaxLen(12).
+			Optional().
+			Unique().
+			Comment("成员邀请码"),
+
 		field.Time("created_at").
 			GoType(utils.DateTime{}).
 			Default(utils.Now).

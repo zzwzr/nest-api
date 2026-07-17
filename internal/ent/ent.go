@@ -18,6 +18,8 @@ import (
 	"nest-api/internal/ent/interfacerequestheader"
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/ent/workspacemember"
@@ -99,6 +101,8 @@ func checkColumn(t, c string) error {
 			interfacerequestheader.Table: interfacerequestheader.ValidColumn,
 			interfaceresult.Table:        interfaceresult.ValidColumn,
 			project.Table:                project.ValidColumn,
+			projectshare.Table:           projectshare.ValidColumn,
+			projectshareinterface.Table:  projectshareinterface.ValidColumn,
 			user.Table:                   user.ValidColumn,
 			workspace.Table:              workspace.ValidColumn,
 			workspacemember.Table:        workspacemember.ValidColumn,

@@ -16,6 +16,7 @@ import (
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/utils"
 
@@ -381,6 +382,21 @@ func (_u *APIUpdate) AddBodyFields(v ...*InterfaceBodyField) *APIUpdate {
 	return _u.AddBodyFieldIDs(ids...)
 }
 
+// AddShareItemIDs adds the "share_items" edge to the ProjectShareInterface entity by IDs.
+func (_u *APIUpdate) AddShareItemIDs(ids ...int64) *APIUpdate {
+	_u.mutation.AddShareItemIDs(ids...)
+	return _u
+}
+
+// AddShareItems adds the "share_items" edges to the ProjectShareInterface entity.
+func (_u *APIUpdate) AddShareItems(v ...*ProjectShareInterface) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddShareItemIDs(ids...)
+}
+
 // Mutation returns the APIMutation object of the builder.
 func (_u *APIUpdate) Mutation() *APIMutation {
 	return _u.mutation
@@ -534,6 +550,27 @@ func (_u *APIUpdate) RemoveBodyFields(v ...*InterfaceBodyField) *APIUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveBodyFieldIDs(ids...)
+}
+
+// ClearShareItems clears all "share_items" edges to the ProjectShareInterface entity.
+func (_u *APIUpdate) ClearShareItems() *APIUpdate {
+	_u.mutation.ClearShareItems()
+	return _u
+}
+
+// RemoveShareItemIDs removes the "share_items" edge to ProjectShareInterface entities by IDs.
+func (_u *APIUpdate) RemoveShareItemIDs(ids ...int64) *APIUpdate {
+	_u.mutation.RemoveShareItemIDs(ids...)
+	return _u
+}
+
+// RemoveShareItems removes "share_items" edges to ProjectShareInterface entities.
+func (_u *APIUpdate) RemoveShareItems(v ...*ProjectShareInterface) *APIUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveShareItemIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1060,6 +1097,51 @@ func (_u *APIUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ShareItemsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ShareItemsTable,
+			Columns: []string{api.ShareItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshareinterface.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedShareItemsIDs(); len(nodes) > 0 && !_u.mutation.ShareItemsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ShareItemsTable,
+			Columns: []string{api.ShareItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshareinterface.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ShareItemsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ShareItemsTable,
+			Columns: []string{api.ShareItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshareinterface.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{api.Label}
@@ -1424,6 +1506,21 @@ func (_u *APIUpdateOne) AddBodyFields(v ...*InterfaceBodyField) *APIUpdateOne {
 	return _u.AddBodyFieldIDs(ids...)
 }
 
+// AddShareItemIDs adds the "share_items" edge to the ProjectShareInterface entity by IDs.
+func (_u *APIUpdateOne) AddShareItemIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.AddShareItemIDs(ids...)
+	return _u
+}
+
+// AddShareItems adds the "share_items" edges to the ProjectShareInterface entity.
+func (_u *APIUpdateOne) AddShareItems(v ...*ProjectShareInterface) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddShareItemIDs(ids...)
+}
+
 // Mutation returns the APIMutation object of the builder.
 func (_u *APIUpdateOne) Mutation() *APIMutation {
 	return _u.mutation
@@ -1577,6 +1674,27 @@ func (_u *APIUpdateOne) RemoveBodyFields(v ...*InterfaceBodyField) *APIUpdateOne
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveBodyFieldIDs(ids...)
+}
+
+// ClearShareItems clears all "share_items" edges to the ProjectShareInterface entity.
+func (_u *APIUpdateOne) ClearShareItems() *APIUpdateOne {
+	_u.mutation.ClearShareItems()
+	return _u
+}
+
+// RemoveShareItemIDs removes the "share_items" edge to ProjectShareInterface entities by IDs.
+func (_u *APIUpdateOne) RemoveShareItemIDs(ids ...int64) *APIUpdateOne {
+	_u.mutation.RemoveShareItemIDs(ids...)
+	return _u
+}
+
+// RemoveShareItems removes "share_items" edges to ProjectShareInterface entities.
+func (_u *APIUpdateOne) RemoveShareItems(v ...*ProjectShareInterface) *APIUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveShareItemIDs(ids...)
 }
 
 // Where appends a list predicates to the APIUpdate builder.
@@ -2126,6 +2244,51 @@ func (_u *APIUpdateOne) sqlSave(ctx context.Context) (_node *API, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ShareItemsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ShareItemsTable,
+			Columns: []string{api.ShareItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshareinterface.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedShareItemsIDs(); len(nodes) > 0 && !_u.mutation.ShareItemsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ShareItemsTable,
+			Columns: []string{api.ShareItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshareinterface.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ShareItemsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ShareItemsTable,
+			Columns: []string{api.ShareItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshareinterface.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

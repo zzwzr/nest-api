@@ -12,6 +12,7 @@ import (
 	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 
@@ -33,6 +34,7 @@ type ProjectQuery struct {
 	withFolders      *FolderQuery
 	withInterfaces   *APIQuery
 	withEnvironments *EnvironmentQuery
+	withShares       *ProjectShareQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -172,6 +174,28 @@ func (_q *ProjectQuery) QueryEnvironments() *EnvironmentQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(environment.Table, environment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.EnvironmentsTable, project.EnvironmentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryShares chains the current query on the "shares" edge.
+func (_q *ProjectQuery) QueryShares() *ProjectShareQuery {
+	query := (&ProjectShareClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(projectshare.Table, projectshare.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.SharesTable, project.SharesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -376,6 +400,7 @@ func (_q *ProjectQuery) Clone() *ProjectQuery {
 		withFolders:      _q.withFolders.Clone(),
 		withInterfaces:   _q.withInterfaces.Clone(),
 		withEnvironments: _q.withEnvironments.Clone(),
+		withShares:       _q.withShares.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -434,6 +459,17 @@ func (_q *ProjectQuery) WithEnvironments(opts ...func(*EnvironmentQuery)) *Proje
 		opt(query)
 	}
 	_q.withEnvironments = query
+	return _q
+}
+
+// WithShares tells the query-builder to eager-load the nodes that are connected to
+// the "shares" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithShares(opts ...func(*ProjectShareQuery)) *ProjectQuery {
+	query := (&ProjectShareClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withShares = query
 	return _q
 }
 
@@ -515,12 +551,13 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withWorkspace != nil,
 			_q.withCreator != nil,
 			_q.withFolders != nil,
 			_q.withInterfaces != nil,
 			_q.withEnvironments != nil,
+			_q.withShares != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -571,6 +608,13 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 		if err := _q.loadEnvironments(ctx, query, nodes,
 			func(n *Project) { n.Edges.Environments = []*Environment{} },
 			func(n *Project, e *Environment) { n.Edges.Environments = append(n.Edges.Environments, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withShares; query != nil {
+		if err := _q.loadShares(ctx, query, nodes,
+			func(n *Project) { n.Edges.Shares = []*ProjectShare{} },
+			func(n *Project, e *ProjectShare) { n.Edges.Shares = append(n.Edges.Shares, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -710,6 +754,36 @@ func (_q *ProjectQuery) loadEnvironments(ctx context.Context, query *Environment
 	}
 	query.Where(predicate.Environment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(project.EnvironmentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadShares(ctx context.Context, query *ProjectShareQuery, nodes []*Project, init func(*Project), assign func(*Project, *ProjectShare)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(projectshare.FieldProjectID)
+	}
+	query.Where(predicate.ProjectShare(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.SharesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

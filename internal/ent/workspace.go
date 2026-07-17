@@ -23,6 +23,8 @@ type Workspace struct {
 	Name string `json:"name,omitempty"`
 	// 拥有者用户 ID
 	OwnerID int64 `json:"owner_id,omitempty"`
+	// 成员邀请码
+	InviteCode string `json:"invite_code,omitempty"`
 	// 创建时间
 	CreatedAt utils.DateTime `json:"created_at,omitempty"`
 	// 更新时间
@@ -86,7 +88,7 @@ func (*Workspace) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(utils.DateTime)}
 		case workspace.FieldID, workspace.FieldOwnerID:
 			values[i] = new(sql.NullInt64)
-		case workspace.FieldName:
+		case workspace.FieldName, workspace.FieldInviteCode:
 			values[i] = new(sql.NullString)
 		case workspace.FieldCreatedAt, workspace.FieldUpdatedAt:
 			values[i] = new(utils.DateTime)
@@ -122,6 +124,12 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field owner_id", values[i])
 			} else if value.Valid {
 				_m.OwnerID = value.Int64
+			}
+		case workspace.FieldInviteCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field invite_code", values[i])
+			} else if value.Valid {
+				_m.InviteCode = value.String
 			}
 		case workspace.FieldCreatedAt:
 			if value, ok := values[i].(*utils.DateTime); !ok {
@@ -198,6 +206,9 @@ func (_m *Workspace) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("owner_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.OwnerID))
+	builder.WriteString(", ")
+	builder.WriteString("invite_code=")
+	builder.WriteString(_m.InviteCode)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CreatedAt))

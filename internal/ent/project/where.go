@@ -435,6 +435,29 @@ func HasEnvironmentsWith(preds ...predicate.Environment) predicate.Project {
 	})
 }
 
+// HasShares applies the HasEdge predicate on the "shares" edge.
+func HasShares() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SharesTable, SharesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSharesWith applies the HasEdge predicate on the "shares" edge with a given conditions (other predicates).
+func HasSharesWith(preds ...predicate.ProjectShare) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newSharesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Project) predicate.Project {
 	return predicate.Project(sql.AndPredicates(predicates...))

@@ -112,5 +112,6 @@ func (User) Edges() []ent.Edge {
 		edge.To("updated_interfaces", API.Type),
 		edge.To("created_environments", Environment.Type),
 		edge.To("created_environment_variables", EnvironmentVariable.Type),
+		edge.To("created_project_shares", ProjectShare.Type),
 	}
 }

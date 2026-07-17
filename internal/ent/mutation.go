@@ -19,6 +19,8 @@ import (
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/ent/workspacemember"
@@ -50,6 +52,8 @@ const (
 	TypeInterfaceRequestHeader = "InterfaceRequestHeader"
 	TypeInterfaceResult        = "InterfaceResult"
 	TypeProject                = "Project"
+	TypeProjectShare           = "ProjectShare"
+	TypeProjectShareInterface  = "ProjectShareInterface"
 	TypeUser                   = "User"
 	TypeWorkspace              = "Workspace"
 	TypeWorkspaceMember        = "WorkspaceMember"
@@ -101,6 +105,9 @@ type APIMutation struct {
 	body_fields              map[int64]struct{}
 	removedbody_fields       map[int64]struct{}
 	clearedbody_fields       bool
+	share_items              map[int64]struct{}
+	removedshare_items       map[int64]struct{}
+	clearedshare_items       bool
 	done                     bool
 	oldValue                 func(context.Context) (*API, error)
 	predicates               []predicate.API
@@ -1261,6 +1268,60 @@ func (m *APIMutation) ResetBodyFields() {
 	m.removedbody_fields = nil
 }
 
+// AddShareItemIDs adds the "share_items" edge to the ProjectShareInterface entity by ids.
+func (m *APIMutation) AddShareItemIDs(ids ...int64) {
+	if m.share_items == nil {
+		m.share_items = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.share_items[ids[i]] = struct{}{}
+	}
+}
+
+// ClearShareItems clears the "share_items" edge to the ProjectShareInterface entity.
+func (m *APIMutation) ClearShareItems() {
+	m.clearedshare_items = true
+}
+
+// ShareItemsCleared reports if the "share_items" edge to the ProjectShareInterface entity was cleared.
+func (m *APIMutation) ShareItemsCleared() bool {
+	return m.clearedshare_items
+}
+
+// RemoveShareItemIDs removes the "share_items" edge to the ProjectShareInterface entity by IDs.
+func (m *APIMutation) RemoveShareItemIDs(ids ...int64) {
+	if m.removedshare_items == nil {
+		m.removedshare_items = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.share_items, ids[i])
+		m.removedshare_items[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedShareItems returns the removed IDs of the "share_items" edge to the ProjectShareInterface entity.
+func (m *APIMutation) RemovedShareItemsIDs() (ids []int64) {
+	for id := range m.removedshare_items {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ShareItemsIDs returns the "share_items" edge IDs in the mutation.
+func (m *APIMutation) ShareItemsIDs() (ids []int64) {
+	for id := range m.share_items {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetShareItems resets all changes to the "share_items" edge.
+func (m *APIMutation) ResetShareItems() {
+	m.share_items = nil
+	m.clearedshare_items = false
+	m.removedshare_items = nil
+}
+
 // Where appends a list predicates to the APIMutation builder.
 func (m *APIMutation) Where(ps ...predicate.API) {
 	m.predicates = append(m.predicates, ps...)
@@ -1668,7 +1729,7 @@ func (m *APIMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *APIMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.project != nil {
 		edges = append(edges, api.EdgeProject)
 	}
@@ -1698,6 +1759,9 @@ func (m *APIMutation) AddedEdges() []string {
 	}
 	if m.body_fields != nil {
 		edges = append(edges, api.EdgeBodyFields)
+	}
+	if m.share_items != nil {
+		edges = append(edges, api.EdgeShareItems)
 	}
 	return edges
 }
@@ -1758,13 +1822,19 @@ func (m *APIMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case api.EdgeShareItems:
+		ids := make([]ent.Value, 0, len(m.share_items))
+		for id := range m.share_items {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *APIMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.removedresponse_headers != nil {
 		edges = append(edges, api.EdgeResponseHeaders)
 	}
@@ -1782,6 +1852,9 @@ func (m *APIMutation) RemovedEdges() []string {
 	}
 	if m.removedbody_fields != nil {
 		edges = append(edges, api.EdgeBodyFields)
+	}
+	if m.removedshare_items != nil {
+		edges = append(edges, api.EdgeShareItems)
 	}
 	return edges
 }
@@ -1826,13 +1899,19 @@ func (m *APIMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case api.EdgeShareItems:
+		ids := make([]ent.Value, 0, len(m.removedshare_items))
+		for id := range m.removedshare_items {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *APIMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.clearedproject {
 		edges = append(edges, api.EdgeProject)
 	}
@@ -1863,6 +1942,9 @@ func (m *APIMutation) ClearedEdges() []string {
 	if m.clearedbody_fields {
 		edges = append(edges, api.EdgeBodyFields)
 	}
+	if m.clearedshare_items {
+		edges = append(edges, api.EdgeShareItems)
+	}
 	return edges
 }
 
@@ -1890,6 +1972,8 @@ func (m *APIMutation) EdgeCleared(name string) bool {
 		return m.clearedquery_params
 	case api.EdgeBodyFields:
 		return m.clearedbody_fields
+	case api.EdgeShareItems:
+		return m.clearedshare_items
 	}
 	return false
 }
@@ -1947,6 +2031,9 @@ func (m *APIMutation) ResetEdge(name string) error {
 		return nil
 	case api.EdgeBodyFields:
 		m.ResetBodyFields()
+		return nil
+	case api.EdgeShareItems:
+		m.ResetShareItems()
 		return nil
 	}
 	return fmt.Errorf("unknown API edge %s", name)
@@ -11537,6 +11624,9 @@ type ProjectMutation struct {
 	environments        map[int64]struct{}
 	removedenvironments map[int64]struct{}
 	clearedenvironments bool
+	shares              map[int64]struct{}
+	removedshares       map[int64]struct{}
+	clearedshares       bool
 	done                bool
 	oldValue            func(context.Context) (*Project, error)
 	predicates          []predicate.Project
@@ -12104,6 +12194,60 @@ func (m *ProjectMutation) ResetEnvironments() {
 	m.removedenvironments = nil
 }
 
+// AddShareIDs adds the "shares" edge to the ProjectShare entity by ids.
+func (m *ProjectMutation) AddShareIDs(ids ...int64) {
+	if m.shares == nil {
+		m.shares = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.shares[ids[i]] = struct{}{}
+	}
+}
+
+// ClearShares clears the "shares" edge to the ProjectShare entity.
+func (m *ProjectMutation) ClearShares() {
+	m.clearedshares = true
+}
+
+// SharesCleared reports if the "shares" edge to the ProjectShare entity was cleared.
+func (m *ProjectMutation) SharesCleared() bool {
+	return m.clearedshares
+}
+
+// RemoveShareIDs removes the "shares" edge to the ProjectShare entity by IDs.
+func (m *ProjectMutation) RemoveShareIDs(ids ...int64) {
+	if m.removedshares == nil {
+		m.removedshares = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.shares, ids[i])
+		m.removedshares[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedShares returns the removed IDs of the "shares" edge to the ProjectShare entity.
+func (m *ProjectMutation) RemovedSharesIDs() (ids []int64) {
+	for id := range m.removedshares {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SharesIDs returns the "shares" edge IDs in the mutation.
+func (m *ProjectMutation) SharesIDs() (ids []int64) {
+	for id := range m.shares {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetShares resets all changes to the "shares" edge.
+func (m *ProjectMutation) ResetShares() {
+	m.shares = nil
+	m.clearedshares = false
+	m.removedshares = nil
+}
+
 // Where appends a list predicates to the ProjectMutation builder.
 func (m *ProjectMutation) Where(ps ...predicate.Project) {
 	m.predicates = append(m.predicates, ps...)
@@ -12334,7 +12478,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.workspace != nil {
 		edges = append(edges, project.EdgeWorkspace)
 	}
@@ -12349,6 +12493,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.environments != nil {
 		edges = append(edges, project.EdgeEnvironments)
+	}
+	if m.shares != nil {
+		edges = append(edges, project.EdgeShares)
 	}
 	return edges
 }
@@ -12383,13 +12530,19 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeShares:
+		ids := make([]ent.Value, 0, len(m.shares))
+		for id := range m.shares {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedfolders != nil {
 		edges = append(edges, project.EdgeFolders)
 	}
@@ -12398,6 +12551,9 @@ func (m *ProjectMutation) RemovedEdges() []string {
 	}
 	if m.removedenvironments != nil {
 		edges = append(edges, project.EdgeEnvironments)
+	}
+	if m.removedshares != nil {
+		edges = append(edges, project.EdgeShares)
 	}
 	return edges
 }
@@ -12424,13 +12580,19 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeShares:
+		ids := make([]ent.Value, 0, len(m.removedshares))
+		for id := range m.removedshares {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedworkspace {
 		edges = append(edges, project.EdgeWorkspace)
 	}
@@ -12445,6 +12607,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	}
 	if m.clearedenvironments {
 		edges = append(edges, project.EdgeEnvironments)
+	}
+	if m.clearedshares {
+		edges = append(edges, project.EdgeShares)
 	}
 	return edges
 }
@@ -12463,6 +12628,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.clearedinterfaces
 	case project.EdgeEnvironments:
 		return m.clearedenvironments
+	case project.EdgeShares:
+		return m.clearedshares
 	}
 	return false
 }
@@ -12500,8 +12667,1715 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 	case project.EdgeEnvironments:
 		m.ResetEnvironments()
 		return nil
+	case project.EdgeShares:
+		m.ResetShares()
+		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)
+}
+
+// ProjectShareMutation represents an operation that mutates the ProjectShare nodes in the graph.
+type ProjectShareMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int64
+	workspace_id    *int64
+	addworkspace_id *int64
+	name            *string
+	share_code      *string
+	enabled         *bool
+	password        *string
+	permission      *uint8
+	addpermission   *int8
+	created_at      *utils.DateTime
+	updated_at      *utils.DateTime
+	deleted_at      *utils.DateTime
+	clearedFields   map[string]struct{}
+	project         *int64
+	clearedproject  bool
+	creator         *int64
+	clearedcreator  bool
+	items           map[int64]struct{}
+	removeditems    map[int64]struct{}
+	cleareditems    bool
+	done            bool
+	oldValue        func(context.Context) (*ProjectShare, error)
+	predicates      []predicate.ProjectShare
+}
+
+var _ ent.Mutation = (*ProjectShareMutation)(nil)
+
+// projectshareOption allows management of the mutation configuration using functional options.
+type projectshareOption func(*ProjectShareMutation)
+
+// newProjectShareMutation creates new mutation for the ProjectShare entity.
+func newProjectShareMutation(c config, op Op, opts ...projectshareOption) *ProjectShareMutation {
+	m := &ProjectShareMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeProjectShare,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withProjectShareID sets the ID field of the mutation.
+func withProjectShareID(id int64) projectshareOption {
+	return func(m *ProjectShareMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ProjectShare
+		)
+		m.oldValue = func(ctx context.Context) (*ProjectShare, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ProjectShare.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withProjectShare sets the old ProjectShare of the mutation.
+func withProjectShare(node *ProjectShare) projectshareOption {
+	return func(m *ProjectShareMutation) {
+		m.oldValue = func(context.Context) (*ProjectShare, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ProjectShareMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ProjectShareMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ProjectShare entities.
+func (m *ProjectShareMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ProjectShareMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ProjectShareMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ProjectShare.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetProjectID sets the "project_id" field.
+func (m *ProjectShareMutation) SetProjectID(i int64) {
+	m.project = &i
+}
+
+// ProjectID returns the value of the "project_id" field in the mutation.
+func (m *ProjectShareMutation) ProjectID() (r int64, exists bool) {
+	v := m.project
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProjectID returns the old "project_id" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldProjectID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProjectID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProjectID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProjectID: %w", err)
+	}
+	return oldValue.ProjectID, nil
+}
+
+// ResetProjectID resets all changes to the "project_id" field.
+func (m *ProjectShareMutation) ResetProjectID() {
+	m.project = nil
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (m *ProjectShareMutation) SetWorkspaceID(i int64) {
+	m.workspace_id = &i
+	m.addworkspace_id = nil
+}
+
+// WorkspaceID returns the value of the "workspace_id" field in the mutation.
+func (m *ProjectShareMutation) WorkspaceID() (r int64, exists bool) {
+	v := m.workspace_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkspaceID returns the old "workspace_id" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldWorkspaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkspaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkspaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkspaceID: %w", err)
+	}
+	return oldValue.WorkspaceID, nil
+}
+
+// AddWorkspaceID adds i to the "workspace_id" field.
+func (m *ProjectShareMutation) AddWorkspaceID(i int64) {
+	if m.addworkspace_id != nil {
+		*m.addworkspace_id += i
+	} else {
+		m.addworkspace_id = &i
+	}
+}
+
+// AddedWorkspaceID returns the value that was added to the "workspace_id" field in this mutation.
+func (m *ProjectShareMutation) AddedWorkspaceID() (r int64, exists bool) {
+	v := m.addworkspace_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWorkspaceID resets all changes to the "workspace_id" field.
+func (m *ProjectShareMutation) ResetWorkspaceID() {
+	m.workspace_id = nil
+	m.addworkspace_id = nil
+}
+
+// SetName sets the "name" field.
+func (m *ProjectShareMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ProjectShareMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ProjectShareMutation) ResetName() {
+	m.name = nil
+}
+
+// SetShareCode sets the "share_code" field.
+func (m *ProjectShareMutation) SetShareCode(s string) {
+	m.share_code = &s
+}
+
+// ShareCode returns the value of the "share_code" field in the mutation.
+func (m *ProjectShareMutation) ShareCode() (r string, exists bool) {
+	v := m.share_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShareCode returns the old "share_code" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldShareCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShareCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShareCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShareCode: %w", err)
+	}
+	return oldValue.ShareCode, nil
+}
+
+// ResetShareCode resets all changes to the "share_code" field.
+func (m *ProjectShareMutation) ResetShareCode() {
+	m.share_code = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *ProjectShareMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *ProjectShareMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *ProjectShareMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetPassword sets the "password" field.
+func (m *ProjectShareMutation) SetPassword(s string) {
+	m.password = &s
+}
+
+// Password returns the value of the "password" field in the mutation.
+func (m *ProjectShareMutation) Password() (r string, exists bool) {
+	v := m.password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPassword returns the old "password" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldPassword(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
+	}
+	return oldValue.Password, nil
+}
+
+// ResetPassword resets all changes to the "password" field.
+func (m *ProjectShareMutation) ResetPassword() {
+	m.password = nil
+}
+
+// SetPermission sets the "permission" field.
+func (m *ProjectShareMutation) SetPermission(u uint8) {
+	m.permission = &u
+	m.addpermission = nil
+}
+
+// Permission returns the value of the "permission" field in the mutation.
+func (m *ProjectShareMutation) Permission() (r uint8, exists bool) {
+	v := m.permission
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPermission returns the old "permission" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldPermission(ctx context.Context) (v uint8, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPermission is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPermission requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPermission: %w", err)
+	}
+	return oldValue.Permission, nil
+}
+
+// AddPermission adds u to the "permission" field.
+func (m *ProjectShareMutation) AddPermission(u int8) {
+	if m.addpermission != nil {
+		*m.addpermission += u
+	} else {
+		m.addpermission = &u
+	}
+}
+
+// AddedPermission returns the value that was added to the "permission" field in this mutation.
+func (m *ProjectShareMutation) AddedPermission() (r int8, exists bool) {
+	v := m.addpermission
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPermission resets all changes to the "permission" field.
+func (m *ProjectShareMutation) ResetPermission() {
+	m.permission = nil
+	m.addpermission = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *ProjectShareMutation) SetCreatedBy(i int64) {
+	m.creator = &i
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *ProjectShareMutation) CreatedBy() (r int64, exists bool) {
+	v := m.creator
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldCreatedBy(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *ProjectShareMutation) ResetCreatedBy() {
+	m.creator = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ProjectShareMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ProjectShareMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ProjectShareMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ProjectShareMutation) SetUpdatedAt(ut utils.DateTime) {
+	m.updated_at = &ut
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ProjectShareMutation) UpdatedAt() (r utils.DateTime, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldUpdatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ProjectShareMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *ProjectShareMutation) SetDeletedAt(ut utils.DateTime) {
+	m.deleted_at = &ut
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *ProjectShareMutation) DeletedAt() (r utils.DateTime, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the ProjectShare entity.
+// If the ProjectShare object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareMutation) OldDeletedAt(ctx context.Context) (v *utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *ProjectShareMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[projectshare.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *ProjectShareMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[projectshare.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *ProjectShareMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, projectshare.FieldDeletedAt)
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *ProjectShareMutation) ClearProject() {
+	m.clearedproject = true
+	m.clearedFields[projectshare.FieldProjectID] = struct{}{}
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *ProjectShareMutation) ProjectCleared() bool {
+	return m.clearedproject
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectID instead. It exists only for internal usage by the builders.
+func (m *ProjectShareMutation) ProjectIDs() (ids []int64) {
+	if id := m.project; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *ProjectShareMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+}
+
+// SetCreatorID sets the "creator" edge to the User entity by id.
+func (m *ProjectShareMutation) SetCreatorID(id int64) {
+	m.creator = &id
+}
+
+// ClearCreator clears the "creator" edge to the User entity.
+func (m *ProjectShareMutation) ClearCreator() {
+	m.clearedcreator = true
+	m.clearedFields[projectshare.FieldCreatedBy] = struct{}{}
+}
+
+// CreatorCleared reports if the "creator" edge to the User entity was cleared.
+func (m *ProjectShareMutation) CreatorCleared() bool {
+	return m.clearedcreator
+}
+
+// CreatorID returns the "creator" edge ID in the mutation.
+func (m *ProjectShareMutation) CreatorID() (id int64, exists bool) {
+	if m.creator != nil {
+		return *m.creator, true
+	}
+	return
+}
+
+// CreatorIDs returns the "creator" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CreatorID instead. It exists only for internal usage by the builders.
+func (m *ProjectShareMutation) CreatorIDs() (ids []int64) {
+	if id := m.creator; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCreator resets all changes to the "creator" edge.
+func (m *ProjectShareMutation) ResetCreator() {
+	m.creator = nil
+	m.clearedcreator = false
+}
+
+// AddItemIDs adds the "items" edge to the ProjectShareInterface entity by ids.
+func (m *ProjectShareMutation) AddItemIDs(ids ...int64) {
+	if m.items == nil {
+		m.items = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.items[ids[i]] = struct{}{}
+	}
+}
+
+// ClearItems clears the "items" edge to the ProjectShareInterface entity.
+func (m *ProjectShareMutation) ClearItems() {
+	m.cleareditems = true
+}
+
+// ItemsCleared reports if the "items" edge to the ProjectShareInterface entity was cleared.
+func (m *ProjectShareMutation) ItemsCleared() bool {
+	return m.cleareditems
+}
+
+// RemoveItemIDs removes the "items" edge to the ProjectShareInterface entity by IDs.
+func (m *ProjectShareMutation) RemoveItemIDs(ids ...int64) {
+	if m.removeditems == nil {
+		m.removeditems = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.items, ids[i])
+		m.removeditems[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedItems returns the removed IDs of the "items" edge to the ProjectShareInterface entity.
+func (m *ProjectShareMutation) RemovedItemsIDs() (ids []int64) {
+	for id := range m.removeditems {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ItemsIDs returns the "items" edge IDs in the mutation.
+func (m *ProjectShareMutation) ItemsIDs() (ids []int64) {
+	for id := range m.items {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetItems resets all changes to the "items" edge.
+func (m *ProjectShareMutation) ResetItems() {
+	m.items = nil
+	m.cleareditems = false
+	m.removeditems = nil
+}
+
+// Where appends a list predicates to the ProjectShareMutation builder.
+func (m *ProjectShareMutation) Where(ps ...predicate.ProjectShare) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ProjectShareMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ProjectShareMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ProjectShare, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ProjectShareMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ProjectShareMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ProjectShare).
+func (m *ProjectShareMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ProjectShareMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.project != nil {
+		fields = append(fields, projectshare.FieldProjectID)
+	}
+	if m.workspace_id != nil {
+		fields = append(fields, projectshare.FieldWorkspaceID)
+	}
+	if m.name != nil {
+		fields = append(fields, projectshare.FieldName)
+	}
+	if m.share_code != nil {
+		fields = append(fields, projectshare.FieldShareCode)
+	}
+	if m.enabled != nil {
+		fields = append(fields, projectshare.FieldEnabled)
+	}
+	if m.password != nil {
+		fields = append(fields, projectshare.FieldPassword)
+	}
+	if m.permission != nil {
+		fields = append(fields, projectshare.FieldPermission)
+	}
+	if m.creator != nil {
+		fields = append(fields, projectshare.FieldCreatedBy)
+	}
+	if m.created_at != nil {
+		fields = append(fields, projectshare.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, projectshare.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, projectshare.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ProjectShareMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case projectshare.FieldProjectID:
+		return m.ProjectID()
+	case projectshare.FieldWorkspaceID:
+		return m.WorkspaceID()
+	case projectshare.FieldName:
+		return m.Name()
+	case projectshare.FieldShareCode:
+		return m.ShareCode()
+	case projectshare.FieldEnabled:
+		return m.Enabled()
+	case projectshare.FieldPassword:
+		return m.Password()
+	case projectshare.FieldPermission:
+		return m.Permission()
+	case projectshare.FieldCreatedBy:
+		return m.CreatedBy()
+	case projectshare.FieldCreatedAt:
+		return m.CreatedAt()
+	case projectshare.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case projectshare.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ProjectShareMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case projectshare.FieldProjectID:
+		return m.OldProjectID(ctx)
+	case projectshare.FieldWorkspaceID:
+		return m.OldWorkspaceID(ctx)
+	case projectshare.FieldName:
+		return m.OldName(ctx)
+	case projectshare.FieldShareCode:
+		return m.OldShareCode(ctx)
+	case projectshare.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case projectshare.FieldPassword:
+		return m.OldPassword(ctx)
+	case projectshare.FieldPermission:
+		return m.OldPermission(ctx)
+	case projectshare.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case projectshare.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case projectshare.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case projectshare.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown ProjectShare field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectShareMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case projectshare.FieldProjectID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProjectID(v)
+		return nil
+	case projectshare.FieldWorkspaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkspaceID(v)
+		return nil
+	case projectshare.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case projectshare.FieldShareCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShareCode(v)
+		return nil
+	case projectshare.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case projectshare.FieldPassword:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPassword(v)
+		return nil
+	case projectshare.FieldPermission:
+		v, ok := value.(uint8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPermission(v)
+		return nil
+	case projectshare.FieldCreatedBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case projectshare.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case projectshare.FieldUpdatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case projectshare.FieldDeletedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShare field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ProjectShareMutation) AddedFields() []string {
+	var fields []string
+	if m.addworkspace_id != nil {
+		fields = append(fields, projectshare.FieldWorkspaceID)
+	}
+	if m.addpermission != nil {
+		fields = append(fields, projectshare.FieldPermission)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ProjectShareMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case projectshare.FieldWorkspaceID:
+		return m.AddedWorkspaceID()
+	case projectshare.FieldPermission:
+		return m.AddedPermission()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectShareMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case projectshare.FieldWorkspaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWorkspaceID(v)
+		return nil
+	case projectshare.FieldPermission:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPermission(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShare numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ProjectShareMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(projectshare.FieldDeletedAt) {
+		fields = append(fields, projectshare.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ProjectShareMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ProjectShareMutation) ClearField(name string) error {
+	switch name {
+	case projectshare.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShare nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ProjectShareMutation) ResetField(name string) error {
+	switch name {
+	case projectshare.FieldProjectID:
+		m.ResetProjectID()
+		return nil
+	case projectshare.FieldWorkspaceID:
+		m.ResetWorkspaceID()
+		return nil
+	case projectshare.FieldName:
+		m.ResetName()
+		return nil
+	case projectshare.FieldShareCode:
+		m.ResetShareCode()
+		return nil
+	case projectshare.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case projectshare.FieldPassword:
+		m.ResetPassword()
+		return nil
+	case projectshare.FieldPermission:
+		m.ResetPermission()
+		return nil
+	case projectshare.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case projectshare.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case projectshare.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case projectshare.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShare field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ProjectShareMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.project != nil {
+		edges = append(edges, projectshare.EdgeProject)
+	}
+	if m.creator != nil {
+		edges = append(edges, projectshare.EdgeCreator)
+	}
+	if m.items != nil {
+		edges = append(edges, projectshare.EdgeItems)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ProjectShareMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case projectshare.EdgeProject:
+		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case projectshare.EdgeCreator:
+		if id := m.creator; id != nil {
+			return []ent.Value{*id}
+		}
+	case projectshare.EdgeItems:
+		ids := make([]ent.Value, 0, len(m.items))
+		for id := range m.items {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ProjectShareMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removeditems != nil {
+		edges = append(edges, projectshare.EdgeItems)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ProjectShareMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case projectshare.EdgeItems:
+		ids := make([]ent.Value, 0, len(m.removeditems))
+		for id := range m.removeditems {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ProjectShareMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedproject {
+		edges = append(edges, projectshare.EdgeProject)
+	}
+	if m.clearedcreator {
+		edges = append(edges, projectshare.EdgeCreator)
+	}
+	if m.cleareditems {
+		edges = append(edges, projectshare.EdgeItems)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ProjectShareMutation) EdgeCleared(name string) bool {
+	switch name {
+	case projectshare.EdgeProject:
+		return m.clearedproject
+	case projectshare.EdgeCreator:
+		return m.clearedcreator
+	case projectshare.EdgeItems:
+		return m.cleareditems
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ProjectShareMutation) ClearEdge(name string) error {
+	switch name {
+	case projectshare.EdgeProject:
+		m.ClearProject()
+		return nil
+	case projectshare.EdgeCreator:
+		m.ClearCreator()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShare unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ProjectShareMutation) ResetEdge(name string) error {
+	switch name {
+	case projectshare.EdgeProject:
+		m.ResetProject()
+		return nil
+	case projectshare.EdgeCreator:
+		m.ResetCreator()
+		return nil
+	case projectshare.EdgeItems:
+		m.ResetItems()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShare edge %s", name)
+}
+
+// ProjectShareInterfaceMutation represents an operation that mutates the ProjectShareInterface nodes in the graph.
+type ProjectShareInterfaceMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int64
+	created_at        *utils.DateTime
+	clearedFields     map[string]struct{}
+	share             *int64
+	clearedshare      bool
+	_interface        *int64
+	cleared_interface bool
+	done              bool
+	oldValue          func(context.Context) (*ProjectShareInterface, error)
+	predicates        []predicate.ProjectShareInterface
+}
+
+var _ ent.Mutation = (*ProjectShareInterfaceMutation)(nil)
+
+// projectshareinterfaceOption allows management of the mutation configuration using functional options.
+type projectshareinterfaceOption func(*ProjectShareInterfaceMutation)
+
+// newProjectShareInterfaceMutation creates new mutation for the ProjectShareInterface entity.
+func newProjectShareInterfaceMutation(c config, op Op, opts ...projectshareinterfaceOption) *ProjectShareInterfaceMutation {
+	m := &ProjectShareInterfaceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeProjectShareInterface,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withProjectShareInterfaceID sets the ID field of the mutation.
+func withProjectShareInterfaceID(id int64) projectshareinterfaceOption {
+	return func(m *ProjectShareInterfaceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ProjectShareInterface
+		)
+		m.oldValue = func(ctx context.Context) (*ProjectShareInterface, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ProjectShareInterface.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withProjectShareInterface sets the old ProjectShareInterface of the mutation.
+func withProjectShareInterface(node *ProjectShareInterface) projectshareinterfaceOption {
+	return func(m *ProjectShareInterfaceMutation) {
+		m.oldValue = func(context.Context) (*ProjectShareInterface, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ProjectShareInterfaceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ProjectShareInterfaceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ProjectShareInterface entities.
+func (m *ProjectShareInterfaceMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ProjectShareInterfaceMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ProjectShareInterfaceMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ProjectShareInterface.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetShareID sets the "share_id" field.
+func (m *ProjectShareInterfaceMutation) SetShareID(i int64) {
+	m.share = &i
+}
+
+// ShareID returns the value of the "share_id" field in the mutation.
+func (m *ProjectShareInterfaceMutation) ShareID() (r int64, exists bool) {
+	v := m.share
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShareID returns the old "share_id" field's value of the ProjectShareInterface entity.
+// If the ProjectShareInterface object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareInterfaceMutation) OldShareID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShareID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShareID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShareID: %w", err)
+	}
+	return oldValue.ShareID, nil
+}
+
+// ResetShareID resets all changes to the "share_id" field.
+func (m *ProjectShareInterfaceMutation) ResetShareID() {
+	m.share = nil
+}
+
+// SetInterfaceID sets the "interface_id" field.
+func (m *ProjectShareInterfaceMutation) SetInterfaceID(i int64) {
+	m._interface = &i
+}
+
+// InterfaceID returns the value of the "interface_id" field in the mutation.
+func (m *ProjectShareInterfaceMutation) InterfaceID() (r int64, exists bool) {
+	v := m._interface
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterfaceID returns the old "interface_id" field's value of the ProjectShareInterface entity.
+// If the ProjectShareInterface object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareInterfaceMutation) OldInterfaceID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterfaceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterfaceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterfaceID: %w", err)
+	}
+	return oldValue.InterfaceID, nil
+}
+
+// ResetInterfaceID resets all changes to the "interface_id" field.
+func (m *ProjectShareInterfaceMutation) ResetInterfaceID() {
+	m._interface = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ProjectShareInterfaceMutation) SetCreatedAt(ut utils.DateTime) {
+	m.created_at = &ut
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ProjectShareInterfaceMutation) CreatedAt() (r utils.DateTime, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ProjectShareInterface entity.
+// If the ProjectShareInterface object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectShareInterfaceMutation) OldCreatedAt(ctx context.Context) (v utils.DateTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ProjectShareInterfaceMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearShare clears the "share" edge to the ProjectShare entity.
+func (m *ProjectShareInterfaceMutation) ClearShare() {
+	m.clearedshare = true
+	m.clearedFields[projectshareinterface.FieldShareID] = struct{}{}
+}
+
+// ShareCleared reports if the "share" edge to the ProjectShare entity was cleared.
+func (m *ProjectShareInterfaceMutation) ShareCleared() bool {
+	return m.clearedshare
+}
+
+// ShareIDs returns the "share" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ShareID instead. It exists only for internal usage by the builders.
+func (m *ProjectShareInterfaceMutation) ShareIDs() (ids []int64) {
+	if id := m.share; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetShare resets all changes to the "share" edge.
+func (m *ProjectShareInterfaceMutation) ResetShare() {
+	m.share = nil
+	m.clearedshare = false
+}
+
+// ClearInterface clears the "interface" edge to the API entity.
+func (m *ProjectShareInterfaceMutation) ClearInterface() {
+	m.cleared_interface = true
+	m.clearedFields[projectshareinterface.FieldInterfaceID] = struct{}{}
+}
+
+// InterfaceCleared reports if the "interface" edge to the API entity was cleared.
+func (m *ProjectShareInterfaceMutation) InterfaceCleared() bool {
+	return m.cleared_interface
+}
+
+// InterfaceIDs returns the "interface" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InterfaceID instead. It exists only for internal usage by the builders.
+func (m *ProjectShareInterfaceMutation) InterfaceIDs() (ids []int64) {
+	if id := m._interface; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInterface resets all changes to the "interface" edge.
+func (m *ProjectShareInterfaceMutation) ResetInterface() {
+	m._interface = nil
+	m.cleared_interface = false
+}
+
+// Where appends a list predicates to the ProjectShareInterfaceMutation builder.
+func (m *ProjectShareInterfaceMutation) Where(ps ...predicate.ProjectShareInterface) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ProjectShareInterfaceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ProjectShareInterfaceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ProjectShareInterface, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ProjectShareInterfaceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ProjectShareInterfaceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ProjectShareInterface).
+func (m *ProjectShareInterfaceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ProjectShareInterfaceMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.share != nil {
+		fields = append(fields, projectshareinterface.FieldShareID)
+	}
+	if m._interface != nil {
+		fields = append(fields, projectshareinterface.FieldInterfaceID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, projectshareinterface.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ProjectShareInterfaceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case projectshareinterface.FieldShareID:
+		return m.ShareID()
+	case projectshareinterface.FieldInterfaceID:
+		return m.InterfaceID()
+	case projectshareinterface.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ProjectShareInterfaceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case projectshareinterface.FieldShareID:
+		return m.OldShareID(ctx)
+	case projectshareinterface.FieldInterfaceID:
+		return m.OldInterfaceID(ctx)
+	case projectshareinterface.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown ProjectShareInterface field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectShareInterfaceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case projectshareinterface.FieldShareID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShareID(v)
+		return nil
+	case projectshareinterface.FieldInterfaceID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterfaceID(v)
+		return nil
+	case projectshareinterface.FieldCreatedAt:
+		v, ok := value.(utils.DateTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShareInterface field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ProjectShareInterfaceMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ProjectShareInterfaceMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectShareInterfaceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ProjectShareInterface numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ProjectShareInterfaceMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ProjectShareInterfaceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ProjectShareInterfaceMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ProjectShareInterface nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ProjectShareInterfaceMutation) ResetField(name string) error {
+	switch name {
+	case projectshareinterface.FieldShareID:
+		m.ResetShareID()
+		return nil
+	case projectshareinterface.FieldInterfaceID:
+		m.ResetInterfaceID()
+		return nil
+	case projectshareinterface.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShareInterface field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ProjectShareInterfaceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.share != nil {
+		edges = append(edges, projectshareinterface.EdgeShare)
+	}
+	if m._interface != nil {
+		edges = append(edges, projectshareinterface.EdgeInterface)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ProjectShareInterfaceMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case projectshareinterface.EdgeShare:
+		if id := m.share; id != nil {
+			return []ent.Value{*id}
+		}
+	case projectshareinterface.EdgeInterface:
+		if id := m._interface; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ProjectShareInterfaceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ProjectShareInterfaceMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ProjectShareInterfaceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedshare {
+		edges = append(edges, projectshareinterface.EdgeShare)
+	}
+	if m.cleared_interface {
+		edges = append(edges, projectshareinterface.EdgeInterface)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ProjectShareInterfaceMutation) EdgeCleared(name string) bool {
+	switch name {
+	case projectshareinterface.EdgeShare:
+		return m.clearedshare
+	case projectshareinterface.EdgeInterface:
+		return m.cleared_interface
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ProjectShareInterfaceMutation) ClearEdge(name string) error {
+	switch name {
+	case projectshareinterface.EdgeShare:
+		m.ClearShare()
+		return nil
+	case projectshareinterface.EdgeInterface:
+		m.ClearInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShareInterface unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ProjectShareInterfaceMutation) ResetEdge(name string) error {
+	switch name {
+	case projectshareinterface.EdgeShare:
+		m.ResetShare()
+		return nil
+	case projectshareinterface.EdgeInterface:
+		m.ResetInterface()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectShareInterface edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
@@ -12547,6 +14421,9 @@ type UserMutation struct {
 	created_environment_variables        map[int64]struct{}
 	removedcreated_environment_variables map[int64]struct{}
 	clearedcreated_environment_variables bool
+	created_project_shares               map[int64]struct{}
+	removedcreated_project_shares        map[int64]struct{}
+	clearedcreated_project_shares        bool
 	done                                 bool
 	oldValue                             func(context.Context) (*User, error)
 	predicates                           []predicate.User
@@ -13517,6 +15394,60 @@ func (m *UserMutation) ResetCreatedEnvironmentVariables() {
 	m.removedcreated_environment_variables = nil
 }
 
+// AddCreatedProjectShareIDs adds the "created_project_shares" edge to the ProjectShare entity by ids.
+func (m *UserMutation) AddCreatedProjectShareIDs(ids ...int64) {
+	if m.created_project_shares == nil {
+		m.created_project_shares = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.created_project_shares[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCreatedProjectShares clears the "created_project_shares" edge to the ProjectShare entity.
+func (m *UserMutation) ClearCreatedProjectShares() {
+	m.clearedcreated_project_shares = true
+}
+
+// CreatedProjectSharesCleared reports if the "created_project_shares" edge to the ProjectShare entity was cleared.
+func (m *UserMutation) CreatedProjectSharesCleared() bool {
+	return m.clearedcreated_project_shares
+}
+
+// RemoveCreatedProjectShareIDs removes the "created_project_shares" edge to the ProjectShare entity by IDs.
+func (m *UserMutation) RemoveCreatedProjectShareIDs(ids ...int64) {
+	if m.removedcreated_project_shares == nil {
+		m.removedcreated_project_shares = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.created_project_shares, ids[i])
+		m.removedcreated_project_shares[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCreatedProjectShares returns the removed IDs of the "created_project_shares" edge to the ProjectShare entity.
+func (m *UserMutation) RemovedCreatedProjectSharesIDs() (ids []int64) {
+	for id := range m.removedcreated_project_shares {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CreatedProjectSharesIDs returns the "created_project_shares" edge IDs in the mutation.
+func (m *UserMutation) CreatedProjectSharesIDs() (ids []int64) {
+	for id := range m.created_project_shares {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCreatedProjectShares resets all changes to the "created_project_shares" edge.
+func (m *UserMutation) ResetCreatedProjectShares() {
+	m.created_project_shares = nil
+	m.clearedcreated_project_shares = false
+	m.removedcreated_project_shares = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -13844,7 +15775,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.owned_workspaces != nil {
 		edges = append(edges, user.EdgeOwnedWorkspaces)
 	}
@@ -13868,6 +15799,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.created_environment_variables != nil {
 		edges = append(edges, user.EdgeCreatedEnvironmentVariables)
+	}
+	if m.created_project_shares != nil {
+		edges = append(edges, user.EdgeCreatedProjectShares)
 	}
 	return edges
 }
@@ -13924,13 +15858,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeCreatedProjectShares:
+		ids := make([]ent.Value, 0, len(m.created_project_shares))
+		for id := range m.created_project_shares {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.removedowned_workspaces != nil {
 		edges = append(edges, user.EdgeOwnedWorkspaces)
 	}
@@ -13954,6 +15894,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedcreated_environment_variables != nil {
 		edges = append(edges, user.EdgeCreatedEnvironmentVariables)
+	}
+	if m.removedcreated_project_shares != nil {
+		edges = append(edges, user.EdgeCreatedProjectShares)
 	}
 	return edges
 }
@@ -14010,13 +15953,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeCreatedProjectShares:
+		ids := make([]ent.Value, 0, len(m.removedcreated_project_shares))
+		for id := range m.removedcreated_project_shares {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.clearedowned_workspaces {
 		edges = append(edges, user.EdgeOwnedWorkspaces)
 	}
@@ -14041,6 +15990,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedcreated_environment_variables {
 		edges = append(edges, user.EdgeCreatedEnvironmentVariables)
 	}
+	if m.clearedcreated_project_shares {
+		edges = append(edges, user.EdgeCreatedProjectShares)
+	}
 	return edges
 }
 
@@ -14064,6 +16016,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedcreated_environments
 	case user.EdgeCreatedEnvironmentVariables:
 		return m.clearedcreated_environment_variables
+	case user.EdgeCreatedProjectShares:
+		return m.clearedcreated_project_shares
 	}
 	return false
 }
@@ -14104,6 +16058,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeCreatedEnvironmentVariables:
 		m.ResetCreatedEnvironmentVariables()
 		return nil
+	case user.EdgeCreatedProjectShares:
+		m.ResetCreatedProjectShares()
+		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
 }
@@ -14115,6 +16072,7 @@ type WorkspaceMutation struct {
 	typ             string
 	id              *int64
 	name            *string
+	invite_code     *string
 	created_at      *utils.DateTime
 	updated_at      *utils.DateTime
 	deleted_at      *utils.DateTime
@@ -14306,6 +16264,55 @@ func (m *WorkspaceMutation) OldOwnerID(ctx context.Context) (v int64, err error)
 // ResetOwnerID resets all changes to the "owner_id" field.
 func (m *WorkspaceMutation) ResetOwnerID() {
 	m.owner = nil
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (m *WorkspaceMutation) SetInviteCode(s string) {
+	m.invite_code = &s
+}
+
+// InviteCode returns the value of the "invite_code" field in the mutation.
+func (m *WorkspaceMutation) InviteCode() (r string, exists bool) {
+	v := m.invite_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInviteCode returns the old "invite_code" field's value of the Workspace entity.
+// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceMutation) OldInviteCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInviteCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInviteCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInviteCode: %w", err)
+	}
+	return oldValue.InviteCode, nil
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (m *WorkspaceMutation) ClearInviteCode() {
+	m.invite_code = nil
+	m.clearedFields[workspace.FieldInviteCode] = struct{}{}
+}
+
+// InviteCodeCleared returns if the "invite_code" field was cleared in this mutation.
+func (m *WorkspaceMutation) InviteCodeCleared() bool {
+	_, ok := m.clearedFields[workspace.FieldInviteCode]
+	return ok
+}
+
+// ResetInviteCode resets all changes to the "invite_code" field.
+func (m *WorkspaceMutation) ResetInviteCode() {
+	m.invite_code = nil
+	delete(m.clearedFields, workspace.FieldInviteCode)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -14598,12 +16605,15 @@ func (m *WorkspaceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkspaceMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, workspace.FieldName)
 	}
 	if m.owner != nil {
 		fields = append(fields, workspace.FieldOwnerID)
+	}
+	if m.invite_code != nil {
+		fields = append(fields, workspace.FieldInviteCode)
 	}
 	if m.created_at != nil {
 		fields = append(fields, workspace.FieldCreatedAt)
@@ -14626,6 +16636,8 @@ func (m *WorkspaceMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case workspace.FieldOwnerID:
 		return m.OwnerID()
+	case workspace.FieldInviteCode:
+		return m.InviteCode()
 	case workspace.FieldCreatedAt:
 		return m.CreatedAt()
 	case workspace.FieldUpdatedAt:
@@ -14645,6 +16657,8 @@ func (m *WorkspaceMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldName(ctx)
 	case workspace.FieldOwnerID:
 		return m.OldOwnerID(ctx)
+	case workspace.FieldInviteCode:
+		return m.OldInviteCode(ctx)
 	case workspace.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case workspace.FieldUpdatedAt:
@@ -14673,6 +16687,13 @@ func (m *WorkspaceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOwnerID(v)
+		return nil
+	case workspace.FieldInviteCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInviteCode(v)
 		return nil
 	case workspace.FieldCreatedAt:
 		v, ok := value.(utils.DateTime)
@@ -14728,6 +16749,9 @@ func (m *WorkspaceMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *WorkspaceMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(workspace.FieldInviteCode) {
+		fields = append(fields, workspace.FieldInviteCode)
+	}
 	if m.FieldCleared(workspace.FieldDeletedAt) {
 		fields = append(fields, workspace.FieldDeletedAt)
 	}
@@ -14745,6 +16769,9 @@ func (m *WorkspaceMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *WorkspaceMutation) ClearField(name string) error {
 	switch name {
+	case workspace.FieldInviteCode:
+		m.ClearInviteCode()
+		return nil
 	case workspace.FieldDeletedAt:
 		m.ClearDeletedAt()
 		return nil
@@ -14761,6 +16788,9 @@ func (m *WorkspaceMutation) ResetField(name string) error {
 		return nil
 	case workspace.FieldOwnerID:
 		m.ResetOwnerID()
+		return nil
+	case workspace.FieldInviteCode:
+		m.ResetInviteCode()
 		return nil
 	case workspace.FieldCreatedAt:
 		m.ResetCreatedAt()

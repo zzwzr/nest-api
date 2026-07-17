@@ -64,9 +64,11 @@ type UserEdges struct {
 	CreatedEnvironments []*Environment `json:"created_environments,omitempty"`
 	// CreatedEnvironmentVariables holds the value of the created_environment_variables edge.
 	CreatedEnvironmentVariables []*EnvironmentVariable `json:"created_environment_variables,omitempty"`
+	// CreatedProjectShares holds the value of the created_project_shares edge.
+	CreatedProjectShares []*ProjectShare `json:"created_project_shares,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // OwnedWorkspacesOrErr returns the OwnedWorkspaces value or an error if the edge
@@ -139,6 +141,15 @@ func (e UserEdges) CreatedEnvironmentVariablesOrErr() ([]*EnvironmentVariable, e
 		return e.CreatedEnvironmentVariables, nil
 	}
 	return nil, &NotLoadedError{edge: "created_environment_variables"}
+}
+
+// CreatedProjectSharesOrErr returns the CreatedProjectShares value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CreatedProjectSharesOrErr() ([]*ProjectShare, error) {
+	if e.loadedTypes[8] {
+		return e.CreatedProjectShares, nil
+	}
+	return nil, &NotLoadedError{edge: "created_project_shares"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -295,6 +306,11 @@ func (_m *User) QueryCreatedEnvironments() *EnvironmentQuery {
 // QueryCreatedEnvironmentVariables queries the "created_environment_variables" edge of the User entity.
 func (_m *User) QueryCreatedEnvironmentVariables() *EnvironmentVariableQuery {
 	return NewUserClient(_m.config).QueryCreatedEnvironmentVariables(_m)
+}
+
+// QueryCreatedProjectShares queries the "created_project_shares" edge of the User entity.
+func (_m *User) QueryCreatedProjectShares() *ProjectShareQuery {
+	return NewUserClient(_m.config).QueryCreatedProjectShares(_m)
 }
 
 // Update returns a builder for updating this User.

@@ -16,6 +16,8 @@ import (
 	"nest-api/internal/ent/interfacerequestheader"
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/ent/workspacemember"
@@ -670,6 +672,81 @@ func init() {
 	projectDescID := projectFields[0].Descriptor()
 	// project.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	project.IDValidator = projectDescID.Validators[0].(func(int64) error)
+	projectshareMixin := schema.ProjectShare{}.Mixin()
+	projectshareMixinHooks0 := projectshareMixin[0].Hooks()
+	projectshare.Hooks[0] = projectshareMixinHooks0[0]
+	projectshareMixinInters0 := projectshareMixin[0].Interceptors()
+	projectshare.Interceptors[0] = projectshareMixinInters0[0]
+	projectshareFields := schema.ProjectShare{}.Fields()
+	_ = projectshareFields
+	// projectshareDescProjectID is the schema descriptor for project_id field.
+	projectshareDescProjectID := projectshareFields[1].Descriptor()
+	// projectshare.DefaultProjectID holds the default value on creation for the project_id field.
+	projectshare.DefaultProjectID = projectshareDescProjectID.Default.(int64)
+	// projectshareDescWorkspaceID is the schema descriptor for workspace_id field.
+	projectshareDescWorkspaceID := projectshareFields[2].Descriptor()
+	// projectshare.DefaultWorkspaceID holds the default value on creation for the workspace_id field.
+	projectshare.DefaultWorkspaceID = projectshareDescWorkspaceID.Default.(int64)
+	// projectshareDescName is the schema descriptor for name field.
+	projectshareDescName := projectshareFields[3].Descriptor()
+	// projectshare.DefaultName holds the default value on creation for the name field.
+	projectshare.DefaultName = projectshareDescName.Default.(string)
+	// projectshare.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	projectshare.NameValidator = projectshareDescName.Validators[0].(func(string) error)
+	// projectshareDescShareCode is the schema descriptor for share_code field.
+	projectshareDescShareCode := projectshareFields[4].Descriptor()
+	// projectshare.ShareCodeValidator is a validator for the "share_code" field. It is called by the builders before save.
+	projectshare.ShareCodeValidator = projectshareDescShareCode.Validators[0].(func(string) error)
+	// projectshareDescEnabled is the schema descriptor for enabled field.
+	projectshareDescEnabled := projectshareFields[5].Descriptor()
+	// projectshare.DefaultEnabled holds the default value on creation for the enabled field.
+	projectshare.DefaultEnabled = projectshareDescEnabled.Default.(bool)
+	// projectshareDescPassword is the schema descriptor for password field.
+	projectshareDescPassword := projectshareFields[6].Descriptor()
+	// projectshare.DefaultPassword holds the default value on creation for the password field.
+	projectshare.DefaultPassword = projectshareDescPassword.Default.(string)
+	// projectshare.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
+	projectshare.PasswordValidator = projectshareDescPassword.Validators[0].(func(string) error)
+	// projectshareDescPermission is the schema descriptor for permission field.
+	projectshareDescPermission := projectshareFields[7].Descriptor()
+	// projectshare.DefaultPermission holds the default value on creation for the permission field.
+	projectshare.DefaultPermission = projectshareDescPermission.Default.(uint8)
+	// projectshareDescCreatedBy is the schema descriptor for created_by field.
+	projectshareDescCreatedBy := projectshareFields[8].Descriptor()
+	// projectshare.DefaultCreatedBy holds the default value on creation for the created_by field.
+	projectshare.DefaultCreatedBy = projectshareDescCreatedBy.Default.(int64)
+	// projectshareDescCreatedAt is the schema descriptor for created_at field.
+	projectshareDescCreatedAt := projectshareFields[9].Descriptor()
+	// projectshare.DefaultCreatedAt holds the default value on creation for the created_at field.
+	projectshare.DefaultCreatedAt = projectshareDescCreatedAt.Default.(func() utils.DateTime)
+	// projectshareDescUpdatedAt is the schema descriptor for updated_at field.
+	projectshareDescUpdatedAt := projectshareFields[10].Descriptor()
+	// projectshare.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	projectshare.DefaultUpdatedAt = projectshareDescUpdatedAt.Default.(func() utils.DateTime)
+	// projectshare.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	projectshare.UpdateDefaultUpdatedAt = projectshareDescUpdatedAt.UpdateDefault.(func() utils.DateTime)
+	// projectshareDescID is the schema descriptor for id field.
+	projectshareDescID := projectshareFields[0].Descriptor()
+	// projectshare.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	projectshare.IDValidator = projectshareDescID.Validators[0].(func(int64) error)
+	projectshareinterfaceFields := schema.ProjectShareInterface{}.Fields()
+	_ = projectshareinterfaceFields
+	// projectshareinterfaceDescShareID is the schema descriptor for share_id field.
+	projectshareinterfaceDescShareID := projectshareinterfaceFields[1].Descriptor()
+	// projectshareinterface.DefaultShareID holds the default value on creation for the share_id field.
+	projectshareinterface.DefaultShareID = projectshareinterfaceDescShareID.Default.(int64)
+	// projectshareinterfaceDescInterfaceID is the schema descriptor for interface_id field.
+	projectshareinterfaceDescInterfaceID := projectshareinterfaceFields[2].Descriptor()
+	// projectshareinterface.DefaultInterfaceID holds the default value on creation for the interface_id field.
+	projectshareinterface.DefaultInterfaceID = projectshareinterfaceDescInterfaceID.Default.(int64)
+	// projectshareinterfaceDescCreatedAt is the schema descriptor for created_at field.
+	projectshareinterfaceDescCreatedAt := projectshareinterfaceFields[3].Descriptor()
+	// projectshareinterface.DefaultCreatedAt holds the default value on creation for the created_at field.
+	projectshareinterface.DefaultCreatedAt = projectshareinterfaceDescCreatedAt.Default.(func() utils.DateTime)
+	// projectshareinterfaceDescID is the schema descriptor for id field.
+	projectshareinterfaceDescID := projectshareinterfaceFields[0].Descriptor()
+	// projectshareinterface.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	projectshareinterface.IDValidator = projectshareinterfaceDescID.Validators[0].(func(int64) error)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	user.Hooks[0] = userMixinHooks0[0]
@@ -752,12 +829,16 @@ func init() {
 	workspaceDescOwnerID := workspaceFields[2].Descriptor()
 	// workspace.DefaultOwnerID holds the default value on creation for the owner_id field.
 	workspace.DefaultOwnerID = workspaceDescOwnerID.Default.(int64)
+	// workspaceDescInviteCode is the schema descriptor for invite_code field.
+	workspaceDescInviteCode := workspaceFields[3].Descriptor()
+	// workspace.InviteCodeValidator is a validator for the "invite_code" field. It is called by the builders before save.
+	workspace.InviteCodeValidator = workspaceDescInviteCode.Validators[0].(func(string) error)
 	// workspaceDescCreatedAt is the schema descriptor for created_at field.
-	workspaceDescCreatedAt := workspaceFields[3].Descriptor()
+	workspaceDescCreatedAt := workspaceFields[4].Descriptor()
 	// workspace.DefaultCreatedAt holds the default value on creation for the created_at field.
 	workspace.DefaultCreatedAt = workspaceDescCreatedAt.Default.(func() utils.DateTime)
 	// workspaceDescUpdatedAt is the schema descriptor for updated_at field.
-	workspaceDescUpdatedAt := workspaceFields[4].Descriptor()
+	workspaceDescUpdatedAt := workspaceFields[5].Descriptor()
 	// workspace.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	workspace.DefaultUpdatedAt = workspaceDescUpdatedAt.Default.(func() utils.DateTime)
 	// workspace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

@@ -51,6 +51,20 @@ func (_c *WorkspaceCreate) SetNillableOwnerID(v *int64) *WorkspaceCreate {
 	return _c
 }
 
+// SetInviteCode sets the "invite_code" field.
+func (_c *WorkspaceCreate) SetInviteCode(v string) *WorkspaceCreate {
+	_c.mutation.SetInviteCode(v)
+	return _c
+}
+
+// SetNillableInviteCode sets the "invite_code" field if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableInviteCode(v *string) *WorkspaceCreate {
+	if v != nil {
+		_c.SetInviteCode(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *WorkspaceCreate) SetCreatedAt(v utils.DateTime) *WorkspaceCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -209,6 +223,11 @@ func (_c *WorkspaceCreate) check() error {
 	if _, ok := _c.mutation.OwnerID(); !ok {
 		return &ValidationError{Name: "owner_id", err: errors.New(`ent: missing required field "Workspace.owner_id"`)}
 	}
+	if v, ok := _c.mutation.InviteCode(); ok {
+		if err := workspace.InviteCodeValidator(v); err != nil {
+			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "Workspace.invite_code": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Workspace.created_at"`)}
 	}
@@ -258,6 +277,10 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(workspace.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.InviteCode(); ok {
+		_spec.SetField(workspace.FieldInviteCode, field.TypeString, value)
+		_node.InviteCode = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(workspace.FieldCreatedAt, field.TypeTime, value)

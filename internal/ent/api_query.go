@@ -17,6 +17,7 @@ import (
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 
 	"entgo.io/ent"
@@ -42,6 +43,7 @@ type APIQuery struct {
 	withRequestHeaders   *InterfaceRequestHeaderQuery
 	withQueryParams      *InterfaceQueryParamQuery
 	withBodyFields       *InterfaceBodyFieldQuery
+	withShareItems       *ProjectShareInterfaceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -298,6 +300,28 @@ func (_q *APIQuery) QueryBodyFields() *InterfaceBodyFieldQuery {
 	return query
 }
 
+// QueryShareItems chains the current query on the "share_items" edge.
+func (_q *APIQuery) QueryShareItems() *ProjectShareInterfaceQuery {
+	query := (&ProjectShareInterfaceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(api.Table, api.FieldID, selector),
+			sqlgraph.To(projectshareinterface.Table, projectshareinterface.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, api.ShareItemsTable, api.ShareItemsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first API entity from the query.
 // Returns a *NotFoundError when no API was found.
 func (_q *APIQuery) First(ctx context.Context) (*API, error) {
@@ -500,6 +524,7 @@ func (_q *APIQuery) Clone() *APIQuery {
 		withRequestHeaders:   _q.withRequestHeaders.Clone(),
 		withQueryParams:      _q.withQueryParams.Clone(),
 		withBodyFields:       _q.withBodyFields.Clone(),
+		withShareItems:       _q.withShareItems.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -616,6 +641,17 @@ func (_q *APIQuery) WithBodyFields(opts ...func(*InterfaceBodyFieldQuery)) *APIQ
 	return _q
 }
 
+// WithShareItems tells the query-builder to eager-load the nodes that are connected to
+// the "share_items" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *APIQuery) WithShareItems(opts ...func(*ProjectShareInterfaceQuery)) *APIQuery {
+	query := (&ProjectShareInterfaceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withShareItems = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -694,7 +730,7 @@ func (_q *APIQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*API, err
 	var (
 		nodes       = []*API{}
 		_spec       = _q.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [11]bool{
 			_q.withProject != nil,
 			_q.withFolder != nil,
 			_q.withCreator != nil,
@@ -705,6 +741,7 @@ func (_q *APIQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*API, err
 			_q.withRequestHeaders != nil,
 			_q.withQueryParams != nil,
 			_q.withBodyFields != nil,
+			_q.withShareItems != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -788,6 +825,13 @@ func (_q *APIQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*API, err
 		if err := _q.loadBodyFields(ctx, query, nodes,
 			func(n *API) { n.Edges.BodyFields = []*InterfaceBodyField{} },
 			func(n *API, e *InterfaceBodyField) { n.Edges.BodyFields = append(n.Edges.BodyFields, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withShareItems; query != nil {
+		if err := _q.loadShareItems(ctx, query, nodes,
+			func(n *API) { n.Edges.ShareItems = []*ProjectShareInterface{} },
+			func(n *API, e *ProjectShareInterface) { n.Edges.ShareItems = append(n.Edges.ShareItems, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1075,6 +1119,36 @@ func (_q *APIQuery) loadBodyFields(ctx context.Context, query *InterfaceBodyFiel
 	}
 	query.Where(predicate.InterfaceBodyField(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(api.BodyFieldsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InterfaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "interface_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *APIQuery) loadShareItems(ctx context.Context, query *ProjectShareInterfaceQuery, nodes []*API, init func(*API), assign func(*API, *ProjectShareInterface)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*API)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(projectshareinterface.FieldInterfaceID)
+	}
+	query.Where(predicate.ProjectShareInterface(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(api.ShareItemsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

@@ -40,6 +40,32 @@ const router = createRouter({
       ],
     },
     {
+      path: '/invite',
+      component: () => import('@/layouts/AuthLayout.vue'),
+      meta: { public: true },
+      children: [
+        {
+          path: '',
+          name: 'invite',
+          component: () => import('@/views/auth/InviteAcceptView.vue'),
+          meta: { title: '加入工作空间' },
+        },
+      ],
+    },
+    {
+      path: '/share',
+      component: () => import('@/layouts/ShareLayout.vue'),
+      meta: { public: true },
+      children: [
+        {
+          path: '',
+          name: 'share',
+          component: () => import('@/views/share/ShareView.vue'),
+          meta: { title: '项目分享' },
+        },
+      ],
+    },
+    {
       path: '/',
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },

@@ -42,6 +42,12 @@ type InterfaceResult func(*sql.Selector)
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
 
+// ProjectShare is the predicate function for projectshare builders.
+type ProjectShare func(*sql.Selector)
+
+// ProjectShareInterface is the predicate function for projectshareinterface builders.
+type ProjectShareInterface func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 

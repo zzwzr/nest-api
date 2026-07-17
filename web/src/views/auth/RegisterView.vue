@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
+const route = useRoute()
 const { register } = useAuth()
 
 const formRef = ref<FormInstance>()
@@ -60,7 +61,8 @@ async function handleSubmit() {
   try {
     await register(form)
     ElMessage.success('注册成功')
-    router.push('/home')
+    const redirect = (route.query.redirect as string) || '/home'
+    router.push(redirect)
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '注册失败')
   } finally {

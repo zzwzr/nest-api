@@ -9,10 +9,3 @@
 ```bash
 go generate ./internal/ent
 ```
-
-现只支持外部postgres 数据库
-分享文档链接
-团队邀请成员
-postman 桌面端
-
-圆角边框

@@ -30,3 +30,35 @@ type DeleteRequest struct {
 	WorkspaceID int64 `form:"workspace_id" json:"workspace_id" binding:"required,min=1"`
 	MemberID    int64 `form:"member_id" json:"member_id" binding:"required,min=1"`
 }
+
+type InviteLinkRequest struct {
+	WorkspaceID int64 `form:"workspace_id" json:"workspace_id" binding:"required,min=1"`
+}
+
+type InviteLinkResponse struct {
+	WorkspaceID   int64  `json:"workspace_id"`
+	WorkspaceName string `json:"workspace_name"`
+	InviteCode    string `json:"invite_code"`
+	InviteURL     string `json:"invite_url"`
+	SiteURL       string `json:"site_url"`
+}
+
+type InvitePreviewRequest struct {
+	InviteCode string `form:"invite_code" binding:"required,min=1,max=12"`
+}
+
+type InvitePreviewResponse struct {
+	WorkspaceID   int64  `json:"workspace_id"`
+	WorkspaceName string `json:"workspace_name"`
+	InviteCode    string `json:"invite_code"`
+}
+
+type AcceptInviteRequest struct {
+	InviteCode string `json:"invite_code" binding:"required,min=1,max=12"`
+}
+
+type AcceptInviteResponse struct {
+	WorkspaceID   int64  `json:"workspace_id"`
+	WorkspaceName string `json:"workspace_name"`
+	AlreadyMember bool   `json:"already_member"`
+}

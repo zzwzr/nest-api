@@ -53,6 +53,8 @@ const (
 	EdgeCreatedEnvironments = "created_environments"
 	// EdgeCreatedEnvironmentVariables holds the string denoting the created_environment_variables edge name in mutations.
 	EdgeCreatedEnvironmentVariables = "created_environment_variables"
+	// EdgeCreatedProjectShares holds the string denoting the created_project_shares edge name in mutations.
+	EdgeCreatedProjectShares = "created_project_shares"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// OwnedWorkspacesTable is the table that holds the owned_workspaces relation/edge.
@@ -111,6 +113,13 @@ const (
 	CreatedEnvironmentVariablesInverseTable = "environment_variables"
 	// CreatedEnvironmentVariablesColumn is the table column denoting the created_environment_variables relation/edge.
 	CreatedEnvironmentVariablesColumn = "created_by"
+	// CreatedProjectSharesTable is the table that holds the created_project_shares relation/edge.
+	CreatedProjectSharesTable = "project_shares"
+	// CreatedProjectSharesInverseTable is the table name for the ProjectShare entity.
+	// It exists in this package in order to avoid circular dependency with the "projectshare" package.
+	CreatedProjectSharesInverseTable = "project_shares"
+	// CreatedProjectSharesColumn is the table column denoting the created_project_shares relation/edge.
+	CreatedProjectSharesColumn = "created_by"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -359,6 +368,20 @@ func ByCreatedEnvironmentVariables(term sql.OrderTerm, terms ...sql.OrderTerm) O
 		sqlgraph.OrderByNeighborTerms(s, newCreatedEnvironmentVariablesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCreatedProjectSharesCount orders the results by created_project_shares count.
+func ByCreatedProjectSharesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCreatedProjectSharesStep(), opts...)
+	}
+}
+
+// ByCreatedProjectShares orders the results by created_project_shares terms.
+func ByCreatedProjectShares(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCreatedProjectSharesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOwnedWorkspacesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -413,5 +436,12 @@ func newCreatedEnvironmentVariablesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatedEnvironmentVariablesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, CreatedEnvironmentVariablesTable, CreatedEnvironmentVariablesColumn),
+	)
+}
+func newCreatedProjectSharesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatedProjectSharesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CreatedProjectSharesTable, CreatedProjectSharesColumn),
 	)
 }

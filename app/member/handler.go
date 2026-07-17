@@ -71,3 +71,67 @@ func (*Handler) Delete(c *gin.Context) {
 	}
 	response.Success(c, nil)
 }
+
+func (*Handler) GetInviteLink(c *gin.Context) {
+	var params InviteLinkRequest
+	if err := validator.Bind(c, &params); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	data, err := (Service{}).GetInviteLink(c.Request.Context(), utils.GetUserID(c), params)
+	if err != nil {
+		logger.Error("member invite link failed", err)
+		response.Fail(c, err)
+		return
+	}
+	response.Success(c, data)
+}
+
+func (*Handler) RefreshInviteLink(c *gin.Context) {
+	var params InviteLinkRequest
+	if err := validator.Bind(c, &params); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	data, err := (Service{}).RefreshInviteLink(c.Request.Context(), utils.GetUserID(c), params)
+	if err != nil {
+		logger.Error("member invite link refresh failed", err)
+		response.Fail(c, err)
+		return
+	}
+	response.Success(c, data)
+}
+
+func (*Handler) PreviewInvite(c *gin.Context) {
+	var params InvitePreviewRequest
+	if err := validator.Bind(c, &params); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	data, err := (Service{}).PreviewInvite(c.Request.Context(), params)
+	if err != nil {
+		logger.Error("member invite preview failed", err)
+		response.Fail(c, err)
+		return
+	}
+	response.Success(c, data)
+}
+
+func (*Handler) AcceptInvite(c *gin.Context) {
+	var params AcceptInviteRequest
+	if err := validator.Bind(c, &params); err != nil {
+		response.Fail(c, err)
+		return
+	}
+
+	data, err := (Service{}).AcceptInvite(c.Request.Context(), utils.GetUserID(c), params)
+	if err != nil {
+		logger.Error("member accept invite failed", err)
+		response.Fail(c, err)
+		return
+	}
+	response.Success(c, data)
+}

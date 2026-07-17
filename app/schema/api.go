@@ -144,5 +144,6 @@ func (API) Edges() []ent.Edge {
 		edge.To("request_headers", InterfaceRequestHeader.Type),
 		edge.To("query_params", InterfaceQueryParam.Type),
 		edge.To("body_fields", InterfaceBodyField.Type),
+		edge.To("share_items", ProjectShareInterface.Type),
 	}
 }

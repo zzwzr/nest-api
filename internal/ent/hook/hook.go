@@ -152,6 +152,30 @@ func (f ProjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectMutation", m)
 }
 
+// The ProjectShareFunc type is an adapter to allow the use of ordinary
+// function as ProjectShare mutator.
+type ProjectShareFunc func(context.Context, *ent.ProjectShareMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectShareFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProjectShareMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectShareMutation", m)
+}
+
+// The ProjectShareInterfaceFunc type is an adapter to allow the use of ordinary
+// function as ProjectShareInterface mutator.
+type ProjectShareInterfaceFunc func(context.Context, *ent.ProjectShareInterfaceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectShareInterfaceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProjectShareInterfaceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectShareInterfaceMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

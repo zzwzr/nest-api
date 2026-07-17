@@ -13,6 +13,7 @@ import (
 	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/ent/workspacemember"
@@ -38,6 +39,7 @@ type UserQuery struct {
 	withUpdatedInterfaces           *APIQuery
 	withCreatedEnvironments         *EnvironmentQuery
 	withCreatedEnvironmentVariables *EnvironmentVariableQuery
+	withCreatedProjectShares        *ProjectShareQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -250,6 +252,28 @@ func (_q *UserQuery) QueryCreatedEnvironmentVariables() *EnvironmentVariableQuer
 	return query
 }
 
+// QueryCreatedProjectShares chains the current query on the "created_project_shares" edge.
+func (_q *UserQuery) QueryCreatedProjectShares() *ProjectShareQuery {
+	query := (&ProjectShareClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(projectshare.Table, projectshare.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedProjectSharesTable, user.CreatedProjectSharesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first User entity from the query.
 // Returns a *NotFoundError when no User was found.
 func (_q *UserQuery) First(ctx context.Context) (*User, error) {
@@ -450,6 +474,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withUpdatedInterfaces:           _q.withUpdatedInterfaces.Clone(),
 		withCreatedEnvironments:         _q.withCreatedEnvironments.Clone(),
 		withCreatedEnvironmentVariables: _q.withCreatedEnvironmentVariables.Clone(),
+		withCreatedProjectShares:        _q.withCreatedProjectShares.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -544,6 +569,17 @@ func (_q *UserQuery) WithCreatedEnvironmentVariables(opts ...func(*EnvironmentVa
 	return _q
 }
 
+// WithCreatedProjectShares tells the query-builder to eager-load the nodes that are connected to
+// the "created_project_shares" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithCreatedProjectShares(opts ...func(*ProjectShareQuery)) *UserQuery {
+	query := (&ProjectShareClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCreatedProjectShares = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -622,7 +658,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			_q.withOwnedWorkspaces != nil,
 			_q.withWorkspaceMemberships != nil,
 			_q.withCreatedProjects != nil,
@@ -631,6 +667,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withUpdatedInterfaces != nil,
 			_q.withCreatedEnvironments != nil,
 			_q.withCreatedEnvironmentVariables != nil,
+			_q.withCreatedProjectShares != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -708,6 +745,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			func(n *User, e *EnvironmentVariable) {
 				n.Edges.CreatedEnvironmentVariables = append(n.Edges.CreatedEnvironmentVariables, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCreatedProjectShares; query != nil {
+		if err := _q.loadCreatedProjectShares(ctx, query, nodes,
+			func(n *User) { n.Edges.CreatedProjectShares = []*ProjectShare{} },
+			func(n *User, e *ProjectShare) { n.Edges.CreatedProjectShares = append(n.Edges.CreatedProjectShares, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -939,6 +983,36 @@ func (_q *UserQuery) loadCreatedEnvironmentVariables(ctx context.Context, query 
 	}
 	query.Where(predicate.EnvironmentVariable(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.CreatedEnvironmentVariablesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.CreatedBy
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadCreatedProjectShares(ctx context.Context, query *ProjectShareQuery, nodes []*User, init func(*User), assign func(*User, *ProjectShare)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(projectshare.FieldCreatedBy)
+	}
+	query.Where(predicate.ProjectShare(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.CreatedProjectSharesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

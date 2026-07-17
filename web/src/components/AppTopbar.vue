@@ -1,18 +1,35 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Moon, Setting, Sunny, SwitchButton } from '@element-plus/icons-vue'
+import { Moon, Setting, Share, Sunny, SwitchButton, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import InviteMemberDialog from '@/components/InviteMemberDialog.vue'
+import ProjectShareDialog from '@/components/ProjectShareDialog.vue'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import WorkspaceProjectSelector from '@/components/WorkspaceProjectSelector.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
+import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
 
 const router = useRouter()
 const { user, logout } = useAuth()
 const { theme, toggleTheme } = useTheme()
 const { t } = useLocale()
+const { activeWorkspace, activeProject } = useWorkspaceContext()
+
+const inviteDialogVisible = ref(false)
+const shareDialogVisible = ref(false)
+
+const canInviteMember = computed(() => {
+  const role = activeWorkspace.value?.role
+  return role === 1 || role === 2
+})
+
+const canShareProject = computed(() => {
+  const role = activeWorkspace.value?.role
+  return Boolean(activeProject.value && (role === 1 || role === 2))
+})
 
 const avatarText = computed(() => {
   const name = user.value?.name || user.value?.account || '?'
@@ -55,6 +72,26 @@ function handleCommand(command: string) {
     </div>
 
     <div class="app-topbar__actions">
+      <button
+        v-if="canInviteMember"
+        type="button"
+        class="app-topbar__invite-btn"
+        @click="inviteDialogVisible = true"
+      >
+        <el-icon :size="16"><UserFilled /></el-icon>
+        <span>{{ t('member.addMember') }}</span>
+      </button>
+
+      <button
+        v-if="canShareProject"
+        type="button"
+        class="app-topbar__invite-btn"
+        @click="shareDialogVisible = true"
+      >
+        <el-icon :size="16"><Share /></el-icon>
+        <span>{{ t('share.button') }}</span>
+      </button>
+
       <el-tooltip :content="themeTooltip" placement="bottom">
         <button type="button" class="app-topbar__action" @click="toggleTheme">
           <el-icon :size="20">
@@ -95,6 +132,9 @@ function handleCommand(command: string) {
         </template>
       </el-dropdown>
     </div>
+
+    <InviteMemberDialog v-model="inviteDialogVisible" />
+    <ProjectShareDialog v-model="shareDialogVisible" />
   </header>
 </template>
 
@@ -146,6 +186,25 @@ function handleCommand(command: string) {
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+}
+
+.app-topbar__invite-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-topbar__invite-btn:hover {
+  background: var(--color-hover);
 }
 
 .app-topbar__action {

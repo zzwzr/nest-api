@@ -11,6 +11,7 @@ import (
 	"nest-api/internal/ent/folder"
 	"nest-api/internal/ent/predicate"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshare"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/ent/workspace"
 	"nest-api/internal/utils"
@@ -176,6 +177,21 @@ func (_u *ProjectUpdate) AddEnvironments(v ...*Environment) *ProjectUpdate {
 	return _u.AddEnvironmentIDs(ids...)
 }
 
+// AddShareIDs adds the "shares" edge to the ProjectShare entity by IDs.
+func (_u *ProjectUpdate) AddShareIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.AddShareIDs(ids...)
+	return _u
+}
+
+// AddShares adds the "shares" edges to the ProjectShare entity.
+func (_u *ProjectUpdate) AddShares(v ...*ProjectShare) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddShareIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_u *ProjectUpdate) Mutation() *ProjectMutation {
 	return _u.mutation
@@ -254,6 +270,27 @@ func (_u *ProjectUpdate) RemoveEnvironments(v ...*Environment) *ProjectUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEnvironmentIDs(ids...)
+}
+
+// ClearShares clears all "shares" edges to the ProjectShare entity.
+func (_u *ProjectUpdate) ClearShares() *ProjectUpdate {
+	_u.mutation.ClearShares()
+	return _u
+}
+
+// RemoveShareIDs removes the "shares" edge to ProjectShare entities by IDs.
+func (_u *ProjectUpdate) RemoveShareIDs(ids ...int64) *ProjectUpdate {
+	_u.mutation.RemoveShareIDs(ids...)
+	return _u
+}
+
+// RemoveShares removes "shares" edges to ProjectShare entities.
+func (_u *ProjectUpdate) RemoveShares(v ...*ProjectShare) *ProjectUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveShareIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -534,6 +571,51 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SharesTable,
+			Columns: []string{project.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshare.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSharesIDs(); len(nodes) > 0 && !_u.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SharesTable,
+			Columns: []string{project.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshare.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SharesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SharesTable,
+			Columns: []string{project.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshare.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -697,6 +779,21 @@ func (_u *ProjectUpdateOne) AddEnvironments(v ...*Environment) *ProjectUpdateOne
 	return _u.AddEnvironmentIDs(ids...)
 }
 
+// AddShareIDs adds the "shares" edge to the ProjectShare entity by IDs.
+func (_u *ProjectUpdateOne) AddShareIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.AddShareIDs(ids...)
+	return _u
+}
+
+// AddShares adds the "shares" edges to the ProjectShare entity.
+func (_u *ProjectUpdateOne) AddShares(v ...*ProjectShare) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddShareIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_u *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return _u.mutation
@@ -775,6 +872,27 @@ func (_u *ProjectUpdateOne) RemoveEnvironments(v ...*Environment) *ProjectUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEnvironmentIDs(ids...)
+}
+
+// ClearShares clears all "shares" edges to the ProjectShare entity.
+func (_u *ProjectUpdateOne) ClearShares() *ProjectUpdateOne {
+	_u.mutation.ClearShares()
+	return _u
+}
+
+// RemoveShareIDs removes the "shares" edge to ProjectShare entities by IDs.
+func (_u *ProjectUpdateOne) RemoveShareIDs(ids ...int64) *ProjectUpdateOne {
+	_u.mutation.RemoveShareIDs(ids...)
+	return _u
+}
+
+// RemoveShares removes "shares" edges to ProjectShare entities.
+func (_u *ProjectUpdateOne) RemoveShares(v ...*ProjectShare) *ProjectUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveShareIDs(ids...)
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -1078,6 +1196,51 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SharesTable,
+			Columns: []string{project.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshare.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSharesIDs(); len(nodes) > 0 && !_u.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SharesTable,
+			Columns: []string{project.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshare.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SharesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.SharesTable,
+			Columns: []string{project.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshare.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

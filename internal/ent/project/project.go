@@ -37,6 +37,8 @@ const (
 	EdgeInterfaces = "interfaces"
 	// EdgeEnvironments holds the string denoting the environments edge name in mutations.
 	EdgeEnvironments = "environments"
+	// EdgeShares holds the string denoting the shares edge name in mutations.
+	EdgeShares = "shares"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
@@ -74,6 +76,13 @@ const (
 	EnvironmentsInverseTable = "environments"
 	// EnvironmentsColumn is the table column denoting the environments relation/edge.
 	EnvironmentsColumn = "project_id"
+	// SharesTable is the table that holds the shares relation/edge.
+	SharesTable = "project_shares"
+	// SharesInverseTable is the table name for the ProjectShare entity.
+	// It exists in this package in order to avoid circular dependency with the "projectshare" package.
+	SharesInverseTable = "project_shares"
+	// SharesColumn is the table column denoting the shares relation/edge.
+	SharesColumn = "project_id"
 )
 
 // Columns holds all SQL columns for project fields.
@@ -216,6 +225,20 @@ func ByEnvironments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newEnvironmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySharesCount orders the results by shares count.
+func BySharesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSharesStep(), opts...)
+	}
+}
+
+// ByShares orders the results by shares terms.
+func ByShares(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSharesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newWorkspaceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -249,5 +272,12 @@ func newEnvironmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EnvironmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, EnvironmentsTable, EnvironmentsColumn),
+	)
+}
+func newSharesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SharesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SharesTable, SharesColumn),
 	)
 }

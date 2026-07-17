@@ -15,6 +15,7 @@ import (
 	"nest-api/internal/ent/interfacerequestheader"
 	"nest-api/internal/ent/interfaceresult"
 	"nest-api/internal/ent/project"
+	"nest-api/internal/ent/projectshareinterface"
 	"nest-api/internal/ent/user"
 	"nest-api/internal/utils"
 
@@ -365,6 +366,21 @@ func (_c *APICreate) AddBodyFields(v ...*InterfaceBodyField) *APICreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddBodyFieldIDs(ids...)
+}
+
+// AddShareItemIDs adds the "share_items" edge to the ProjectShareInterface entity by IDs.
+func (_c *APICreate) AddShareItemIDs(ids ...int64) *APICreate {
+	_c.mutation.AddShareItemIDs(ids...)
+	return _c
+}
+
+// AddShareItems adds the "share_items" edges to the ProjectShareInterface entity.
+func (_c *APICreate) AddShareItems(v ...*ProjectShareInterface) *APICreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddShareItemIDs(ids...)
 }
 
 // Mutation returns the APIMutation object of the builder.
@@ -788,6 +804,22 @@ func (_c *APICreate) createSpec() (*API, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(interfacebodyfield.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ShareItemsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   api.ShareItemsTable,
+			Columns: []string{api.ShareItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectshareinterface.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

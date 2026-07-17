@@ -1040,6 +1040,29 @@ func HasBodyFieldsWith(preds ...predicate.InterfaceBodyField) predicate.API {
 	})
 }
 
+// HasShareItems applies the HasEdge predicate on the "share_items" edge.
+func HasShareItems() predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ShareItemsTable, ShareItemsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasShareItemsWith applies the HasEdge predicate on the "share_items" edge with a given conditions (other predicates).
+func HasShareItemsWith(preds ...predicate.ProjectShareInterface) predicate.API {
+	return predicate.API(func(s *sql.Selector) {
+		step := newShareItemsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.API) predicate.API {
 	return predicate.API(sql.AndPredicates(predicates...))

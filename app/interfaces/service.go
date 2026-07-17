@@ -77,11 +77,16 @@ func (Service) Detail(ctx context.Context, userID int64, params DetailRequest) (
 		return nil, err
 	}
 
+	return LoadDetail(ctx, params.ProjectID, params.InterfaceID)
+}
+
+// LoadDetail loads interface detail without membership checks (for share access).
+func LoadDetail(ctx context.Context, projectID, interfaceID int64) (*DetailItem, error) {
 	row, err := database.DB.API.
 		Query().
 		Where(
-			entapi.IDEQ(params.InterfaceID),
-			entapi.ProjectIDEQ(params.ProjectID),
+			entapi.IDEQ(interfaceID),
+			entapi.ProjectIDEQ(projectID),
 		).
 		WithFolder().
 		WithUpdater().
@@ -116,7 +121,7 @@ func (Service) Detail(ctx context.Context, userID int64, params DetailRequest) (
 		folderName = row.Edges.Folder.Name
 	}
 
-	detail := &DetailItem{
+	return &DetailItem{
 		Item: Item{
 			ID:            row.ID,
 			ProjectID:     row.ProjectID,
@@ -142,8 +147,7 @@ func (Service) Detail(ctx context.Context, userID int64, params DetailRequest) (
 		ResponseHeaders:  buildResponseHeaders(row.Edges.ResponseHeaders),
 		ResponseResults:  buildResponseResults(row.Edges.ResponseResults),
 		ResponseExamples: buildResponseExamples(row.Edges.ResponseExamples),
-	}
-	return detail, nil
+	}, nil
 }
 
 func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (int64, error) {

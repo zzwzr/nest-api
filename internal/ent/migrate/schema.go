@@ -383,6 +383,75 @@ var (
 			},
 		},
 	}
+	// ProjectSharesColumns holds the columns for the "project_shares" table.
+	ProjectSharesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "workspace_id", Type: field.TypeInt64, Default: 0},
+		{Name: "name", Type: field.TypeString, Size: 150, Default: ""},
+		{Name: "share_code", Type: field.TypeString, Unique: true, Size: 16},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "password", Type: field.TypeString, Size: 255, Default: ""},
+		{Name: "permission", Type: field.TypeUint8, Default: 1},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "project_id", Type: field.TypeInt64, Default: 0},
+		{Name: "created_by", Type: field.TypeInt64, Default: 0},
+	}
+	// ProjectSharesTable holds the schema information for the "project_shares" table.
+	ProjectSharesTable = &schema.Table{
+		Name:       "project_shares",
+		Columns:    ProjectSharesColumns,
+		PrimaryKey: []*schema.Column{ProjectSharesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_shares_projects_shares",
+				Columns:    []*schema.Column{ProjectSharesColumns[10]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "project_shares_users_created_project_shares",
+				Columns:    []*schema.Column{ProjectSharesColumns[11]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ProjectShareInterfacesColumns holds the columns for the "project_share_interfaces" table.
+	ProjectShareInterfacesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
+		{Name: "interface_id", Type: field.TypeInt64, Default: 0},
+		{Name: "share_id", Type: field.TypeInt64, Default: 0},
+	}
+	// ProjectShareInterfacesTable holds the schema information for the "project_share_interfaces" table.
+	ProjectShareInterfacesTable = &schema.Table{
+		Name:       "project_share_interfaces",
+		Columns:    ProjectShareInterfacesColumns,
+		PrimaryKey: []*schema.Column{ProjectShareInterfacesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_share_interfaces_interfaces_share_items",
+				Columns:    []*schema.Column{ProjectShareInterfacesColumns[2]},
+				RefColumns: []*schema.Column{InterfacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "project_share_interfaces_project_shares_items",
+				Columns:    []*schema.Column{ProjectShareInterfacesColumns[3]},
+				RefColumns: []*schema.Column{ProjectSharesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "projectshareinterface_share_id_interface_id",
+				Unique:  true,
+				Columns: []*schema.Column{ProjectShareInterfacesColumns[3], ProjectShareInterfacesColumns[2]},
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -408,6 +477,7 @@ var (
 	WorkspacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
 		{Name: "name", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "invite_code", Type: field.TypeString, Unique: true, Nullable: true, Size: 12},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp(0) without time zone"}},
@@ -421,7 +491,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workspaces_users_owned_workspaces",
-				Columns:    []*schema.Column{WorkspacesColumns[5]},
+				Columns:    []*schema.Column{WorkspacesColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -471,6 +541,8 @@ var (
 		InterfaceRequestHeadersTable,
 		InterfaceResultsTable,
 		ProjectsTable,
+		ProjectSharesTable,
+		ProjectShareInterfacesTable,
 		UsersTable,
 		WorkspacesTable,
 		WorkspaceMembersTable,
@@ -530,6 +602,10 @@ func init() {
 	}
 	ProjectsTable.ForeignKeys[0].RefTable = UsersTable
 	ProjectsTable.ForeignKeys[1].RefTable = WorkspacesTable
+	ProjectSharesTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectSharesTable.ForeignKeys[1].RefTable = UsersTable
+	ProjectShareInterfacesTable.ForeignKeys[0].RefTable = InterfacesTable
+	ProjectShareInterfacesTable.ForeignKeys[1].RefTable = ProjectSharesTable
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[1].RefTable = WorkspacesTable

@@ -2046,7 +2046,7 @@ type EnvironmentMutation struct {
 	typ              string
 	id               *int64
 	name             *string
-	base_url         *string
+	remark           *string
 	is_default       *bool
 	created_at       *utils.DateTime
 	updated_at       *utils.DateTime
@@ -2240,40 +2240,40 @@ func (m *EnvironmentMutation) ResetName() {
 	m.name = nil
 }
 
-// SetBaseURL sets the "base_url" field.
-func (m *EnvironmentMutation) SetBaseURL(s string) {
-	m.base_url = &s
+// SetRemark sets the "remark" field.
+func (m *EnvironmentMutation) SetRemark(s string) {
+	m.remark = &s
 }
 
-// BaseURL returns the value of the "base_url" field in the mutation.
-func (m *EnvironmentMutation) BaseURL() (r string, exists bool) {
-	v := m.base_url
+// Remark returns the value of the "remark" field in the mutation.
+func (m *EnvironmentMutation) Remark() (r string, exists bool) {
+	v := m.remark
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldBaseURL returns the old "base_url" field's value of the Environment entity.
+// OldRemark returns the old "remark" field's value of the Environment entity.
 // If the Environment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EnvironmentMutation) OldBaseURL(ctx context.Context) (v string, err error) {
+func (m *EnvironmentMutation) OldRemark(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldBaseURL is only allowed on UpdateOne operations")
+		return v, errors.New("OldRemark is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldBaseURL requires an ID field in the mutation")
+		return v, errors.New("OldRemark requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldBaseURL: %w", err)
+		return v, fmt.Errorf("querying old value for OldRemark: %w", err)
 	}
-	return oldValue.BaseURL, nil
+	return oldValue.Remark, nil
 }
 
-// ResetBaseURL resets all changes to the "base_url" field.
-func (m *EnvironmentMutation) ResetBaseURL() {
-	m.base_url = nil
+// ResetRemark resets all changes to the "remark" field.
+func (m *EnvironmentMutation) ResetRemark() {
+	m.remark = nil
 }
 
 // SetIsDefault sets the "is_default" field.
@@ -2631,8 +2631,8 @@ func (m *EnvironmentMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, environment.FieldName)
 	}
-	if m.base_url != nil {
-		fields = append(fields, environment.FieldBaseURL)
+	if m.remark != nil {
+		fields = append(fields, environment.FieldRemark)
 	}
 	if m.is_default != nil {
 		fields = append(fields, environment.FieldIsDefault)
@@ -2661,8 +2661,8 @@ func (m *EnvironmentMutation) Field(name string) (ent.Value, bool) {
 		return m.ProjectID()
 	case environment.FieldName:
 		return m.Name()
-	case environment.FieldBaseURL:
-		return m.BaseURL()
+	case environment.FieldRemark:
+		return m.Remark()
 	case environment.FieldIsDefault:
 		return m.IsDefault()
 	case environment.FieldCreatedBy:
@@ -2686,8 +2686,8 @@ func (m *EnvironmentMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldProjectID(ctx)
 	case environment.FieldName:
 		return m.OldName(ctx)
-	case environment.FieldBaseURL:
-		return m.OldBaseURL(ctx)
+	case environment.FieldRemark:
+		return m.OldRemark(ctx)
 	case environment.FieldIsDefault:
 		return m.OldIsDefault(ctx)
 	case environment.FieldCreatedBy:
@@ -2721,12 +2721,12 @@ func (m *EnvironmentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case environment.FieldBaseURL:
+	case environment.FieldRemark:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetBaseURL(v)
+		m.SetRemark(v)
 		return nil
 	case environment.FieldIsDefault:
 		v, ok := value.(bool)
@@ -2830,8 +2830,8 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 	case environment.FieldName:
 		m.ResetName()
 		return nil
-	case environment.FieldBaseURL:
-		m.ResetBaseURL()
+	case environment.FieldRemark:
+		m.ResetRemark()
 		return nil
 	case environment.FieldIsDefault:
 		m.ResetIsDefault()

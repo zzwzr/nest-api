@@ -4,7 +4,7 @@ type Item struct {
 	ID        int64  `json:"id"`
 	ProjectID int64  `json:"project_id"`
 	Name      string `json:"name"`
-	BaseURL   string `json:"base_url"`
+	Remark    string `json:"remark"`
 	IsDefault bool   `json:"is_default"`
 	CreatedAt string `json:"created_at"`
 }
@@ -18,7 +18,7 @@ type CreateRequest struct {
 	WorkspaceID int64  `json:"workspace_id" binding:"required,min=1"`
 	ProjectID   int64  `json:"project_id" binding:"required,min=1"`
 	Name        string `json:"name" binding:"required,min=1,max=100"`
-	BaseURL     string `json:"base_url" binding:"max=500"`
+	Remark      string `json:"remark" binding:"max=500"`
 	IsDefault   bool   `json:"is_default"`
 }
 
@@ -27,7 +27,7 @@ type UpdateRequest struct {
 	ProjectID     int64  `json:"project_id" binding:"required,min=1"`
 	EnvironmentID int64  `json:"environment_id" binding:"required,min=1"`
 	Name          string `json:"name" binding:"required,min=1,max=100"`
-	BaseURL       string `json:"base_url" binding:"max=500"`
+	Remark        string `json:"remark" binding:"max=500"`
 	IsDefault     bool   `json:"is_default"`
 }
 

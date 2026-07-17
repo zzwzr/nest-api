@@ -44,10 +44,11 @@ func (Environment) Fields() []ent.Field {
 			Default("").
 			Comment("环境名称"),
 
-		field.String("base_url").
+		field.String("remark").
+			StorageKey("base_url").
 			MaxLen(500).
 			Default("").
-			Comment("基础 URL"),
+			Comment("备注"),
 
 		field.Bool("is_default").
 			Default(false).

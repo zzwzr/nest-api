@@ -19,8 +19,8 @@ const (
 	FieldProjectID = "project_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldBaseURL holds the string denoting the base_url field in the database.
-	FieldBaseURL = "base_url"
+	// FieldRemark holds the string denoting the remark field in the database.
+	FieldRemark = "base_url"
 	// FieldIsDefault holds the string denoting the is_default field in the database.
 	FieldIsDefault = "is_default"
 	// FieldCreatedBy holds the string denoting the created_by field in the database.
@@ -67,7 +67,7 @@ var Columns = []string{
 	FieldID,
 	FieldProjectID,
 	FieldName,
-	FieldBaseURL,
+	FieldRemark,
 	FieldIsDefault,
 	FieldCreatedBy,
 	FieldCreatedAt,
@@ -99,10 +99,10 @@ var (
 	DefaultName string
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
-	// DefaultBaseURL holds the default value on creation for the "base_url" field.
-	DefaultBaseURL string
-	// BaseURLValidator is a validator for the "base_url" field. It is called by the builders before save.
-	BaseURLValidator func(string) error
+	// DefaultRemark holds the default value on creation for the "remark" field.
+	DefaultRemark string
+	// RemarkValidator is a validator for the "remark" field. It is called by the builders before save.
+	RemarkValidator func(string) error
 	// DefaultIsDefault holds the default value on creation for the "is_default" field.
 	DefaultIsDefault bool
 	// DefaultCreatedBy holds the default value on creation for the "created_by" field.
@@ -135,9 +135,9 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByBaseURL orders the results by the base_url field.
-func ByBaseURL(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldBaseURL, opts...).ToFunc()
+// ByRemark orders the results by the remark field.
+func ByRemark(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRemark, opts...).ToFunc()
 }
 
 // ByIsDefault orders the results by the is_default field.

@@ -174,7 +174,7 @@ export interface EnvironmentItem {
   id: number
   project_id: number
   name: string
-  base_url: string
+  remark: string
   is_default: boolean
   created_at: string
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   createEnvironmentVariable,
@@ -8,6 +8,7 @@ import {
 } from '@/api/envvariable'
 import { useLocale } from '@/composables/useLocale'
 import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
+import type { EnvironmentVariableItem } from '@/types/workspace'
 
 const { t } = useLocale()
 const {
@@ -23,7 +24,16 @@ const {
 
 const editingId = ref<number | null>(null)
 const deletingId = ref<number | null>(null)
-const creating = ref(false)
+const submitting = ref(false)
+const dialogVisible = ref(false)
+const dialogMode = ref<'create' | 'edit'>('create')
+const editingVariableId = ref<number | null>(null)
+
+const form = reactive({
+  key: '',
+  value: '',
+  description: '',
+})
 
 const currentEnvironmentId = computed(() => activeTab.value?.environmentId ?? activeEnvironmentId.value)
 
@@ -38,91 +48,82 @@ watch(
   { immediate: true },
 )
 
-async function handleCreate() {
-  if (!activeWorkspaceId.value || !activeProjectId.value || !currentEnvironmentId.value) return
-
-  try {
-    const { value: key } = await ElMessageBox.prompt(
-      t('environment.variableKeyPlaceholder'),
-      t('environment.createVariable'),
-      {
-        inputPattern: /\S+/,
-        inputErrorMessage: t('workspace.nameRequired'),
-      },
-    )
-    if (!key?.trim()) return
-
-    const { value } = await ElMessageBox.prompt(
-      t('environment.variableValuePlaceholder'),
-      t('environment.createVariable'),
-      {
-        inputValue: '',
-      },
-    )
-
-    creating.value = true
-    await createEnvironmentVariable(
-      activeWorkspaceId.value,
-      activeProjectId.value,
-      currentEnvironmentId.value,
-      {
-        key: key.trim(),
-        value: value ?? '',
-      },
-    )
-    ElMessage.success(t('environment.variableCreateSuccess'))
-    await loadEnvironmentVariables()
-  } catch (error) {
-    if (error !== 'cancel' && error !== 'close') {
-      ElMessage.error(error instanceof Error ? error.message : t('environment.variableCreateFailed'))
-    }
-  } finally {
-    creating.value = false
+watch(dialogVisible, (visible) => {
+  if (!visible) {
+    form.key = ''
+    form.value = ''
+    form.description = ''
+    editingVariableId.value = null
   }
+})
+
+function openCreateDialog() {
+  dialogMode.value = 'create'
+  form.key = ''
+  form.value = ''
+  form.description = ''
+  dialogVisible.value = true
 }
 
-async function handleEdit(variableId: number, currentKey: string, currentValue: string, description: string) {
+function openEditDialog(row: EnvironmentVariableItem) {
+  dialogMode.value = 'edit'
+  editingVariableId.value = row.id
+  form.key = row.key
+  form.value = row.value
+  form.description = row.description ?? ''
+  dialogVisible.value = true
+}
+
+async function handleSubmit() {
   if (!activeWorkspaceId.value || !activeProjectId.value || !currentEnvironmentId.value) return
 
+  const key = form.key.trim()
+  if (!key) {
+    ElMessage.warning(t('environment.variableKeyPlaceholder'))
+    return
+  }
+
+  submitting.value = true
   try {
-    const { value: key } = await ElMessageBox.prompt(
-      t('environment.variableKeyPlaceholder'),
-      t('environment.editVariable'),
-      {
-        inputValue: currentKey,
-        inputPattern: /\S+/,
-        inputErrorMessage: t('workspace.nameRequired'),
-      },
-    )
-    if (!key?.trim()) return
-
-    const { value } = await ElMessageBox.prompt(
-      t('environment.variableValuePlaceholder'),
-      t('environment.editVariable'),
-      {
-        inputValue: currentValue,
-      },
-    )
-
-    editingId.value = variableId
-    await updateEnvironmentVariable(
-      activeWorkspaceId.value,
-      activeProjectId.value,
-      currentEnvironmentId.value,
-      variableId,
-      {
-        key: key.trim(),
-        value: value ?? '',
-        description,
-      },
-    )
-    ElMessage.success(t('environment.variableUpdateSuccess'))
+    if (dialogMode.value === 'create') {
+      await createEnvironmentVariable(
+        activeWorkspaceId.value,
+        activeProjectId.value,
+        currentEnvironmentId.value,
+        {
+          key,
+          value: form.value,
+          description: form.description.trim(),
+        },
+      )
+      ElMessage.success(t('environment.variableCreateSuccess'))
+    } else if (editingVariableId.value) {
+      editingId.value = editingVariableId.value
+      await updateEnvironmentVariable(
+        activeWorkspaceId.value,
+        activeProjectId.value,
+        currentEnvironmentId.value,
+        editingVariableId.value,
+        {
+          key,
+          value: form.value,
+          description: form.description.trim(),
+        },
+      )
+      ElMessage.success(t('environment.variableUpdateSuccess'))
+    }
+    dialogVisible.value = false
     await loadEnvironmentVariables()
   } catch (error) {
-    if (error !== 'cancel' && error !== 'close') {
-      ElMessage.error(error instanceof Error ? error.message : t('environment.variableUpdateFailed'))
-    }
+    ElMessage.error(
+      error instanceof Error
+        ? error.message
+        : dialogMode.value === 'create'
+          ? t('environment.variableCreateFailed')
+          : t('environment.variableUpdateFailed'),
+    )
   } finally {
+    submitting.value = false
     editingId.value = null
   }
 }
@@ -170,9 +171,8 @@ async function handleDelete(variableId: number, key: string) {
       <el-button
         type="primary"
         class="workspace-action-btn"
-        :loading="creating"
         :disabled="!currentEnvironmentId"
-        @click="handleCreate"
+        @click="openCreateDialog"
       >
         <span class="workspace-action-btn__plus">+</span>
         <span>{{ t('environment.createVariable') }}</span>
@@ -194,7 +194,7 @@ async function handleDelete(variableId: number, key: string) {
             type="primary"
             link
             :loading="editingId === row.id"
-            @click="handleEdit(row.id, row.key, row.value, row.description)"
+            @click="openEditDialog(row)"
           >
             {{ t('common.edit') }}
           </el-button>
@@ -209,11 +209,70 @@ async function handleDelete(variableId: number, key: string) {
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogMode === 'create' ? t('environment.createVariable') : t('environment.editVariable')"
+      width="460px"
+      destroy-on-close
+    >
+      <el-form label-position="top" @submit.prevent="handleSubmit">
+        <el-form-item :label="t('environment.variableKey')" required>
+          <el-input
+            v-model="form.key"
+            :placeholder="t('environment.variableKeyPlaceholder')"
+            maxlength="100"
+            show-word-limit
+          />
+        </el-form-item>
+        <el-form-item :label="t('environment.variableValue')">
+          <el-input
+            v-model="form.value"
+            :placeholder="t('environment.variableValuePlaceholder')"
+            type="textarea"
+            :rows="3"
+          />
+        </el-form-item>
+        <el-form-item :label="t('environment.variableDescription')">
+          <el-input
+            v-model="form.description"
+            :placeholder="t('environment.variableDescriptionPlaceholder')"
+            maxlength="255"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          {{ t('common.confirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <style scoped>
 .variable-manage__toolbar {
   padding: 10px 10px 10px 8px;
+}
+
+.variable-manage :deep(.el-dialog .el-input__inner),
+.variable-manage :deep(.el-dialog .el-textarea__inner) {
+  color: var(--color-text) !important;
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+  font-size: 14px;
+}
+
+.variable-manage :deep(.el-dialog .el-input__inner::placeholder),
+.variable-manage :deep(.el-dialog .el-textarea__inner::placeholder) {
+  color: var(--color-text-secondary) !important;
+  -webkit-text-fill-color: var(--color-text-secondary);
+}
+
+.variable-manage :deep(.el-dialog .el-form-item__label) {
+  color: var(--color-text);
+  font-weight: 500;
 }
 </style>

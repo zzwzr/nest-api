@@ -59,16 +59,16 @@ func (_u *EnvironmentUpdate) SetNillableName(v *string) *EnvironmentUpdate {
 	return _u
 }
 
-// SetBaseURL sets the "base_url" field.
-func (_u *EnvironmentUpdate) SetBaseURL(v string) *EnvironmentUpdate {
-	_u.mutation.SetBaseURL(v)
+// SetRemark sets the "remark" field.
+func (_u *EnvironmentUpdate) SetRemark(v string) *EnvironmentUpdate {
+	_u.mutation.SetRemark(v)
 	return _u
 }
 
-// SetNillableBaseURL sets the "base_url" field if the given value is not nil.
-func (_u *EnvironmentUpdate) SetNillableBaseURL(v *string) *EnvironmentUpdate {
+// SetNillableRemark sets the "remark" field if the given value is not nil.
+func (_u *EnvironmentUpdate) SetNillableRemark(v *string) *EnvironmentUpdate {
 	if v != nil {
-		_u.SetBaseURL(*v)
+		_u.SetRemark(*v)
 	}
 	return _u
 }
@@ -259,9 +259,9 @@ func (_u *EnvironmentUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Environment.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.BaseURL(); ok {
-		if err := environment.BaseURLValidator(v); err != nil {
-			return &ValidationError{Name: "base_url", err: fmt.Errorf(`ent: validator failed for field "Environment.base_url": %w`, err)}
+	if v, ok := _u.mutation.Remark(); ok {
+		if err := environment.RemarkValidator(v); err != nil {
+			return &ValidationError{Name: "remark", err: fmt.Errorf(`ent: validator failed for field "Environment.remark": %w`, err)}
 		}
 	}
 	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
@@ -288,8 +288,8 @@ func (_u *EnvironmentUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(environment.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.BaseURL(); ok {
-		_spec.SetField(environment.FieldBaseURL, field.TypeString, value)
+	if value, ok := _u.mutation.Remark(); ok {
+		_spec.SetField(environment.FieldRemark, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(environment.FieldIsDefault, field.TypeBool, value)
@@ -457,16 +457,16 @@ func (_u *EnvironmentUpdateOne) SetNillableName(v *string) *EnvironmentUpdateOne
 	return _u
 }
 
-// SetBaseURL sets the "base_url" field.
-func (_u *EnvironmentUpdateOne) SetBaseURL(v string) *EnvironmentUpdateOne {
-	_u.mutation.SetBaseURL(v)
+// SetRemark sets the "remark" field.
+func (_u *EnvironmentUpdateOne) SetRemark(v string) *EnvironmentUpdateOne {
+	_u.mutation.SetRemark(v)
 	return _u
 }
 
-// SetNillableBaseURL sets the "base_url" field if the given value is not nil.
-func (_u *EnvironmentUpdateOne) SetNillableBaseURL(v *string) *EnvironmentUpdateOne {
+// SetNillableRemark sets the "remark" field if the given value is not nil.
+func (_u *EnvironmentUpdateOne) SetNillableRemark(v *string) *EnvironmentUpdateOne {
 	if v != nil {
-		_u.SetBaseURL(*v)
+		_u.SetRemark(*v)
 	}
 	return _u
 }
@@ -670,9 +670,9 @@ func (_u *EnvironmentUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Environment.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.BaseURL(); ok {
-		if err := environment.BaseURLValidator(v); err != nil {
-			return &ValidationError{Name: "base_url", err: fmt.Errorf(`ent: validator failed for field "Environment.base_url": %w`, err)}
+	if v, ok := _u.mutation.Remark(); ok {
+		if err := environment.RemarkValidator(v); err != nil {
+			return &ValidationError{Name: "remark", err: fmt.Errorf(`ent: validator failed for field "Environment.remark": %w`, err)}
 		}
 	}
 	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
@@ -716,8 +716,8 @@ func (_u *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environment
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(environment.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.BaseURL(); ok {
-		_spec.SetField(environment.FieldBaseURL, field.TypeString, value)
+	if value, ok := _u.mutation.Remark(); ok {
+		_spec.SetField(environment.FieldRemark, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(environment.FieldIsDefault, field.TypeBool, value)

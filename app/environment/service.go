@@ -30,7 +30,7 @@ func (Service) List(ctx context.Context, userID int64, params ListRequest) ([]It
 			ID:        row.ID,
 			ProjectID: row.ProjectID,
 			Name:      row.Name,
-			BaseURL:   row.BaseURL,
+			Remark:    row.Remark,
 			IsDefault: row.IsDefault,
 			CreatedAt: row.CreatedAt.Format(utils.DateTimeFormat),
 		})
@@ -61,7 +61,7 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) e
 		}
 	}
 
-	_, err = Repo{}.Create(ctx, params.ProjectID, userID, params.Name, params.BaseURL, isDefault)
+	_, err = Repo{}.Create(ctx, params.ProjectID, userID, params.Name, params.Remark, isDefault)
 	return err
 }
 
@@ -82,7 +82,7 @@ func (Service) Update(ctx context.Context, userID int64, params UpdateRequest) e
 		}
 	}
 
-	return (Repo{}).Update(ctx, params.EnvironmentID, params.Name, params.BaseURL, params.IsDefault)
+	return (Repo{}).Update(ctx, params.EnvironmentID, params.Name, params.Remark, params.IsDefault)
 }
 
 func (Service) Delete(ctx context.Context, userID int64, params DeleteRequest) error {

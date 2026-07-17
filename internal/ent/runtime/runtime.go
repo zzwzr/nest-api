@@ -124,12 +124,12 @@ func init() {
 	environment.DefaultName = environmentDescName.Default.(string)
 	// environment.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	environment.NameValidator = environmentDescName.Validators[0].(func(string) error)
-	// environmentDescBaseURL is the schema descriptor for base_url field.
-	environmentDescBaseURL := environmentFields[3].Descriptor()
-	// environment.DefaultBaseURL holds the default value on creation for the base_url field.
-	environment.DefaultBaseURL = environmentDescBaseURL.Default.(string)
-	// environment.BaseURLValidator is a validator for the "base_url" field. It is called by the builders before save.
-	environment.BaseURLValidator = environmentDescBaseURL.Validators[0].(func(string) error)
+	// environmentDescRemark is the schema descriptor for remark field.
+	environmentDescRemark := environmentFields[3].Descriptor()
+	// environment.DefaultRemark holds the default value on creation for the remark field.
+	environment.DefaultRemark = environmentDescRemark.Default.(string)
+	// environment.RemarkValidator is a validator for the "remark" field. It is called by the builders before save.
+	environment.RemarkValidator = environmentDescRemark.Validators[0].(func(string) error)
 	// environmentDescIsDefault is the schema descriptor for is_default field.
 	environmentDescIsDefault := environmentFields[4].Descriptor()
 	// environment.DefaultIsDefault holds the default value on creation for the is_default field.

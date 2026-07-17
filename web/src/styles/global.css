@@ -20,12 +20,14 @@
   --el-color-primary: #007acc;
   --el-bg-color: #ffffff;
   --el-bg-color-page: #f3f3f3;
+  --el-bg-color-overlay: #ffffff;
   --el-fill-color-blank: #ffffff;
   --el-text-color-primary: #333333;
   --el-text-color-regular: #666666;
-  --el-text-color-placeholder: #999999;
+  --el-text-color-placeholder: #888888;
   --el-border-color: #e0e0e0;
   --el-border-color-light: #ebebeb;
+  --el-input-text-color: #333333;
 
   --color-workspace-content: #f3f3f3;
   --color-workspace-elevated: #ffffff;
@@ -84,12 +86,14 @@
   --el-color-primary: #007acc;
   --el-bg-color: #242424;
   --el-bg-color-page: #1a1a1a;
+  --el-bg-color-overlay: #242424;
   --el-fill-color-blank: #242424;
   --el-text-color-primary: #e8e8e8;
   --el-text-color-regular: #a8a8a8;
-  --el-text-color-placeholder: #7a7a7a;
+  --el-text-color-placeholder: #8a8a8a;
   --el-border-color: #3a3a3a;
   --el-border-color-light: #444444;
+  --el-input-text-color: #e8e8e8;
 
   --color-workspace-content: #212121;
   --color-workspace-elevated: #2a2a2a;
@@ -205,6 +209,25 @@ a {
   box-shadow: 0 0 0 1px var(--color-border) inset;
 }
 
+.el-input__inner,
+.el-textarea__inner,
+.el-input__inner:not(:placeholder-shown),
+.el-textarea__inner:not(:placeholder-shown) {
+  color: var(--color-text) !important;
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: var(--color-text-secondary) !important;
+  -webkit-text-fill-color: var(--color-text-secondary);
+}
+
+.el-form-item__label {
+  color: var(--color-text);
+}
+
 .el-input__wrapper:hover,
 .el-select__wrapper:hover {
   box-shadow: 0 0 0 1px var(--color-primary) inset;
@@ -280,7 +303,7 @@ a {
   box-shadow: var(--color-menu-shadow);
 }
 
-.app-user-menu .el-popper__arrow::before {
+.app-user-menu.el-popper.is-light > .el-popper__arrow::before {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
 }
@@ -372,7 +395,7 @@ a {
   box-shadow: var(--color-menu-shadow);
 }
 
-.ws-project-popover .el-popper__arrow::before {
+.ws-project-popover.el-popper.is-light > .el-popper__arrow::before {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
 }

@@ -65,9 +65,9 @@ func Name(v string) predicate.Environment {
 	return predicate.Environment(sql.FieldEQ(FieldName, v))
 }
 
-// BaseURL applies equality check predicate on the "base_url" field. It's identical to BaseURLEQ.
-func BaseURL(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldEQ(FieldBaseURL, v))
+// Remark applies equality check predicate on the "remark" field. It's identical to RemarkEQ.
+func Remark(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldEQ(FieldRemark, v))
 }
 
 // IsDefault applies equality check predicate on the "is_default" field. It's identical to IsDefaultEQ.
@@ -180,69 +180,69 @@ func NameContainsFold(v string) predicate.Environment {
 	return predicate.Environment(sql.FieldContainsFold(FieldName, v))
 }
 
-// BaseURLEQ applies the EQ predicate on the "base_url" field.
-func BaseURLEQ(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldEQ(FieldBaseURL, v))
+// RemarkEQ applies the EQ predicate on the "remark" field.
+func RemarkEQ(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldEQ(FieldRemark, v))
 }
 
-// BaseURLNEQ applies the NEQ predicate on the "base_url" field.
-func BaseURLNEQ(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldNEQ(FieldBaseURL, v))
+// RemarkNEQ applies the NEQ predicate on the "remark" field.
+func RemarkNEQ(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldNEQ(FieldRemark, v))
 }
 
-// BaseURLIn applies the In predicate on the "base_url" field.
-func BaseURLIn(vs ...string) predicate.Environment {
-	return predicate.Environment(sql.FieldIn(FieldBaseURL, vs...))
+// RemarkIn applies the In predicate on the "remark" field.
+func RemarkIn(vs ...string) predicate.Environment {
+	return predicate.Environment(sql.FieldIn(FieldRemark, vs...))
 }
 
-// BaseURLNotIn applies the NotIn predicate on the "base_url" field.
-func BaseURLNotIn(vs ...string) predicate.Environment {
-	return predicate.Environment(sql.FieldNotIn(FieldBaseURL, vs...))
+// RemarkNotIn applies the NotIn predicate on the "remark" field.
+func RemarkNotIn(vs ...string) predicate.Environment {
+	return predicate.Environment(sql.FieldNotIn(FieldRemark, vs...))
 }
 
-// BaseURLGT applies the GT predicate on the "base_url" field.
-func BaseURLGT(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldGT(FieldBaseURL, v))
+// RemarkGT applies the GT predicate on the "remark" field.
+func RemarkGT(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldGT(FieldRemark, v))
 }
 
-// BaseURLGTE applies the GTE predicate on the "base_url" field.
-func BaseURLGTE(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldGTE(FieldBaseURL, v))
+// RemarkGTE applies the GTE predicate on the "remark" field.
+func RemarkGTE(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldGTE(FieldRemark, v))
 }
 
-// BaseURLLT applies the LT predicate on the "base_url" field.
-func BaseURLLT(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldLT(FieldBaseURL, v))
+// RemarkLT applies the LT predicate on the "remark" field.
+func RemarkLT(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldLT(FieldRemark, v))
 }
 
-// BaseURLLTE applies the LTE predicate on the "base_url" field.
-func BaseURLLTE(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldLTE(FieldBaseURL, v))
+// RemarkLTE applies the LTE predicate on the "remark" field.
+func RemarkLTE(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldLTE(FieldRemark, v))
 }
 
-// BaseURLContains applies the Contains predicate on the "base_url" field.
-func BaseURLContains(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldContains(FieldBaseURL, v))
+// RemarkContains applies the Contains predicate on the "remark" field.
+func RemarkContains(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldContains(FieldRemark, v))
 }
 
-// BaseURLHasPrefix applies the HasPrefix predicate on the "base_url" field.
-func BaseURLHasPrefix(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldHasPrefix(FieldBaseURL, v))
+// RemarkHasPrefix applies the HasPrefix predicate on the "remark" field.
+func RemarkHasPrefix(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldHasPrefix(FieldRemark, v))
 }
 
-// BaseURLHasSuffix applies the HasSuffix predicate on the "base_url" field.
-func BaseURLHasSuffix(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldHasSuffix(FieldBaseURL, v))
+// RemarkHasSuffix applies the HasSuffix predicate on the "remark" field.
+func RemarkHasSuffix(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldHasSuffix(FieldRemark, v))
 }
 
-// BaseURLEqualFold applies the EqualFold predicate on the "base_url" field.
-func BaseURLEqualFold(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldEqualFold(FieldBaseURL, v))
+// RemarkEqualFold applies the EqualFold predicate on the "remark" field.
+func RemarkEqualFold(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldEqualFold(FieldRemark, v))
 }
 
-// BaseURLContainsFold applies the ContainsFold predicate on the "base_url" field.
-func BaseURLContainsFold(v string) predicate.Environment {
-	return predicate.Environment(sql.FieldContainsFold(FieldBaseURL, v))
+// RemarkContainsFold applies the ContainsFold predicate on the "remark" field.
+func RemarkContainsFold(v string) predicate.Environment {
+	return predicate.Environment(sql.FieldContainsFold(FieldRemark, v))
 }
 
 // IsDefaultEQ applies the EQ predicate on the "is_default" field.

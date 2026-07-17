@@ -60,22 +60,22 @@ func (Repo) ClearDefault(ctx context.Context, projectID int64) error {
 	return err
 }
 
-func (Repo) Create(ctx context.Context, projectID, userID int64, name, baseURL string, isDefault bool) (*ent.Environment, error) {
+func (Repo) Create(ctx context.Context, projectID, userID int64, name, remark string, isDefault bool) (*ent.Environment, error) {
 	return database.DB.Environment.
 		Create().
 		SetProjectID(projectID).
 		SetName(name).
-		SetBaseURL(baseURL).
+		SetRemark(remark).
 		SetIsDefault(isDefault).
 		SetCreatedBy(userID).
 		Save(ctx)
 }
 
-func (Repo) Update(ctx context.Context, environmentID int64, name, baseURL string, isDefault bool) error {
+func (Repo) Update(ctx context.Context, environmentID int64, name, remark string, isDefault bool) error {
 	_, err := database.DB.Environment.
 		UpdateOneID(environmentID).
 		SetName(name).
-		SetBaseURL(baseURL).
+		SetRemark(remark).
 		SetIsDefault(isDefault).
 		Save(ctx)
 	return err

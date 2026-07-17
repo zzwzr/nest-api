@@ -24,8 +24,8 @@ type Environment struct {
 	ProjectID int64 `json:"project_id,omitempty"`
 	// 环境名称
 	Name string `json:"name,omitempty"`
-	// 基础 URL
-	BaseURL string `json:"base_url,omitempty"`
+	// 备注
+	Remark string `json:"remark,omitempty"`
 	// 是否默认环境
 	IsDefault bool `json:"is_default,omitempty"`
 	// 创建者用户 ID
@@ -97,7 +97,7 @@ func (*Environment) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case environment.FieldID, environment.FieldProjectID, environment.FieldCreatedBy:
 			values[i] = new(sql.NullInt64)
-		case environment.FieldName, environment.FieldBaseURL:
+		case environment.FieldName, environment.FieldRemark:
 			values[i] = new(sql.NullString)
 		case environment.FieldCreatedAt, environment.FieldUpdatedAt:
 			values[i] = new(utils.DateTime)
@@ -134,11 +134,11 @@ func (_m *Environment) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case environment.FieldBaseURL:
+		case environment.FieldRemark:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field base_url", values[i])
+				return fmt.Errorf("unexpected type %T for field remark", values[i])
 			} else if value.Valid {
-				_m.BaseURL = value.String
+				_m.Remark = value.String
 			}
 		case environment.FieldIsDefault:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -228,8 +228,8 @@ func (_m *Environment) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("base_url=")
-	builder.WriteString(_m.BaseURL)
+	builder.WriteString("remark=")
+	builder.WriteString(_m.Remark)
 	builder.WriteString(", ")
 	builder.WriteString("is_default=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsDefault))

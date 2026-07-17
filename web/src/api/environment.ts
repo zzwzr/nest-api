@@ -10,7 +10,7 @@ export function fetchEnvironments(workspaceId: number, projectId: number) {
 export function createEnvironment(
   workspaceId: number,
   projectId: number,
-  payload: { name: string; base_url?: string; is_default?: boolean },
+  payload: { name: string; remark?: string; is_default?: boolean },
 ) {
   return getData<null>(
     http.post('/v1/environments', {
@@ -25,7 +25,7 @@ export function updateEnvironment(
   workspaceId: number,
   projectId: number,
   environmentId: number,
-  payload: { name: string; base_url?: string; is_default?: boolean },
+  payload: { name: string; remark?: string; is_default?: boolean },
 ) {
   return getData<null>(
     http.put('/v1/environments', {

@@ -51,16 +51,16 @@ func (_c *EnvironmentCreate) SetNillableName(v *string) *EnvironmentCreate {
 	return _c
 }
 
-// SetBaseURL sets the "base_url" field.
-func (_c *EnvironmentCreate) SetBaseURL(v string) *EnvironmentCreate {
-	_c.mutation.SetBaseURL(v)
+// SetRemark sets the "remark" field.
+func (_c *EnvironmentCreate) SetRemark(v string) *EnvironmentCreate {
+	_c.mutation.SetRemark(v)
 	return _c
 }
 
-// SetNillableBaseURL sets the "base_url" field if the given value is not nil.
-func (_c *EnvironmentCreate) SetNillableBaseURL(v *string) *EnvironmentCreate {
+// SetNillableRemark sets the "remark" field if the given value is not nil.
+func (_c *EnvironmentCreate) SetNillableRemark(v *string) *EnvironmentCreate {
 	if v != nil {
-		_c.SetBaseURL(*v)
+		_c.SetRemark(*v)
 	}
 	return _c
 }
@@ -217,9 +217,9 @@ func (_c *EnvironmentCreate) defaults() error {
 		v := environment.DefaultName
 		_c.mutation.SetName(v)
 	}
-	if _, ok := _c.mutation.BaseURL(); !ok {
-		v := environment.DefaultBaseURL
-		_c.mutation.SetBaseURL(v)
+	if _, ok := _c.mutation.Remark(); !ok {
+		v := environment.DefaultRemark
+		_c.mutation.SetRemark(v)
 	}
 	if _, ok := _c.mutation.IsDefault(); !ok {
 		v := environment.DefaultIsDefault
@@ -259,12 +259,12 @@ func (_c *EnvironmentCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Environment.name": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.BaseURL(); !ok {
-		return &ValidationError{Name: "base_url", err: errors.New(`ent: missing required field "Environment.base_url"`)}
+	if _, ok := _c.mutation.Remark(); !ok {
+		return &ValidationError{Name: "remark", err: errors.New(`ent: missing required field "Environment.remark"`)}
 	}
-	if v, ok := _c.mutation.BaseURL(); ok {
-		if err := environment.BaseURLValidator(v); err != nil {
-			return &ValidationError{Name: "base_url", err: fmt.Errorf(`ent: validator failed for field "Environment.base_url": %w`, err)}
+	if v, ok := _c.mutation.Remark(); ok {
+		if err := environment.RemarkValidator(v); err != nil {
+			return &ValidationError{Name: "remark", err: fmt.Errorf(`ent: validator failed for field "Environment.remark": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.IsDefault(); !ok {
@@ -326,9 +326,9 @@ func (_c *EnvironmentCreate) createSpec() (*Environment, *sqlgraph.CreateSpec) {
 		_spec.SetField(environment.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := _c.mutation.BaseURL(); ok {
-		_spec.SetField(environment.FieldBaseURL, field.TypeString, value)
-		_node.BaseURL = value
+	if value, ok := _c.mutation.Remark(); ok {
+		_spec.SetField(environment.FieldRemark, field.TypeString, value)
+		_node.Remark = value
 	}
 	if value, ok := _c.mutation.IsDefault(); ok {
 		_spec.SetField(environment.FieldIsDefault, field.TypeBool, value)

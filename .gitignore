@@ -2,6 +2,7 @@
 .vscode/
 .idea/
 *.log
+/web/
 
 docker/caddy/data/
 docker/valkey/data/

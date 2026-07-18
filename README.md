@@ -34,7 +34,6 @@ ApiNest 用来集中管理接口文档与协作流程。你可以把团队放进
 ```bash
 docker pull zzwzr/nest:latest
 
-docker pull zzwzr/nest:0.0.1
 ```
 
 > **部署前提**
@@ -50,8 +49,8 @@ docker pull zzwzr/nest:0.0.1
 services:
   nest:
     image: zzwzr/nest:latest
-    ports:
-      - "3000:3000"
+    expose:
+      - 3000
     volumes:
       - ./runtime:/app/runtime
     restart: unless-stopped
@@ -88,9 +87,10 @@ your.domain.com {
 
 ## 路线图
 
-- [ ] 内置 / 多数据库支持（当前仅外部 PostgreSQL）
+- [ ] 接口测试
 - [ ] 桌面端对接
 - [ ] 液态玻璃主题与边框细化
+- [ ] 内置 / 多数据库支持（当前仅外部 PostgreSQL）
 
 ## License
 

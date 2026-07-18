@@ -30,15 +30,13 @@ const { t } = useLocale()
 
 const fieldTypeOptions = ['string', 'number', 'boolean', 'object', 'array', 'file']
 
-const filledRows = computed(() => props.modelValue.filter(hasParamContent))
-
 const allFilledRequired = computed(
-  () => filledRows.value.length > 0 && filledRows.value.every((row) => row.required),
+  () => props.modelValue.length > 0 && props.modelValue.every((row) => row.required),
 )
 
 const requiredIndeterminate = computed(() => {
-  const requiredCount = filledRows.value.filter((row) => row.required).length
-  return requiredCount > 0 && requiredCount < filledRows.value.length
+  const requiredCount = props.modelValue.filter((row) => row.required).length
+  return requiredCount > 0 && requiredCount < props.modelValue.length
 })
 
 const requiredHeaderTooltip = computed(() =>

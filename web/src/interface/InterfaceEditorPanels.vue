@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import InterfaceRequestParams from '@/interface/InterfaceRequestParams.vue'
 import InterfaceResponseHeaderTable from '@/interface/InterfaceResponseHeaderTable.vue'
 import InterfaceResponseExamples from '@/interface/InterfaceResponseExamples.vue'
 import InterfaceResponseResults from '@/interface/InterfaceResponseResults.vue'
 import { useLocale } from '@/composables/useLocale'
+import {
+  hasRequestParamsContent,
+  hasResponseExamplesContent,
+  hasResponseHeadersContent,
+  hasResponseResultsContent,
+} from '@/utils/interface-editor-form'
 import type { ParamRow } from '@/utils/interface-params'
 import type {
   InterfaceRequestBody,
@@ -13,15 +19,24 @@ import type {
   InterfaceResponseResult,
 } from '@/types/workspace'
 
-defineProps<{
-  requestHeaders: ParamRow[]
-  queryParams: ParamRow[]
-  requestBody: InterfaceRequestBody
-  responseHeaders: ParamRow[]
-  responseResults: InterfaceResponseResult[]
-  responseExamples: InterfaceResponseExample[]
-  readonly?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    requestHeaders: ParamRow[]
+    queryParams: ParamRow[]
+    requestBody: InterfaceRequestBody
+    responseHeaders: ParamRow[]
+    responseResults: InterfaceResponseResult[]
+    responseExamples: InterfaceResponseExample[]
+    readonly?: boolean
+    /** Changes when switching API / create session so empty panels re-collapse. */
+    panelStateKey?: string | number | null
+    /** When true (create API), keep all four panels expanded by default. */
+    defaultOpen?: boolean
+  }>(),
+  {
+    defaultOpen: false,
+  },
+)
 
 const emit = defineEmits<{
   'update:requestHeaders': [value: ParamRow[]]
@@ -35,11 +50,54 @@ const emit = defineEmits<{
 const { t } = useLocale()
 
 const openPanels = reactive({
-  requestParams: true,
-  responseHeader: true,
-  responseResult: true,
-  responseExample: true,
+  requestParams: false,
+  responseHeader: false,
+  responseResult: false,
+  responseExample: false,
 })
+
+function expandAllPanels() {
+  openPanels.requestParams = true
+  openPanels.responseHeader = true
+  openPanels.responseResult = true
+  openPanels.responseExample = true
+}
+
+function syncOpenFromContent() {
+  openPanels.requestParams = hasRequestParamsContent(
+    props.requestHeaders,
+    props.queryParams,
+    props.requestBody,
+  )
+  openPanels.responseHeader = hasResponseHeadersContent(props.responseHeaders)
+  openPanels.responseResult = hasResponseResultsContent(props.responseResults)
+  openPanels.responseExample = hasResponseExamplesContent(props.responseExamples)
+}
+
+// Create flow: open all panels once per session; user can still collapse manually.
+watch(
+  () => [props.panelStateKey, props.defaultOpen] as const,
+  () => {
+    if (props.defaultOpen) expandAllPanels()
+    else syncOpenFromContent()
+  },
+  { immediate: true },
+)
+
+// Edit / doc: expand only sections that have content.
+watch(
+  () =>
+    [
+      hasRequestParamsContent(props.requestHeaders, props.queryParams, props.requestBody),
+      hasResponseHeadersContent(props.responseHeaders),
+      hasResponseResultsContent(props.responseResults),
+      hasResponseExamplesContent(props.responseExamples),
+    ] as const,
+  () => {
+    if (props.defaultOpen) return
+    syncOpenFromContent()
+  },
+)
 </script>
 
 <template>

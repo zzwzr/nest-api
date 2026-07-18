@@ -7,6 +7,7 @@ import InterfaceCreateForm from '@/views/workspace/InterfaceCreateForm.vue'
 import InterfaceDetailPanel from '@/views/workspace/InterfaceDetailPanel.vue'
 import ProjectManagePanel from '@/views/workspace/ProjectManagePanel.vue'
 import VariableManagePanel from '@/views/workspace/VariableManagePanel.vue'
+import { useSaveShortcut } from '@/composables/useInterfaceEditorDirty'
 import { useLocale } from '@/composables/useLocale'
 import { interfaceStatusKey } from '@/constants/interface-status'
 import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
@@ -285,36 +286,54 @@ function handleTabClick(tab: WorkspaceTab) {
   activateTab(tab.id)
 }
 
-const createFormRef = ref<{ save: () => Promise<boolean> } | null>(null)
-
-async function confirmCloseCreateApi() {
+async function confirmDiscardUnsaved(tab: WorkspaceTab): Promise<boolean> {
+  if (!tab.dirty) return true
   try {
     await ElMessageBox.confirm(
-      t('workspace.unsavedCreateConfirm'),
-      t('workspace.unsavedCreateTitle'),
+      tab.kind === 'create-api'
+        ? t('workspace.discardCreateConfirm')
+        : t('workspace.unsavedCloseConfirm'),
+      tab.kind === 'create-api'
+        ? t('workspace.discardCreateTitle')
+        : t('workspace.unsavedCloseTitle'),
       {
         type: 'warning',
-        confirmButtonText: t('common.confirm'),
+        confirmButtonText:
+          tab.kind === 'create-api'
+            ? t('workspace.discardCreateAction')
+            : t('workspace.unsavedCloseAction'),
         cancelButtonText: t('common.cancel'),
       },
     )
+    return true
   } catch {
-    closeTab('create-api')
-    return
+    return false
   }
+}
 
-  const saved = await createFormRef.value?.save()
-  if (!saved) return
+async function confirmCloseCreateApi() {
+  const createTab = workspaceTabs.value.find((item) => item.id === 'create-api')
+  if (createTab && !(await confirmDiscardUnsaved(createTab))) return
+  closeTab('create-api')
 }
 
 async function handleTabClose(tab: WorkspaceTab, event?: MouseEvent) {
   event?.stopPropagation()
-  if (tab.kind === 'create-api') {
-    await confirmCloseCreateApi()
-    return
-  }
+  if (!(await confirmDiscardUnsaved(tab))) return
   closeTab(tab.id)
 }
+
+type EditorSaveHandle = { save: () => void | boolean | Promise<void | boolean> }
+const createFormRef = ref<EditorSaveHandle | null>(null)
+const detailFormRef = ref<EditorSaveHandle | null>(null)
+
+useSaveShortcut(
+  () => {
+    if (showCreateForm.value) return createFormRef.value?.save()
+    if (showApiDetail.value) return detailFormRef.value?.save()
+  },
+  () => showCreateForm.value || showApiDetail.value,
+)
 
 function openTabContextMenu(event: MouseEvent, tab: WorkspaceTab) {
   if (!isTabClosable(tab)) return
@@ -493,8 +512,11 @@ onBeforeUnmount(() => {
             ref="createFormRef"
             @request-close="confirmCloseCreateApi"
           />
-          <InterfaceDetailPanel v-else-if="showApiDetail" />
-          <div v-else-if="showFolderView" class="workspace-main__folder-view">
+        </keep-alive>
+        <keep-alive>
+          <InterfaceDetailPanel v-if="showApiDetail" ref="detailFormRef" />
+        </keep-alive>
+        <div v-if="showFolderView" class="workspace-main__folder-view">
             <div class="workspace-main__toolbar">
               <el-button type="primary" class="workspace-action-btn" @click="handleAddApi">
                 <span class="workspace-action-btn__plus">+</span>
@@ -622,7 +644,6 @@ onBeforeUnmount(() => {
               {{ t('workspace.loadedRecords', { count: String(apiRows.length) }) }}
             </div>
           </div>
-        </keep-alive>
       </template>
 
       <template v-else>

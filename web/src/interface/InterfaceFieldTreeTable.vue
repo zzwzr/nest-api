@@ -8,7 +8,6 @@ import {
   addSiblingAtPath,
   areSiblingPaths,
   compactFieldTree,
-  countFilledFieldRequired,
   ensureTrailingEmptyRoot,
   flattenFieldTree,
   hasFieldContent,
@@ -36,15 +35,14 @@ const fieldTypeOptions = ['string', 'number', 'boolean', 'object', 'array', 'fil
 
 const flatRows = computed(() => flattenFieldTree(props.modelValue))
 
-const requiredStats = computed(() => countFilledFieldRequired(props.modelValue))
-
 const allFilledRequired = computed(
-  () => requiredStats.value.filled > 0 && requiredStats.value.required === requiredStats.value.filled,
+  () => flatRows.value.length > 0 && flatRows.value.every((row) => row.node.required),
 )
 
-const requiredIndeterminate = computed(
-  () => requiredStats.value.required > 0 && requiredStats.value.required < requiredStats.value.filled,
-)
+const requiredIndeterminate = computed(() => {
+  const requiredCount = flatRows.value.filter((row) => row.node.required).length
+  return requiredCount > 0 && requiredCount < flatRows.value.length
+})
 
 const requiredHeaderTooltip = computed(() =>
   allFilledRequired.value

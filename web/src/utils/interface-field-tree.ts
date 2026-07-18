@@ -24,7 +24,7 @@ export function emptyFieldNode(parentId = 0): FieldTreeNode {
     parent_id: parentId,
     name: '',
     type: 'string',
-    required: false,
+    required: true,
     description: '',
     example: '',
     mock: '',
@@ -213,9 +213,7 @@ export function setAllFieldsRequired(nodes: FieldTreeNode[], required: boolean):
 
   function walk(list: FieldTreeNode[]) {
     for (const node of list) {
-      if (hasFieldContent(node)) {
-        node.required = required
-      }
+      node.required = required
       if (node.children?.length) {
         walk(node.children)
       }

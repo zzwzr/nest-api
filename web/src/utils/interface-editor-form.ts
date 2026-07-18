@@ -5,7 +5,12 @@ import {
   responseFieldTreeFromApi,
 } from '@/utils/interface-field-tree'
 import { normalizeResponseExampleForSave } from '@/utils/response-example-format'
-import { compactParamRows, emptyParamRow, type ParamRow } from '@/utils/interface-params'
+import {
+  compactParamRows,
+  emptyParamRow,
+  hasParamContent,
+  type ParamRow,
+} from '@/utils/interface-params'
 import type {
   HttpMethod,
   HttpProtocol,
@@ -53,6 +58,26 @@ export function createEmptyInterfaceEditorForm(
     responseResults: [],
     responseExamples: [],
   }
+}
+
+/** Replace all fields on a reactive form with a fresh empty editor state. */
+export function resetInterfaceEditorForm(
+  form: InterfaceEditorFormState,
+  defaults?: Partial<Pick<InterfaceEditorFormState, 'method' | 'status' | 'folderId'>>,
+) {
+  const next = createEmptyInterfaceEditorForm(defaults)
+  form.protocol = next.protocol
+  form.method = defaults?.method ?? next.method
+  form.url = next.url
+  form.folderId = defaults?.folderId ?? null
+  form.name = next.name
+  form.status = defaults?.status ?? next.status
+  form.requestHeaders = next.requestHeaders
+  form.requestBody = next.requestBody
+  form.queryParams = next.queryParams
+  form.responseHeaders = next.responseHeaders
+  form.responseResults = next.responseResults
+  form.responseExamples = next.responseExamples
 }
 
 export function defaultResponseResult(name: string): InterfaceResponseResult {
@@ -112,4 +137,26 @@ export function interfaceEditorSnapshot(form: InterfaceEditorFormState) {
     protocol: form.protocol,
     ...buildInterfaceSavePayload(form),
   })
+}
+
+export function hasRequestParamsContent(
+  headers: ParamRow[],
+  queryParams: ParamRow[],
+  body: InterfaceRequestBody,
+): boolean {
+  if (headers.some(hasParamContent) || queryParams.some(hasParamContent)) return true
+  if (body.format === 'raw') return !!(body.raw?.trim())
+  return compactFieldTree(body.fields ?? []).length > 0
+}
+
+export function hasResponseHeadersContent(headers: ParamRow[]): boolean {
+  return headers.some(hasParamContent)
+}
+
+export function hasResponseResultsContent(results: InterfaceResponseResult[]): boolean {
+  return results.some((result) => compactResponseFieldTree(result.fields ?? []).length > 0)
+}
+
+export function hasResponseExamplesContent(examples: InterfaceResponseExample[]): boolean {
+  return examples.some((example) => !!(example.raw?.trim()))
 }

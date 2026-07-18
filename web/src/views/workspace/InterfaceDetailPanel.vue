@@ -5,10 +5,7 @@ import { fetchInterfaceDetail } from '@/api/interface'
 import InterfaceEditorPanels from '@/interface/InterfaceEditorPanels.vue'
 import InterfaceStatusRadio from '@/interface/InterfaceStatusRadio.vue'
 import InterfaceUrlBar from '@/interface/InterfaceUrlBar.vue'
-import {
-  useInterfaceEditorDirty,
-  useSaveShortcut,
-} from '@/composables/useInterfaceEditorDirty'
+import { useInterfaceEditorDirty } from '@/composables/useInterfaceEditorDirty'
 import { useLocale } from '@/composables/useLocale'
 import { useWorkspaceContext, parseApiId } from '@/composables/useWorkspaceContext'
 import {
@@ -20,7 +17,10 @@ import {
 } from '@/utils/interface-editor-form'
 import { collectFolderOptions } from '@/utils/interface-folder-options'
 import { fieldTreeFromApi, responseFieldTreeFromApi } from '@/utils/interface-field-tree'
-import { enrichResponseExample } from '@/utils/response-example-format'
+import {
+  enrichResponseExample,
+  normalizeResponseExampleForSave,
+} from '@/utils/response-example-format'
 import { emptyParamRow, ensureTrailingEmptyRow, type ParamRow } from '@/utils/interface-params'
 import type { InterfaceDetail } from '@/types/workspace'
 
@@ -36,7 +36,7 @@ const {
   apiTree,
   parseFolderId,
   submitUpdateInterface,
-  setActiveTabDirty,
+  setTabDirty,
 } = useWorkspaceContext()
 
 const mode = ref<DetailMode>('edit')
@@ -50,14 +50,21 @@ const interfaceId = computed(() => {
   return parseApiId(tab.apiId)
 })
 
+const detailTabId = computed(() => {
+  const id = interfaceId.value
+  return id != null ? `api-${id}` : null
+})
+
 const readOnly = computed(() => mode.value === 'doc')
 const folderOptions = computed(() => collectFolderOptions(apiTree.value, parseFolderId))
 
 const { beginSuppress, captureBaseline } = useInterfaceEditorDirty({
   getSnapshot: () => interfaceEditorSnapshot(form),
-  setDirty: setActiveTabDirty,
+  setDirty: (dirty) => {
+    if (detailTabId.value) setTabDirty(detailTabId.value, dirty)
+  },
   enabled: () => !readOnly.value && !loading.value && !saving.value,
-  watchSource: () => form,
+  watchSource: form,
 })
 
 function toParamRows(
@@ -74,6 +81,7 @@ function toParamRows(
 }
 
 function applyDetail(detail: InterfaceDetail) {
+  form.protocol = 'HTTP'
   form.method = detail.method
   form.url = detail.url
   form.folderId = detail.folder_id
@@ -95,7 +103,9 @@ function applyDetail(detail: InterfaceDetail) {
       }))
     : [defaultResponseResult(t('workspace.interfaceForm.defaultSuccess'))]
   form.responseExamples = detail.response_examples?.length
-    ? detail.response_examples.map((item) => enrichResponseExample({ ...item }))
+    ? detail.response_examples.map((item) =>
+        normalizeResponseExampleForSave(enrichResponseExample({ ...item })),
+      )
     : [defaultResponseExample(t('workspace.interfaceForm.successExample'))]
 }
 
@@ -137,6 +147,7 @@ async function loadDetail() {
   }
 
   loading.value = true
+  beginSuppress()
   try {
     const detail = await fetchInterfaceDetail(
       activeWorkspaceId.value,
@@ -153,12 +164,14 @@ async function loadDetail() {
       beginSuppress()
       applyDetail(detail)
     }
-    await captureBaseline()
   } catch (error) {
     if (interfaceId.value !== requestId) return
     ElMessage.error(error instanceof Error ? error.message : t('workspace.loadApiFailed'))
   } finally {
-    if (interfaceId.value === requestId) loading.value = false
+    if (interfaceId.value === requestId) {
+      loading.value = false
+      await captureBaseline()
+    }
   }
 }
 
@@ -191,7 +204,9 @@ async function handleSave() {
   }
 }
 
-useSaveShortcut(handleSave, () => !readOnly.value && !saving.value && !loading.value)
+defineExpose({
+  save: handleSave,
+})
 </script>
 
 <template>
@@ -265,6 +280,7 @@ useSaveShortcut(handleSave, () => !readOnly.value && !saving.value && !loading.v
       </div>
 
       <InterfaceEditorPanels
+        :panel-state-key="interfaceId"
         v-model:request-headers="form.requestHeaders"
         v-model:query-params="form.queryParams"
         v-model:request-body="form.requestBody"

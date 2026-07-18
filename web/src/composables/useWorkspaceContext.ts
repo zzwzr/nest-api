@@ -65,6 +65,8 @@ const CREATE_API_TAB_ID = 'create-api'
 
 const workspaceTabs = ref<WorkspaceTab[]>([])
 const activeTabId = ref<string | null>(storedLayout.activeTabId ?? null)
+/** Bumps each time "Add API" is opened so the create form can reset kept-alive state. */
+const createApiSessionKey = ref(0)
 let navigationHydrated = false
 let bootstrapComplete = false
 
@@ -387,12 +389,14 @@ export function useWorkspaceContext() {
       label: '',
       folderId: resolvedFolderId ?? undefined,
       closable: true,
+      dirty: false,
     })
-    activateTab(CREATE_API_TAB_ID)
-
     if (folderNode) {
       selectedFolderId.value = folderNode.id
     }
+    // Reset kept-alive create form before showing the tab
+    createApiSessionKey.value += 1
+    activateTab(CREATE_API_TAB_ID)
   }
 
   function openSpaceSectionTab(section: 'workspaces' | 'projects' | 'members') {
@@ -611,11 +615,16 @@ export function useWorkspaceContext() {
     }
   }
 
-  function setActiveTabDirty(dirty: boolean) {
-    const tab = workspaceTabs.value.find((item) => item.id === activeTabId.value)
+  function setTabDirty(tabId: string, dirty: boolean) {
+    const tab = workspaceTabs.value.find((item) => item.id === tabId)
     if (tab) {
       tab.dirty = dirty
     }
+  }
+
+  function setActiveTabDirty(dirty: boolean) {
+    if (!activeTabId.value) return
+    setTabDirty(activeTabId.value, dirty)
   }
 
   function markActiveTabDirty() {
@@ -1308,6 +1317,9 @@ export function useWorkspaceContext() {
     closeAllTabs,
     markActiveTabDirty,
     setActiveTabDirty,
+    setTabDirty,
+    createApiSessionKey,
+    CREATE_API_TAB_ID,
     toggleNode,
     isNodeExpanded,
     openCreateWorkspace,

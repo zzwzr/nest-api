@@ -987,7 +987,7 @@ onBeforeUnmount(() => {
 }
 
 .context-panel__tree-item--api[draggable='true'] {
-  cursor: grab;
+  cursor: pointer;
 }
 
 .context-panel__tree-item--api[draggable='true']:active {

@@ -1,13 +1,10 @@
 ﻿<script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import InterfaceEditorPanels from '@/interface/InterfaceEditorPanels.vue'
 import InterfaceStatusRadio from '@/interface/InterfaceStatusRadio.vue'
 import InterfaceUrlBar from '@/interface/InterfaceUrlBar.vue'
-import {
-  useInterfaceEditorDirty,
-  useSaveShortcut,
-} from '@/composables/useInterfaceEditorDirty'
+import { useInterfaceEditorDirty } from '@/composables/useInterfaceEditorDirty'
 import { useLocale } from '@/composables/useLocale'
 import { useWorkspaceContext } from '@/composables/useWorkspaceContext'
 import {
@@ -16,6 +13,7 @@ import {
   defaultResponseExample,
   defaultResponseResult,
   interfaceEditorSnapshot,
+  resetInterfaceEditorForm,
 } from '@/utils/interface-editor-form'
 import { collectFolderOptions } from '@/utils/interface-folder-options'
 
@@ -29,7 +27,9 @@ const {
   selectedFolder,
   submitCreateInterface,
   parseFolderId,
-  setActiveTabDirty,
+  setTabDirty,
+  createApiSessionKey,
+  CREATE_API_TAB_ID,
 } = useWorkspaceContext()
 
 const saving = ref(false)
@@ -39,34 +39,43 @@ const folderOptions = computed(() => collectFolderOptions(apiTree.value, parseFo
 
 const { beginSuppress, captureBaseline } = useInterfaceEditorDirty({
   getSnapshot: () => interfaceEditorSnapshot(form),
-  setDirty: setActiveTabDirty,
+  setDirty: (dirty) => setTabDirty(CREATE_API_TAB_ID, dirty),
   enabled: () => !saving.value,
-  watchSource: () => form,
+  watchSource: form,
 })
 
-watch(
-  selectedFolder,
-  (folder) => {
-    if (!folder) return
-    form.folderId = parseFolderId(folder.id)
-  },
-  { immediate: true },
-)
-
-watch(folderOptions, (options) => {
-  if (!form.folderId && options.length > 0) {
-    form.folderId = options[0].folderId
+function resolveFolderId(): number | null {
+  if (selectedFolder.value) {
+    return parseFolderId(selectedFolder.value.id)
   }
-})
+  if (folderOptions.value.length > 0) {
+    return folderOptions.value[0].folderId
+  }
+  return null
+}
 
-onMounted(async () => {
+async function resetForNewApi() {
   beginSuppress()
+  resetInterfaceEditorForm(form, {
+    method: 'POST',
+    status: 1,
+    folderId: resolveFolderId(),
+  })
   form.responseResults = [defaultResponseResult(t('workspace.interfaceForm.defaultSuccess'))]
   form.responseExamples = [defaultResponseExample(t('workspace.interfaceForm.successExample'))]
-  if (!form.folderId && folderOptions.value.length > 0) {
-    form.folderId = folderOptions.value[0].folderId
-  }
   await captureBaseline()
+}
+
+watch(createApiSessionKey, () => {
+  void resetForNewApi()
+}, { immediate: true })
+
+watch(selectedFolder, (folder) => {
+  if (!folder) return
+  const nextFolderId = parseFolderId(folder.id)
+  if (nextFolderId != null && form.folderId !== nextFolderId) {
+    form.folderId = nextFolderId
+  }
 })
 
 async function handleSave(): Promise<boolean> {
@@ -96,8 +105,6 @@ async function handleSave(): Promise<boolean> {
     saving.value = false
   }
 }
-
-useSaveShortcut(handleSave, () => !saving.value)
 
 defineExpose({
   save: handleSave,
@@ -156,6 +163,9 @@ function emitClose() {
       </div>
 
       <InterfaceEditorPanels
+        :key="createApiSessionKey"
+        :panel-state-key="createApiSessionKey"
+        default-open
         v-model:request-headers="form.requestHeaders"
         v-model:query-params="form.queryParams"
         v-model:request-body="form.requestBody"

@@ -10,7 +10,7 @@ export function emptyParamRow(): ParamRow {
   return {
     name: '',
     type: 'string',
-    required: false,
+    required: true,
     description: '',
     example: '',
   }
@@ -36,6 +36,6 @@ export function compactParamRows(rows: ParamRow[]): ParamRow[] {
 export function setAllParamsRequired(rows: ParamRow[], required: boolean): ParamRow[] {
   return rows.map((row) => ({
     ...row,
-    required: hasParamContent(row) ? required : row.required,
+    required,
   }))
 }

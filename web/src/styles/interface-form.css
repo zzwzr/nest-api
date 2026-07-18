@@ -1092,12 +1092,38 @@
   border-color: var(--color-interface-accent);
 }
 
+.interface-param-table .el-checkbox__input.is-checked .el-checkbox__inner::after {
+  border-color: #fff;
+}
+
+.interface-param-table .el-checkbox__input.is-disabled {
+  opacity: 1;
+}
+
+.interface-param-table .el-checkbox__input.is-disabled .el-checkbox__inner {
+  background-color: var(--color-workspace-content) !important;
+  border-color: var(--color-interface-checkbox-border) !important;
+}
+
+.interface-param-table .el-checkbox__input.is-disabled.is-checked .el-checkbox__inner {
+  background-color: var(--color-interface-accent) !important;
+  border-color: var(--color-interface-accent) !important;
+}
+
+.interface-param-table .el-checkbox__input.is-disabled.is-checked .el-checkbox__inner::after {
+  border-color: #fff !important;
+}
+
 .interface-param-table .el-checkbox__input.is-focus .el-checkbox__inner {
   border-color: var(--color-interface-accent);
 }
 
 .interface-param-table .el-checkbox:hover .el-checkbox__inner {
   border-color: var(--color-interface-accent);
+}
+
+.interface-param-table .el-checkbox__input.is-disabled + span.el-checkbox__label {
+  color: inherit;
 }
 
 .interface-param-table__delete {

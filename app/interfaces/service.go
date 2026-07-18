@@ -124,14 +124,72 @@ func (Service) Create(ctx context.Context, userID int64, params CreateRequest) (
 		status = 1
 	}
 
+	bodyFormat := params.RequestBody.Format
+	if bodyFormat == "" {
+		bodyFormat = "json"
+	}
+	bodyDataType := params.RequestBody.DataType
+	if bodyDataType == "" {
+		bodyDataType = "Object"
+	}
+
 	repo := Repo{}
 	sortOrder, err := repo.NextSortOrder(ctx, params.ProjectID, params.FolderID)
 	if err != nil {
 		return 0, err
 	}
 
-	row, err := repo.Create(ctx, params.ProjectID, params.FolderID, userID, params.Name, method, params.URL, status, sortOrder)
+	tx, err := database.DB.Tx(ctx)
 	if err != nil {
+		return 0, err
+	}
+
+	row, err := tx.API.
+		Create().
+		SetProjectID(params.ProjectID).
+		SetFolderID(params.FolderID).
+		SetName(params.Name).
+		SetMethod(method).
+		SetURL(params.URL).
+		SetStatus(status).
+		SetSortOrder(sortOrder).
+		SetRequestBodyFormat(bodyFormat).
+		SetRequestBodyDataType(bodyDataType).
+		SetRequestBodyRaw(params.RequestBody.Raw).
+		SetCreatedBy(userID).
+		SetUpdatedBy(userID).
+		Save(ctx)
+	if err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	if err := repo.ReplaceRequestHeaders(ctx, tx, row.ID, params.RequestHeaders); err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+	if err := repo.ReplaceQueryParams(ctx, tx, row.ID, params.QueryParams); err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+	if err := repo.ReplaceBodyFields(ctx, tx, row.ID, params.RequestBody.Fields); err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+	if err := repo.ReplaceResponseHeaders(ctx, tx, row.ID, params.ResponseHeaders); err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+	if err := repo.ReplaceResponseResults(ctx, tx, row.ID, params.ResponseResults); err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+	if err := repo.ReplaceResponseExamples(ctx, tx, row.ID, params.ResponseExamples); err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
 	return row.ID, nil

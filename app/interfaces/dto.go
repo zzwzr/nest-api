@@ -102,13 +102,19 @@ type DetailRequest struct {
 }
 
 type CreateRequest struct {
-	WorkspaceID int64  `json:"workspace_id" binding:"required,min=1"`
-	ProjectID   int64  `json:"project_id" binding:"required,min=1"`
-	FolderID    int64  `json:"folder_id" binding:"required,min=1"`
-	Name        string `json:"name" binding:"required,min=1,max=100"`
-	Method      string `json:"method" binding:"required,min=1,max=10"`
-	URL         string `json:"url" binding:"max=500"`
-	Status      uint8  `json:"status"`
+	WorkspaceID      int64                 `json:"workspace_id" binding:"required,min=1"`
+	ProjectID        int64                 `json:"project_id" binding:"required,min=1"`
+	FolderID         int64                 `json:"folder_id" binding:"required,min=1"`
+	Name             string                `json:"name" binding:"required,min=1,max=100"`
+	Method           string                `json:"method" binding:"required,min=1,max=10"`
+	URL              string                `json:"url" binding:"max=500"`
+	Status           uint8                 `json:"status"`
+	RequestHeaders   []ParamItem           `json:"request_headers"`
+	RequestBody      RequestBodyConfig     `json:"request_body"`
+	QueryParams      []ParamItem           `json:"query_params"`
+	ResponseHeaders  []ResponseHeaderItem  `json:"response_headers"`
+	ResponseResults  []ResponseResultItem  `json:"response_results"`
+	ResponseExamples []ResponseExampleItem `json:"response_examples"`
 }
 
 type UpdateRequest struct {

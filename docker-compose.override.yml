@@ -1,13 +1,17 @@
 services:
-
   nest:
-    image: nest:latest
-    expose:
-      - 3000
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nest:dev
+    ports:
+      - "3000:3000"
+    environment:
+      TZ: Asia/Shanghai
+      GIN_MODE: debug
     volumes:
       - D:\data\nest\runtime:/app/runtime
     restart: unless-stopped
-
     networks:
       - default
       - common-network

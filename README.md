@@ -10,6 +10,12 @@ ApiNest 用来集中管理接口文档与协作流程。你可以把团队放进
 
 适合替代零散的文档表格或私有接口清单，让接口定义、环境切换与协作权限落在同一处。
 
+## 在线演示
+
+- 地址：[https://nest.lengyuye.top/login](https://nest.lengyuye.top/login)
+- 账号：`admin`
+- 密码：`123123`
+
 ## 技术栈
 
 | 层级 | 技术 |

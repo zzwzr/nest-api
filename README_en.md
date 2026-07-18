@@ -10,6 +10,12 @@ ApiNest centralizes API documentation and team collaboration. Put your team in a
 
 It replaces scattered spreadsheets and private API lists, keeping API definitions, environment switching, and collaboration permissions in one place.
 
+## Live demo
+
+- URL: [https://nest.lengyuye.top/login](https://nest.lengyuye.top/login)
+- Username: `admin`
+- Password: `123123`
+
 ## Tech stack
 
 | Layer | Technologies |
